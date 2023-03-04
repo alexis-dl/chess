@@ -11,26 +11,26 @@ public class ChessBoard {
     private List<Piece> pieces = new ArrayList<Piece>();
 
     public ChessBoard() {
-        pieces.add(new Piece(PieceType.ROOK, 1, 1));
-        pieces.add(new Piece(PieceType.KNIGHT, 2, 1));
-        pieces.add(new Piece(PieceType.BISHOP, 3, 1));
-        pieces.add(new Piece(PieceType.QUEEN, 4, 1));
-        pieces.add(new Piece(PieceType.KING, 5, 1));
-        pieces.add(new Piece(PieceType.BISHOP, 6, 1));
-        pieces.add(new Piece(PieceType.KNIGHT, 7, 1));
-        pieces.add(new Piece(PieceType.ROOK, 8, 1));
+        pieces.add(new Piece(PieceType.ROOK, PieceColor.WHITE, 1, 1));
+        pieces.add(new Piece(PieceType.KNIGHT, PieceColor.WHITE, 2, 1));
+        pieces.add(new Piece(PieceType.BISHOP, PieceColor.WHITE, 3, 1));
+        pieces.add(new Piece(PieceType.QUEEN, PieceColor.WHITE, 4, 1));
+        pieces.add(new Piece(PieceType.KING, PieceColor.WHITE, 5, 1));
+        pieces.add(new Piece(PieceType.BISHOP, PieceColor.WHITE, 6, 1));
+        pieces.add(new Piece(PieceType.KNIGHT, PieceColor.WHITE, 7, 1));
+        pieces.add(new Piece(PieceType.ROOK, PieceColor.WHITE, 8, 1));
         for (int x = 1; x <= BOARD_LENGTH; x++) {
-            pieces.add(new Piece(PieceType.PAWN, x, 2));
-            pieces.add(new Piece(PieceType.PAWN, x, 7));
+            pieces.add(new Piece(PieceType.PAWN, PieceColor.WHITE, x, 2));
+            pieces.add(new Piece(PieceType.PAWN, PieceColor.BLACK, x, 7));
         }
-        pieces.add(new Piece(PieceType.ROOK, 1, 8));
-        pieces.add(new Piece(PieceType.KNIGHT, 2, 8));
-        pieces.add(new Piece(PieceType.BISHOP, 3, 8));
-        pieces.add(new Piece(PieceType.QUEEN, 4, 8));
-        pieces.add(new Piece(PieceType.KING, 5, 8));
-        pieces.add(new Piece(PieceType.BISHOP, 6, 8));
-        pieces.add(new Piece(PieceType.KNIGHT, 7, 8));
-        pieces.add(new Piece(PieceType.ROOK, 8, 8));
+        pieces.add(new Piece(PieceType.ROOK, PieceColor.BLACK, 1, 8));
+        pieces.add(new Piece(PieceType.KNIGHT, PieceColor.BLACK, 2, 8));
+        pieces.add(new Piece(PieceType.BISHOP, PieceColor.BLACK, 3, 8));
+        pieces.add(new Piece(PieceType.QUEEN, PieceColor.BLACK, 4, 8));
+        pieces.add(new Piece(PieceType.KING, PieceColor.BLACK, 5, 8));
+        pieces.add(new Piece(PieceType.BISHOP, PieceColor.BLACK, 6, 8));
+        pieces.add(new Piece(PieceType.KNIGHT, PieceColor.BLACK, 7, 8));
+        pieces.add(new Piece(PieceType.ROOK, PieceColor.BLACK, 8, 8));
     }
 
     public Piece getPiece(int x, int y) {
