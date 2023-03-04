@@ -1,17 +1,15 @@
 package com.chess;
 
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
-import java.util.Arrays;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 import org.junit.jupiter.api.Test;
 
 public class ChessBoardTest {
     @Test
-    void createBoardTest() {
+    void initChessBoardTest() {
         ChessBoard board = new ChessBoard();
-        Piece piece = new Piece(PieceType.KING, 0, 0);
-        board.setPieces(Arrays.asList(piece));
-        assertTrue(board.getPieces().get(0).getType().equals(PieceType.KING));
+        assertEquals(PieceType.QUEEN, board.getPiece(4, 1).getType());
+        assertNull(board.getPiece(4, 4));
     }
 }
