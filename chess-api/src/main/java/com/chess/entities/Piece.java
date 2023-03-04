@@ -1,4 +1,7 @@
-package com.chess;
+package com.chess.entities;
+
+import com.chess.enums.PieceColor;
+import com.chess.enums.PieceType;
 
 import lombok.Data;
 

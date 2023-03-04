@@ -1,4 +1,4 @@
-package com.chess;
+package com.chess.enums;
 
 public enum PieceType {
     KING,

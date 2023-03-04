@@ -1,7 +1,10 @@
-package com.chess;
+package com.chess.entities;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import com.chess.enums.PieceColor;
+import com.chess.enums.PieceType;
 
 import lombok.Data;
 

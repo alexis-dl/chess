@@ -5,6 +5,10 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 
 import org.junit.jupiter.api.Test;
 
+import com.chess.entities.ChessBoard;
+import com.chess.enums.PieceColor;
+import com.chess.enums.PieceType;
+
 public class ChessBoardTest {
     @Test
     void initChessBoardTest() {
