@@ -3,12 +3,15 @@ package com.chess.entities;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.springframework.stereotype.Component;
+
 import com.chess.enums.PieceColor;
 import com.chess.enums.PieceType;
 
 import lombok.Data;
 
 @Data
+@Component
 public class ChessBoard {
     private static final int BOARD_LENGTH = 8;
     private List<Piece> pieces = new ArrayList<Piece>();
