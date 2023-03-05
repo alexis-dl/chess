@@ -12,10 +12,10 @@ public class Piece {
     private PieceColor color;
     private Square square;
 
-    public Piece(PieceType type, PieceColor color, int x, int y) {
-        this.color = color;
+    public Piece(PieceType type, PieceColor color, Square square) {
         this.type = type;
-        this.square = new Square(x, y);
+        this.color = color;
+        this.square = square;
     }
 
     public int getX() {
