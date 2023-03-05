@@ -3,6 +3,8 @@ package com.chess.entities;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.inject.Singleton;
+
 import org.springframework.stereotype.Component;
 
 import com.chess.enums.PieceColor;
@@ -12,6 +14,8 @@ import lombok.Data;
 
 @Data
 @Component
+
+@Singleton
 public class ChessBoard {
     private static final int BOARD_LENGTH = 8;
     private List<Piece> pieces = new ArrayList<Piece>();
@@ -39,12 +43,16 @@ public class ChessBoard {
         pieces.add(new Piece(PieceType.ROOK, PieceColor.BLACK, 8, 8));
     }
 
-    public Piece getPiece(int x, int y) {
+    public Piece getPiece(Square square) {
         for (Piece piece : pieces) {
-            if (piece.getX() == x && piece.getY() == y) {
+            if (piece.getSquare().equals(square)) {
                 return piece;
             }
         }
         return null;
+    }
+
+    public Piece getPiece(int x, int y) {
+        return getPiece(new Square(x, y));
     }
 }
