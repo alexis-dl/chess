@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <title>Chess Board</title>
+    <link rel="stylesheet" type="text/css" href="/chessboard-style.css">
+</head>
+
+<body>
+    <div class="chess-board">
+        <th:block th:each="row : ${#numbers.sequence(1,8)}">
+            <th:block th:each="col : ${#numbers.sequence(1,8)}">
+                <th:block th:if="${row % 2 == col % 2}">
+                    <div class="white"></div>
+                </th:block>
+                <th:block th:unless="${row % 2 == col % 2}">
+                    <div class="black"></div>
+                </th:block>
+            </th:block>
+        </th:block>
+    </div>
+</body>
+
+<!-- TODO ajouter toutes les pieces sur l'échiquier -->
+<!-- <div th:each="x : ${#numbers.sequence(1,8)}"
+                class="piece th:classappend=${board.getPiece(x, y) != null ? ' ' + board.getPiece(x, y).getType().toString().toLowerCase() + '-' + board.getPiece(x, y).getColor().toString().toLowerCase() : ''}">
+            </div> -->
+
+
+</html>
