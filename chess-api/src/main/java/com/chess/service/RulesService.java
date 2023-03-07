@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpClientErrorException.NotFound;
 
 import com.chess.entities.ChessBoard;
 import com.chess.entities.Piece;
@@ -213,5 +214,18 @@ public class RulesService {
 
     private boolean isPieceOnSquare(Square square) {
         return board.getPiece(square) != null;
+    }
+
+    public void movePiece(Square fromSquare, Square toSquare) throws Exception {
+        Piece p = board.getPiece(fromSquare);
+        if (p == null) {
+            throw new Exception("The piece wasn't found on the starting square");
+        }
+        if (getAvailableSquares(p).contains(toSquare)) {
+            board.emptySquare(toSquare);
+            p.setSquare(toSquare);
+        } else {
+            throw new Exception("This move is not allowed by the rules");
+        }
     }
 }

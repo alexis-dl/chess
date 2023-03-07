@@ -51,4 +51,14 @@ public class ChessBoard {
     public Piece getPiece(int x, int y) {
         return getPiece(new Square(x, y));
     }
+
+    public void emptySquare(Square s) {
+        if (getPiece(s) != null) {
+            pieces.remove(getPiece(s));
+        }
+    }
+
+    public boolean hasPiece(Square s) {
+        return getPiece(s) != null;
+    }
 }
