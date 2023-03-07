@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.util.List;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,6 +27,11 @@ public class RulesServiceTest {
     @Autowired
     ChessBoard chessBoard;
 
+    @BeforeEach
+    void init() {
+        rulesService = new RulesService();
+    }
+
     @Test
     void testGetAvailableSquaresforWhiteRook() {
         List<Square> availableSquares = rulesService.getAvailableSquares(chessBoard.getPiece(1, 1));
@@ -44,6 +50,7 @@ public class RulesServiceTest {
     void testGetAvailableSquaresforWhiteBishop() {
         List<Square> availableSquares = rulesService.getAvailableSquares(chessBoard.getPiece(3, 1));
         assertEquals(0, availableSquares.size());
+        // TODO fix same board for all tests
     }
 
     @Test
