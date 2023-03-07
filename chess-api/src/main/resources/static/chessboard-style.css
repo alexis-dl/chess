@@ -14,11 +14,11 @@
 }
 
 .chess-board .white {
-    background-color: #f0d9b5;
+    background-color: #b5f0b9;
 }
 
 .chess-board .black {
-    background-color: #b58863;
+    background-color: #63b566;
 }
 
 .chess-board .piece {
@@ -27,50 +27,50 @@
     background-size: cover;
 }
 
-.chess-board .piece.rook-white {
+.chess-board .piece.ROOK-WHITE {
     background-image: url('/chess-pieces/white-rook.png');
 }
 
-.chess-board .piece.knight-white {
+.chess-board .piece.KNIGHT-WHITE {
     background-image: url('/chess-pieces/white-knight.png');
 }
 
-.chess-board .piece.bishop-white {
+.chess-board .piece.BISHOP-WHITE {
     background-image: url('/chess-pieces/white-bishop.png');
 }
 
-.chess-board .piece.queen-white {
+.chess-board .piece.QUEEN-WHITE {
     background-image: url('/chess-pieces/white-queen.png');
 }
 
-.chess-board .piece.king-white {
+.chess-board .piece.KING-WHITE {
     background-image: url('/chess-pieces/white-king.png');
 }
 
-.chess-board .piece.pawn-white {
+.chess-board .piece.PAWN-WHITE {
     background-image: url('/chess-pieces/white-pawn.png');
 }
 
-.chess-board .piece.rook-black {
+.chess-board .piece.ROOK-BLACK {
     background-image: url('/chess-pieces/black-rook.png');
 }
 
-.chess-board .piece.knight-black {
+.chess-board .piece.KNIGHT-BLACK {
     background-image: url('/chess-pieces/black-knight.png');
 }
 
-.chess-board .piece.bishop-black {
+.chess-board .piece.BISHOP-BLACK {
     background-image: url('/chess-pieces/black-bishop.png');
 }
 
-.chess-board .piece.queen-black {
+.chess-board .piece.QUEEN-BLACK {
     background-image: url('/chess-pieces/black-queen.png');
 }
 
-.chess-board .piece.king-black {
+.chess-board .piece.KING-BLACK {
     background-image: url('/chess-pieces/black-king.png');
 }
 
-.chess-board .piece.pawn-black {
+.chess-board .piece.PAWN-BLACK {
     background-image: url('/chess-pieces/black-pawn.png');
 }

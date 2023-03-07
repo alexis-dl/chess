@@ -15,7 +15,7 @@ public class PagesController {
 
     @GetMapping("/chess")
     public String getChessBoard(Model model) {
-        model.addAttribute("pieces", chessboard.getPieces());
+        model.addAttribute("pieces", chessboard);
         return "chessboard";
     }
 

@@ -8,23 +8,32 @@
 
 <body>
     <div class="chess-board">
-        <th:block th:each="row : ${#numbers.sequence(1,8)}">
+        <!-- boucle sur les rangées et les colonnes -->
+        <th:block th:each="row : ${#numbers.sequence(8,1)}">
             <th:block th:each="col : ${#numbers.sequence(1,8)}">
-                <th:block th:if="${row % 2 == col % 2}">
-                    <div class="white"></div>
-                </th:block>
-                <th:block th:unless="${row % 2 == col % 2}">
-                    <div class="black"></div>
+
+                <!-- récupérer la pièce pour la case (col, row) -->
+                <th:block th:with="piece=${pieces.getPiece(col, row)}">
+
+                    <!-- vérifier si la case contient une pièce -->
+                    <th:block th:if="${piece != null}">
+                        <th:block th:if="${row % 2 == col % 2}">
+                            <!-- la case est blanche -->
+                            <div th:class="white+' '+piece+' '+${piece.type} + '-' + ${piece.color}"></div>
+                        </th:block>
+                        <th:block th:unless="${row % 2 == col % 2}">
+                            <!-- la case est noire -->
+                            <div th:class="black+' '+piece+' '+${piece.type} + '-' + ${piece.color}"></div>
+                        </th:block>
+                    </th:block>
+                    <th:block th:unless="${piece != null}">
+                        <!-- la case est vide -->
+                        <div th:class="${row % 2 == col % 2 ? 'white' : 'black'}"></div>
+                    </th:block>
                 </th:block>
             </th:block>
         </th:block>
     </div>
 </body>
-
-<!-- TODO ajouter toutes les pieces sur l'échiquier -->
-<!-- <div th:each="x : ${#numbers.sequence(1,8)}"
-                class="piece th:classappend=${board.getPiece(x, y) != null ? ' ' + board.getPiece(x, y).getType().toString().toLowerCase() + '-' + board.getPiece(x, y).getColor().toString().toLowerCase() : ''}">
-            </div> -->
-
 
 </html>
