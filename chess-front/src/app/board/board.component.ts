@@ -6,5 +6,7 @@ import { Component } from '@angular/core';
   styleUrls: ['./board.component.scss']
 })
 export class BoardComponent {
-
+  getSquareColor(row: number, col: number) {
+    return (row + col) % 2 == 0 ? 'square light' : 'square dark';
+  }
 }
