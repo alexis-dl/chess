@@ -3,7 +3,7 @@
 <div class="board">
     <ng-container *ngFor="let row of [1, 2, 3, 4, 5, 6, 7, 8]">
         <ng-container *ngFor="let col of [1, 2, 3, 4, 5, 6, 7, 8]">
-            <div [ngClass]="getSquareColor(row, col)"></div>
+            <div [ngClass]="getSquareColor(row, col)+' '+getPiece(row, col)"></div>
         </ng-container>
     </ng-container>
 </div>
