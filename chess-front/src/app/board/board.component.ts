@@ -8,6 +8,9 @@ import { Observable } from 'rxjs';
   styleUrls: ['./board.component.scss']
 })
 export class BoardComponent {
+  isSelected(row: number, col: number) {
+    return (row == 4 && col == 2);
+  }
 
   getSquareColor(row: number, col: number) {
     return (row + col) % 2 == 0 ? 'square light' : 'square dark';
@@ -32,7 +35,6 @@ export class BoardComponent {
     } else {
       return "";
     }
-
   }
 
   getData() {
@@ -41,15 +43,4 @@ export class BoardComponent {
       this.apiData = data;
     });
   }
-
-
-
-
-
-  // /** GET pieces from the server */
-  // getPieceFromApi(row: number, col: number): {
-  //   const url = `${this.boardUrl}/piece/${row}/${col}`;
-  //   this.http.get<any>(this.boardUrl)
-  // }
-
 }
