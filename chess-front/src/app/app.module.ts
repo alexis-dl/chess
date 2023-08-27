@@ -6,9 +6,10 @@ import { AppComponent } from './app.component';
 import { ChessBoardComponent } from './chess-board/chess-board.component';
 import { ChessSquareComponent } from './chess-square/chess-square.component';
 import { ChessPieceComponent } from './chess-piece/chess-piece.component';
+import { PlayerPanelComponent } from './player-panel/player-panel.component';
 
 @NgModule({
-  declarations: [AppComponent, ChessBoardComponent, ChessSquareComponent, ChessPieceComponent],
+  declarations: [AppComponent, ChessBoardComponent, ChessSquareComponent, ChessPieceComponent, PlayerPanelComponent],
   imports: [BrowserModule, AppRoutingModule],
   providers: [],
   bootstrap: [AppComponent],
