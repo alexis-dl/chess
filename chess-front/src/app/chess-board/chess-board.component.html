@@ -2,7 +2,15 @@
   <div *ngFor="let col of [1, 2, 3, 4, 5, 6, 7, 8]" class="chess-col">
     <div *ngFor="let row of [1, 2, 3, 4, 5, 6, 7, 8]" class="chess-square">
       <app-chess-square
+<<<<<<< HEAD
         [isSquareWhite]="(col + row) % 2 === 0"
+=======
+<<<<<<< HEAD
+        [isSquareWhite]="(col + row) % 2 === 0"
+=======
+        [isWhite]="(col + row) % 2 === 0"
+>>>>>>> c77e5f1fd9297f2e0ffa2bea7ee7b5d2d13c4ec7
+>>>>>>> 089f8a54793150290dca5451aeb6cfb30bf5881b
         [pieceType]="getPieceTypeBySquare(row, col)"></app-chess-square>
     </div>
   </div>
