@@ -1,11 +1,10 @@
 import { Component } from '@angular/core';
-import { PlayerPanelComponent } from './player-panel/player-panel.component';
 import { Player } from './player.model';
 
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
-  styleUrls: ['./app.component.scss']
+  styleUrls: ['./app.component.scss'],
 })
 export class AppComponent {
   player1: Player;
@@ -15,13 +14,13 @@ export class AppComponent {
     this.player1 = {
       name: 'Chacalito53',
       elo: 1500,
-      profilePicture: 'assets/pictures/chacalito.png'
+      profilePicture: 'assets/pictures/chacalito.png',
     };
 
     this.player2 = {
       name: 'Zozocracra',
       elo: 763,
-      profilePicture: 'assets/pictures/default-profile-picture.jpg'
+      profilePicture: 'assets/pictures/default-profile-picture.jpg',
     };
   }
 }
