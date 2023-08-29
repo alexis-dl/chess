@@ -8,7 +8,10 @@ import { Component, Input } from '@angular/core';
 export class ChessPieceComponent {
   @Input() pieceType!: string;
 
-  getPieceImagePath(pieceType: string): string {
+  getPieceImagePath(pieceType: string): string | null {
+    if (pieceType === '') {
+      return null;
+    }
     return `assets/chess-pieces/${pieceType}.png`;
   }
 }
