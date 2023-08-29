@@ -13,7 +13,7 @@ export class AppComponent {
   constructor() {
     this.player1 = {
       name: 'Chacalito53',
-      elo: 1500,
+      elo: 1548,
       profilePicture: 'assets/pictures/chacalito.png',
     };
 
