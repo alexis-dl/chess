@@ -1,3 +1,8 @@
-<div class="chess-piece" cdkDrag>
+<div
+  class="chess-piece"
+  cdkDrag
+  (cdkDragStarted)="onDragStart()"
+  (cdkDragEnded)="onDragEnd()"
+  [ngStyle]="{ cursor: isDragging ? 'grabbing' : 'grab' }">
   <img [src]="getPieceImagePath(pieceType)" [alt]="pieceType | titlecase" />
 </div>
