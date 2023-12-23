@@ -14,3 +14,17 @@
   align-items: center;
   height: 100%;
 }
+.chess-square {
+  width: 60px;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.white-square {
+  background-color: rgb(222, 244, 203);
+}
+
+.black-square {
+  background-color: rgb(38, 166, 64);
+}
