@@ -10,6 +10,7 @@
           (cdkDropListDropped)="onDrop($event)">
           <app-chess-piece
             cdkDrag
+            cdkDragBoundary=".chess-board"
             [cdkDragData]="{ row: row, col: col }"
             [pieceType]="chessBoard[row][col]">
           </app-chess-piece>
