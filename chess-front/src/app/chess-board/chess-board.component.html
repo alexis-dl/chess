@@ -11,9 +11,6 @@
           <app-chess-piece
             cdkDrag
             [cdkDragData]="{ row: row, col: col }"
-            (cdkDragStarted)="onDragStart()"
-            (cdkDragEnded)="onDragEnd()"
-            [ngStyle]="{ cursor: isDragging ? 'grabbing' : 'grab' }"
             [pieceType]="chessBoard[row][col]">
           </app-chess-piece>
         </div>

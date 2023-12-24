@@ -8,7 +8,6 @@ import { Position } from '../position';
   styleUrls: ['./chess-board.component.scss'],
 })
 export class ChessBoardComponent implements OnInit {
-  isDragging: boolean = false;
   chessBoard: string[][] = [];
 
   ngOnInit(): void {
@@ -67,14 +66,6 @@ export class ChessBoardComponent implements OnInit {
     }
     return ''; // for squares without any pieces
   }
-  onDragStart(): void {
-    this.isDragging = true;
-  }
-
-  onDragEnd(): void {
-    this.isDragging = false;
-  }
-
   onDrop(event: CdkDragDrop<any>): void {
     const oldPos: Position = event.item.data;
     const newPos: Position = event.container.data;

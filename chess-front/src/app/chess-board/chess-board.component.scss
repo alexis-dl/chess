@@ -31,7 +31,9 @@
 .cdk-drag-placeholder {
   display: none;
 }
-
+.cdk-drop-list-dragging {
+  cursor: grabbing;
+}
 // .example-custom-placeholder {
 //   z-index: 102;
 //   background: red;
