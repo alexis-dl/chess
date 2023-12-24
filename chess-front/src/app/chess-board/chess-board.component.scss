@@ -28,3 +28,14 @@
 .black-square {
   background-color: rgb(38, 166, 64);
 }
+.cdk-drag-placeholder {
+  display: none;
+}
+
+// .example-custom-placeholder {
+//   z-index: 102;
+//   background: red;
+//   /* border: dotted 3px #999; */
+//   min-height: 60px;
+//   transition: transform 250ms cubic-bezier(0, 0, 0.2, 1);
+// }
