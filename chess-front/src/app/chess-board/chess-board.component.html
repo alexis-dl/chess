@@ -1,18 +1,19 @@
 <div class="board-container" cdkDropListGroup>
   <div class="chess-board">
     <div *ngFor="let col of [0, 1, 2, 3, 4, 5, 6, 7]" class="chess-col">
-      <div *ngFor="let row of [0, 1, 2, 3, 4, 5, 6, 7]" class="chess-square">
+      <div *ngFor="let row of [7, 6, 5, 4, 3, 2, 1, 0]" class="chess-square">
         <div
           class="chess-square"
-          [ngClass]="(col + row) % 2 === 0 ? 'white-square' : 'black-square'"
+          [ngClass]="getSquareClass(col, row)"
           cdkDropList
-          [cdkDropListData]="{ row: row, col: col }"
+          [cdkDropListData]="{ y: row, x: col }"
           (cdkDropListDropped)="onDrop($event)">
           <app-chess-piece
             cdkDrag
             cdkDragBoundary=".chess-board"
-            [cdkDragData]="{ row: row, col: col }"
-            [pieceType]="chessBoard[row][col]">
+            [cdkDragData]="{ y: row, x: col }"
+            [pieceType]="chessBoard[row][col]"
+            (click)="highlightAllowedMoves(col, row)">
           </app-chess-piece>
         </div>
       </div>
