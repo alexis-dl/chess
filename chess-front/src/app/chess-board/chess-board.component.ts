@@ -2,7 +2,8 @@ import { CdkDragDrop } from '@angular/cdk/drag-drop';
 import { Component, OnInit } from '@angular/core';
 import { Position } from '../position';
 import { RulesService } from '../rules.service';
-import { ChessBoard } from '../chessBoard';
+import { Chessboard } from '../chessboard';
+import { ChessUtilsService } from '../chess-utils.service';
 
 @Component({
   selector: 'app-chess-board',
@@ -10,10 +11,13 @@ import { ChessBoard } from '../chessBoard';
   styleUrls: ['./chess-board.component.scss'],
 })
 export class ChessBoardComponent implements OnInit {
-  chessBoard: ChessBoard = new ChessBoard();
+  chessBoard: Chessboard = new Chessboard(this.chessUtilsService);
   highlightedSquares: Position[] = [];
 
-  constructor(private rulesService: RulesService) {}
+  constructor(
+    private rulesService: RulesService,
+    private chessUtilsService: ChessUtilsService
+  ) {}
 
   ngOnInit(): void {}
 
@@ -50,6 +54,15 @@ export class ChessBoardComponent implements OnInit {
       const piece = this.chessBoard.getPiece(oldPos);
       this.chessBoard.setPiece('', oldPos);
       this.chessBoard.setPiece(piece, newPos);
+      // send an alert if king are checked
+      this.rulesService.isKingChecked(
+        this.chessUtilsService.getColor('white'),
+        this.chessBoard
+      );
+      this.rulesService.isKingChecked(
+        this.chessUtilsService.getColor('black'),
+        this.chessBoard
+      );
     }
   }
 }

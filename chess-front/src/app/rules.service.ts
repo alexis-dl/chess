@@ -1,14 +1,47 @@
 import { Injectable } from '@angular/core';
 import { Position } from './position';
-import { ChessBoard } from './chessBoard';
+import { Chessboard } from './chessboard';
+import { ChessUtilsService } from './chess-utils.service';
 
 @Injectable({
   providedIn: 'root',
 })
 export class RulesService {
-  constructor() {}
+  constructor(private chessUtilsService: ChessUtilsService) {}
 
-  getMovesByPieceType(piecePos: Position, chessBoard: ChessBoard): Position[] {
+  isKingChecked(pieceColor: string, chessBoard: Chessboard): boolean {
+    const kingPos = chessBoard.findPiecePosition(pieceColor + '-king');
+
+    if (kingPos) {
+      // Iterate over all opponent's pieces and check if any can attack the king
+      for (let x = 0; x < Chessboard.BOARD_SIZE; x++) {
+        for (let y = 0; y < Chessboard.BOARD_SIZE; y++) {
+          const attackingPiecePos = new Position(x, y);
+          const piece = chessBoard.getPiece(attackingPiecePos);
+          if (
+            piece &&
+            piece.startsWith(
+              this.chessUtilsService.getOpponentColor(pieceColor)
+            )
+          ) {
+            const availableMoves: Position[] = this.getMovesByPieceType(
+              attackingPiecePos,
+              chessBoard
+            );
+            if (availableMoves.some(move => move.equals(kingPos))) {
+              alert(pieceColor + ' king checked');
+              return true;
+            }
+          }
+        }
+      }
+    }
+    return false;
+  }
+  // Method that retrieve all available moves for a piece, regarding to its type.
+  //TODO : add obstacles
+  // Does not check for checks
+  getMovesByPieceType(piecePos: Position, chessBoard: Chessboard): Position[] {
     const chessPieceName = chessBoard.getPiece(piecePos);
     const pieceColor = chessPieceName.split('-')[0];
     const pieceType = chessPieceName.split('-')[1];
@@ -20,12 +53,16 @@ export class RulesService {
 
         for (const deltaX of deltasKing) {
           for (const deltaY of deltasKing) {
-            const newPosition = piecePos.addX(deltaX).addY(deltaY);
+            const newPos = piecePos.addX(deltaX).addY(deltaY);
             if (
-              !newPosition.equals(piecePos) &&
-              newPosition.isInsideTheBoard()
+              !newPos.equals(piecePos) &&
+              newPos.isInsideTheBoard() &&
+              this.chessUtilsService.areColorsDifferent(
+                this.chessUtilsService.getColor(chessBoard.getPiece(newPos)),
+                pieceColor
+              )
             ) {
-              moves.push(newPosition);
+              moves.push(newPos);
             }
           }
         }
@@ -38,14 +75,31 @@ export class RulesService {
             // Exclude actual position of the queen
             if (deltaX !== 0 || deltaY !== 0) {
               let multiplier = 1;
-              let newPosition = piecePos
+              let newPos = piecePos
                 .addX(deltaX * multiplier)
                 .addY(deltaY * multiplier);
 
-              while (newPosition.isInsideTheBoard()) {
-                moves.push(newPosition);
+              while (newPos.isInsideTheBoard()) {
+                const pieceAtNewPos = chessBoard.getPiece(newPos);
+
+                if (pieceAtNewPos) {
+                  const pieceAtNewPosColor =
+                    this.chessUtilsService.getColor(pieceAtNewPos);
+
+                  if (
+                    this.chessUtilsService.areColorsDifferent(
+                      pieceAtNewPosColor,
+                      pieceColor
+                    )
+                  ) {
+                    moves.push(newPos);
+                  }
+                  // Stop the loop when a piece is encountered, regardless of color
+                  break;
+                }
+                moves.push(newPos);
                 multiplier++;
-                newPosition = piecePos
+                newPos = piecePos
                   .addX(deltaX * multiplier)
                   .addY(deltaY * multiplier);
               }
@@ -58,14 +112,31 @@ export class RulesService {
         for (const deltaX of deltasBishop) {
           for (const deltaY of deltasBishop) {
             let multiplier = 1;
-            let newPosition = piecePos
+            let newPos = piecePos
               .addX(deltaX * multiplier)
               .addY(deltaY * multiplier);
 
-            while (newPosition.isInsideTheBoard()) {
-              moves.push(newPosition);
+            while (newPos.isInsideTheBoard()) {
+              const pieceAtNewPos = chessBoard.getPiece(newPos);
+
+              if (pieceAtNewPos) {
+                const pieceAtNewPosColor =
+                  this.chessUtilsService.getColor(pieceAtNewPos);
+
+                if (
+                  this.chessUtilsService.areColorsDifferent(
+                    pieceAtNewPosColor,
+                    pieceColor
+                  )
+                ) {
+                  moves.push(newPos);
+                }
+                // Stop the loop when a piece is encountered, regardless of color
+                break;
+              }
+              moves.push(newPos);
               multiplier++;
-              newPosition = piecePos
+              newPos = piecePos
                 .addX(deltaX * multiplier)
                 .addY(deltaY * multiplier);
             }
@@ -77,20 +148,37 @@ export class RulesService {
         for (const delta of deltas) {
           for (const axis of ['X', 'Y']) {
             let multiplier = 1;
-            let newPosition: Position;
+            let newPos: Position;
             if (axis === 'X') {
-              newPosition = piecePos.addX(delta * multiplier);
+              newPos = piecePos.addX(delta * multiplier);
             } else {
-              newPosition = piecePos.addY(delta * multiplier);
+              newPos = piecePos.addY(delta * multiplier);
             }
 
-            while (newPosition.isInsideTheBoard()) {
-              moves.push(newPosition);
+            while (newPos.isInsideTheBoard()) {
+              const pieceAtNewPos = chessBoard.getPiece(newPos);
+
+              if (pieceAtNewPos) {
+                const pieceAtNewPosColor =
+                  this.chessUtilsService.getColor(pieceAtNewPos);
+
+                if (
+                  this.chessUtilsService.areColorsDifferent(
+                    pieceAtNewPosColor,
+                    pieceColor
+                  )
+                ) {
+                  moves.push(newPos);
+                }
+                // Stop the loop when a piece is encountered, regardless of color
+                break;
+              }
+              moves.push(newPos);
               multiplier++;
               if (axis === 'X') {
-                newPosition = piecePos.addX(delta * multiplier);
+                newPos = piecePos.addX(delta * multiplier);
               } else {
-                newPosition = piecePos.addY(delta * multiplier);
+                newPos = piecePos.addY(delta * multiplier);
               }
             }
           }
@@ -109,12 +197,18 @@ export class RulesService {
         ];
 
         for (const delta of knightDeltas) {
-          const newPosition = new Position(
+          const newPos = new Position(
             piecePos.x + delta.deltaX,
             piecePos.y + delta.deltaY
           );
-          if (newPosition.isInsideTheBoard()) {
-            moves.push(newPosition);
+          if (
+            newPos.isInsideTheBoard() &&
+            this.chessUtilsService.areColorsDifferent(
+              this.chessUtilsService.getColor(chessBoard.getPiece(newPos)),
+              pieceColor
+            )
+          ) {
+            moves.push(newPos);
           }
         }
         break;
@@ -124,14 +218,17 @@ export class RulesService {
 
         // Mouvement simple en avant
         const forwardOne = piecePos.addY(direction);
-        if (forwardOne.isInsideTheBoard()) {
+        if (forwardOne.isInsideTheBoard() && !chessBoard.getPiece(forwardOne)) {
           moves.push(forwardOne);
 
           // Mouvement double en avant (disponible uniquement au premier coup)
           const initialRow = pieceColor === 'white' ? 1 : 6;
           if (piecePos.y === initialRow) {
             const forwardTwo = forwardOne.addY(direction);
-            if (forwardTwo.isInsideTheBoard()) {
+            if (
+              forwardTwo.isInsideTheBoard() &&
+              !chessBoard.getPiece(forwardTwo)
+            ) {
               moves.push(forwardTwo);
             }
           }
@@ -139,18 +236,31 @@ export class RulesService {
 
         // Attaque en diagonale à gauche
         const attackLeft = piecePos.addX(-1).addY(direction);
-        if (attackLeft.isInsideTheBoard()) {
+        if (
+          attackLeft.isInsideTheBoard() &&
+          this.chessUtilsService.areColorsOpposite(
+            this.chessUtilsService.getColor(chessBoard.getPiece(attackLeft)),
+            pieceColor
+          )
+        ) {
           moves.push(attackLeft);
         }
 
         // Attaque en diagonale à droite
         const attackRight = piecePos.addX(1).addY(direction);
-        if (attackRight.isInsideTheBoard()) {
+        if (
+          attackRight.isInsideTheBoard() &&
+          this.chessUtilsService.areColorsOpposite(
+            this.chessUtilsService.getColor(chessBoard.getPiece(attackRight)),
+            pieceColor
+          )
+        ) {
           moves.push(attackRight);
         }
+
+        //TODO allow en-passant , by registering last move in chessBoard or future game entity
         break;
     }
-    console.log('Positions trouvées :', moves);
     return moves;
   }
 

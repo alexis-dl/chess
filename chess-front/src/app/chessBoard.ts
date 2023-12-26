@@ -1,10 +1,12 @@
+import { ChessUtilsService } from './chess-utils.service';
 import { Position } from './position';
 
-export class ChessBoard {
+export class Chessboard {
+  static readonly BOARD_SIZE = 8;
   pieces: string[][] = [];
   highlightedSquares: Position[] = [];
 
-  constructor() {
+  constructor(private chessUtilsService: ChessUtilsService) {
     this.initializeChessBoard();
   }
 
@@ -16,56 +18,23 @@ export class ChessBoard {
     this.pieces[position.y][position.x] = pieceName;
   }
 
+  findPiecePosition(pieceName: string): Position | null {
+    for (let row = 0; row < this.pieces.length; row++) {
+      const col = this.pieces[row].findIndex(value => value === pieceName);
+      if (col !== -1) {
+        return new Position(col, row);
+      }
+    }
+    return null; // Element not found, but shouldn't happen
+  }
+
   private initializeChessBoard(): void {
     for (let i = 0; i < 8; i++) {
       this.pieces[i] = [];
       for (let j = 0; j < 8; j++) {
         // Initial chess pieces setup can be adjusted based on your needs
-        this.pieces[i][j] = this.getInitialChessPiece(i, j);
+        this.pieces[i][j] = this.chessUtilsService.getInitialChessPiece(i, j);
       }
     }
-  }
-  private getInitialChessPiece(rowIndex: number, colIndex: number): string {
-    //static board with the initial position of pieces
-    const row = rowIndex;
-
-    if (row === 0) {
-      switch (colIndex) {
-        case 0:
-        case 7:
-          return 'white-rook';
-        case 1:
-        case 6:
-          return 'white-knight';
-        case 2:
-        case 5:
-          return 'white-bishop';
-        case 3:
-          return 'white-queen';
-        case 4:
-          return 'white-king';
-      }
-    } else if (row === 1) {
-      return 'white-pawn';
-    } else if (row === 6) {
-      return 'black-pawn';
-    } else if (row === 7) {
-      switch (colIndex) {
-        case 0:
-        case 7:
-          return 'black-rook';
-        case 1:
-        case 6:
-          return 'black-knight';
-        case 2:
-        case 5:
-          return 'black-bishop';
-        case 3:
-          return 'black-queen';
-        case 4:
-          return 'black-king';
-      }
-    }
-    return ''; // for squares without any pieces
   }
 }
