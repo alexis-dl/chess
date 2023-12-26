@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Position } from './position';
+import { ChessBoard } from './chessBoard';
 
 @Injectable({
   providedIn: 'root',
@@ -7,7 +8,8 @@ import { Position } from './position';
 export class RulesService {
   constructor() {}
 
-  getMovesByPieceType(piecePos: Position, chessPieceName: string): Position[] {
+  getMovesByPieceType(piecePos: Position, chessBoard: ChessBoard): Position[] {
+    const chessPieceName = chessBoard.getPiece(piecePos);
     const pieceColor = chessPieceName.split('-')[0];
     const pieceType = chessPieceName.split('-')[1];
     const moves: Position[] = [];
