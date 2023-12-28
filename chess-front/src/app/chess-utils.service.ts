@@ -6,6 +6,10 @@ import { Injectable } from '@angular/core';
 export class ChessUtilsService {
   constructor() {}
 
+  getType(pieceName: string) {
+    return pieceName.split('-')[1];
+  }
+
   getColor(pieceName: string) {
     return pieceName.split('-')[0];
   }
@@ -17,10 +21,6 @@ export class ChessUtilsService {
   // Return true if colors are differents (colors can be empty )
   areColorsDifferent(color1: string, color2: string): boolean {
     return color1 !== color2;
-  }
-
-  getType(pieceName: string) {
-    return pieceName.split('-')[1];
   }
 
   getOpponentColor(pieceColor: string): string {

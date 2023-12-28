@@ -34,7 +34,7 @@ export class ChessBoardComponent implements OnInit {
 
   highlightAllowedMoves(x: number, y: number) {
     const piecePos = new Position(x, y);
-    const squaresToHighlight = this.rulesService.getMovesByPieceType(
+    const squaresToHighlight = this.rulesService.getValidMovesByPiecePos(
       piecePos,
       this.chessBoard
     );
@@ -46,23 +46,17 @@ export class ChessBoardComponent implements OnInit {
     const oldPos: Position = event.item.data;
     const newPos: Position = event.container.data;
     // if(rulesService.isMoveValid())
-    if (
-      this.rulesService
-        .getMovesByPieceType(new Position(oldPos.x, oldPos.y), this.chessBoard)
-        .some(move => move.equals(newPos))
-    ) {
-      const piece = this.chessBoard.getPiece(oldPos);
-      this.chessBoard.setPiece('', oldPos);
-      this.chessBoard.setPiece(piece, newPos);
+    if (this.rulesService.isMoveValid(oldPos, newPos, this.chessBoard)) {
+      this.rulesService.movePiece(oldPos, newPos, this.chessBoard);
       // send an alert if king are checked
-      this.rulesService.isKingChecked(
-        this.chessUtilsService.getColor('white'),
-        this.chessBoard
-      );
-      this.rulesService.isKingChecked(
-        this.chessUtilsService.getColor('black'),
-        this.chessBoard
-      );
+      // this.rulesService.isKingChecked(
+      //   this.chessUtilsService.getColor('white'),
+      //   this.chessBoard
+      // );
+      // this.rulesService.isKingChecked(
+      //   this.chessUtilsService.getColor('black'),
+      //   this.chessBoard
+      // );
     }
   }
 }

@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { Position } from './position';
 import { Chessboard } from './chessboard';
 import { ChessUtilsService } from './chess-utils.service';
+import { cloneDeep } from 'lodash';
 
 @Injectable({
   providedIn: 'root',
@@ -9,42 +10,56 @@ import { ChessUtilsService } from './chess-utils.service';
 export class RulesService {
   constructor(private chessUtilsService: ChessUtilsService) {}
 
-  isKingChecked(pieceColor: string, chessBoard: Chessboard): boolean {
-    const kingPos = chessBoard.findPiecePosition(pieceColor + '-king');
-
-    if (kingPos) {
-      // Iterate over all opponent's pieces and check if any can attack the king
-      for (let x = 0; x < Chessboard.BOARD_SIZE; x++) {
-        for (let y = 0; y < Chessboard.BOARD_SIZE; y++) {
-          const attackingPiecePos = new Position(x, y);
-          const piece = chessBoard.getPiece(attackingPiecePos);
-          if (
-            piece &&
-            piece.startsWith(
-              this.chessUtilsService.getOpponentColor(pieceColor)
-            )
-          ) {
-            const availableMoves: Position[] = this.getMovesByPieceType(
-              attackingPiecePos,
-              chessBoard
-            );
-            if (availableMoves.some(move => move.equals(kingPos))) {
-              alert(pieceColor + ' king checked');
-              return true;
-            }
-          }
-        }
-      }
-    }
-    return false;
+  /**
+   * Move the piece from Position A to Position B.
+   * @returns the eaten piece if there is one.
+   */
+  movePiece(
+    oldPos: Position,
+    newPos: Position,
+    chessBoard: Chessboard
+  ): string {
+    const movingPiece = chessBoard.getPiece(oldPos);
+    const eatenPiece = chessBoard.getPiece(newPos);
+    chessBoard.setPiece('', oldPos);
+    chessBoard.setPiece(movingPiece, newPos);
+    return eatenPiece;
   }
+
+  // Give a validation for a given move
+  isMoveValid(
+    oldPos: Position,
+    newPos: Position,
+    chessBoard: Chessboard
+  ): boolean {
+    const color = this.chessUtilsService.getColor(chessBoard.getPiece(oldPos));
+    const cloneChessboard: Chessboard = cloneDeep(chessBoard);
+    this.movePiece(oldPos, newPos, cloneChessboard);
+
+    return (
+      this.getMovesByPiecePos(
+        new Position(oldPos.x, oldPos.y),
+        chessBoard
+      ).some(move => move.equals(newPos)) &&
+      !this.isKingChecked(color, cloneChessboard)
+    );
+  }
+  // get all valid moves for a given PiecePos, verifying that the own king is not checked after the move.
+  getValidMovesByPiecePos(
+    piecePos: Position,
+    chessBoard: Chessboard
+  ): Position[] {
+    return this.getMovesByPiecePos(piecePos, chessBoard).filter(getMove =>
+      this.isMoveValid(piecePos, getMove, chessBoard)
+    );
+  }
+
   // Method that retrieve all available moves for a piece, regarding to its type.
-  //TODO : add obstacles
-  // Does not check for checks
-  getMovesByPieceType(piecePos: Position, chessBoard: Chessboard): Position[] {
+  // Does not verify if king is checked
+  getMovesByPiecePos(piecePos: Position, chessBoard: Chessboard): Position[] {
     const chessPieceName = chessBoard.getPiece(piecePos);
-    const pieceColor = chessPieceName.split('-')[0];
-    const pieceType = chessPieceName.split('-')[1];
+    const pieceColor = this.chessUtilsService.getColor(chessPieceName);
+    const pieceType = this.chessUtilsService.getType(chessPieceName);
     const moves: Position[] = [];
 
     switch (pieceType) {
@@ -264,5 +279,34 @@ export class RulesService {
     return moves;
   }
 
-  isMoveValid(oldPos: Position, newPos: Position) {}
+  // check if the king of the given color is in check on the given chessboard.
+  isKingChecked(pieceColor: string, chessBoard: Chessboard): boolean {
+    const kingPos = chessBoard.findPiecePosition(pieceColor + '-king');
+
+    if (kingPos) {
+      // Iterate over all opponent's pieces and check if any can attack the king
+      for (let x = 0; x < Chessboard.BOARD_SIZE; x++) {
+        for (let y = 0; y < Chessboard.BOARD_SIZE; y++) {
+          const attackingPiecePos = new Position(x, y);
+          const piece = chessBoard.getPiece(attackingPiecePos);
+          if (
+            piece &&
+            piece.startsWith(
+              this.chessUtilsService.getOpponentColor(pieceColor)
+            )
+          ) {
+            const availableMoves: Position[] = this.getMovesByPiecePos(
+              attackingPiecePos,
+              chessBoard
+            );
+            if (availableMoves.some(move => move.equals(kingPos))) {
+              // alert(pieceColor + ' king checked');
+              return true;
+            }
+          }
+        }
+      }
+    }
+    return false;
+  }
 }
