@@ -45,18 +45,9 @@ export class ChessBoardComponent implements OnInit {
   onDrop(event: CdkDragDrop<any>): void {
     const oldPos: Position = event.item.data;
     const newPos: Position = event.container.data;
-    // if(rulesService.isMoveValid())
+
     if (this.rulesService.isMoveValid(oldPos, newPos, this.chessBoard)) {
       this.rulesService.movePiece(oldPos, newPos, this.chessBoard);
-      // send an alert if king are checked
-      // this.rulesService.isKingChecked(
-      //   this.chessUtilsService.getColor('white'),
-      //   this.chessBoard
-      // );
-      // this.rulesService.isKingChecked(
-      //   this.chessUtilsService.getColor('black'),
-      //   this.chessBoard
-      // );
     }
   }
 }
