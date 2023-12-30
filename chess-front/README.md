@@ -30,6 +30,5 @@ To get more help on the Angular CLI use `ng help` or go check out the [Angular C
 
 ```bash
 cd chess-front
-ng build --output-path docs --base-href ./
-mv docs ..
+ng build --output-path ../docs --base-href https://alexis-dl.github.io/chess/
 ```
