@@ -2,16 +2,16 @@
   <mat-sidenav #sidenav mode="over">
     <!-- Contenu du menu latéral -->
     <mat-nav-list>
-      <a mat-list-item (click)="sidenav.toggle()" routerLink="/chess/play"
+      <a mat-list-item (click)="sidenav.toggle()" routerLink="/play"
         >New Game</a
       >
-      <a mat-list-item (click)="sidenav.toggle()" routerLink="/chess/player"
+      <a mat-list-item (click)="sidenav.toggle()" routerLink="/player"
         >Player</a
       >
-      <a mat-list-item (click)="sidenav.toggle()" routerLink="/chess/openings"
+      <a mat-list-item (click)="sidenav.toggle()" routerLink="/openings"
         >Openings (Not Available)</a
       >
-      <a mat-list-item (click)="sidenav.toggle()" routerLink="/chess/settings"
+      <a mat-list-item (click)="sidenav.toggle()" routerLink="/settings"
         >Settings</a
       >
       <!-- Ajoutez d'autres options du menu ici -->
@@ -23,7 +23,7 @@
       <button mat-icon-button (click)="sidenav.toggle()">
         <mat-icon>menu</mat-icon>
       </button>
-      <span routerLink="/chess/play" style="cursor: pointer">Chess</span>
+      <span routerLink="/play" style="cursor: pointer">Chess</span>
       <span class="example-spacer"></span>
       <span class="example-spacer"></span>
       <button
@@ -31,7 +31,7 @@
         class="example-icon"
         style="margin-left: auto"
         aria-label="Openings"
-        routerLink="/chess/openings">
+        routerLink="/openings">
         <mat-icon>book</mat-icon>
       </button>
 

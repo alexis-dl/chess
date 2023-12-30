@@ -11,11 +11,11 @@ export class SettingsSlidemenuComponent {
 
   ngOnInit() {
     this.items = [
-      { label: 'Home', icon: 'pi pi-fw pi-home', routerLink: '/chess/play' },
+      { label: 'Home', icon: 'pi pi-fw pi-home', routerLink: '/play' },
       {
         label: 'Settings',
         icon: 'pi pi-fw pi-cog',
-        routerLink: '/chess/settings',
+        routerLink: '/settings',
       },
       {
         separator: true, //not working yet but to deal with
