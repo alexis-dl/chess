@@ -16,6 +16,11 @@ import { MatIconModule } from '@angular/material/icon';
 import { ToolbarSidenavComponent } from './toolbar-sidenav/toolbar-sidenav.component';
 import { SettingsComponent } from './settings/settings.component';
 import { ChessGameComponent } from './chess-game/chess-game.component';
+import { SlideMenuModule } from 'primeng/slidemenu';
+import { SettingsSlidemenuComponent } from './toolbar-sidenav/settings-slidemenu/settings-slidemenu.component';
+import { QuitComponent } from './toolbar-sidenav/quit/quit.component';
+import { OpeningsComponent } from './openings/openings.component';
+
 @NgModule({
   declarations: [
     AppComponent,
@@ -25,6 +30,9 @@ import { ChessGameComponent } from './chess-game/chess-game.component';
     ToolbarSidenavComponent,
     SettingsComponent,
     ChessGameComponent,
+    SettingsSlidemenuComponent,
+    QuitComponent,
+    OpeningsComponent,
   ],
   providers: [],
   bootstrap: [AppComponent],
@@ -38,6 +46,7 @@ import { ChessGameComponent } from './chess-game/chess-game.component';
     MatButtonModule,
     MatToolbarModule,
     MatIconModule,
+    SlideMenuModule,
   ],
 })
 export class AppModule {}

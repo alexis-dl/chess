@@ -1,0 +1,12 @@
+<button
+  mat-icon-button
+  class="example-icon"
+  aria-label="Settings"
+  (click)="menu.toggle($event)">
+  <mat-icon>settings</mat-icon>
+</button>
+<p-slideMenu
+  #menu
+  [model]="items"
+  [popup]="true"
+  [viewportHeight]="240"></p-slideMenu>
