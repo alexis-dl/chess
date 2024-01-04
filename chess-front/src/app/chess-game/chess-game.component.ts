@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
-import { Player } from './player.model';
+import { Player } from '../player-panel/player.model';
+import { Bot } from '../bot/bot.model';
 
 @Component({
   selector: 'app-chess-game',
@@ -8,19 +9,21 @@ import { Player } from './player.model';
 })
 export class ChessGameComponent {
   player1: Player;
-  player2: Player;
+  bot: Bot;
 
   constructor() {
     this.player1 = {
       name: 'Chacalito53',
       elo: 1548,
-      profilePicture: 'assets/pictures/chacalito.png',
+      profilePicture: 'assets/pictures/chacalito-profile-pic.png',
     };
 
-    this.player2 = {
-      name: 'Zozocracra',
-      elo: 763,
-      profilePicture: 'assets/pictures/default-profile-picture.jpg',
-    };
+    this.bot = new Bot();
+
+    // this.player2 = {
+    //   name: 'Zozocracra',
+    //   elo: 763,
+    //   profilePicture: 'assets/pictures/default-profile-picture.jpg',
+    // };
   }
 }

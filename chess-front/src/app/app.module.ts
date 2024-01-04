@@ -5,7 +5,7 @@ import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { ChessBoardComponent } from './chess-game/chess-board/chess-board.component';
 import { ChessPieceComponent } from './chess-game/chess-piece/chess-piece.component';
-import { PlayerPanelComponent } from './chess-game/player-panel/player-panel.component';
+import { PlayerPanelComponent } from './player-panel/player-panel.component';
 import { DragDropModule } from '@angular/cdk/drag-drop';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { MatSidenavModule } from '@angular/material/sidenav';
@@ -20,6 +20,7 @@ import { SlideMenuModule } from 'primeng/slidemenu';
 import { SettingsSlidemenuComponent } from './toolbar-sidenav/settings-slidemenu/settings-slidemenu.component';
 import { QuitComponent } from './toolbar-sidenav/quit/quit.component';
 import { OpeningsComponent } from './openings/openings.component';
+import { BotComponent } from './bot/bot.component';
 
 @NgModule({
   declarations: [
@@ -33,6 +34,7 @@ import { OpeningsComponent } from './openings/openings.component';
     SettingsSlidemenuComponent,
     QuitComponent,
     OpeningsComponent,
+    BotComponent,
   ],
   providers: [],
   bootstrap: [AppComponent],

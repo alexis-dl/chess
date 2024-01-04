@@ -1,6 +1,6 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
-import { PlayerPanelComponent } from './chess-game/player-panel/player-panel.component';
+import { PlayerPanelComponent } from './player-panel/player-panel.component';
 import { SettingsComponent } from './settings/settings.component';
 import { ChessGameComponent } from './chess-game/chess-game.component';
 import { QuitComponent } from './toolbar-sidenav/quit/quit.component';

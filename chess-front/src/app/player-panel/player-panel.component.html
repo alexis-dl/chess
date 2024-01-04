@@ -1,0 +1,13 @@
+<div class="player-panel" *ngIf="player">
+  <!-- Displaying the player's name -->
+  <h2>{{ player.name }}</h2>
+
+  <!-- Displaying the player's profile picture -->
+  <img
+    [src]="player.profilePicture"
+    alt="Profile Picture"
+    class="profile-picture" />
+
+  <!-- Displaying the player's Elo ranking -->
+  <p>Elo Ranking: {{ player.elo }}</p>
+</div>

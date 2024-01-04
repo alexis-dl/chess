@@ -1,6 +1,6 @@
 <mat-sidenav-container>
   <mat-sidenav #sidenav mode="over">
-    <!-- Contenu du menu latéral -->
+    <!-- Side panel content -->
     <mat-nav-list>
       <a mat-list-item (click)="sidenav.toggle()" routerLink="/play"
         >New Game</a
@@ -14,7 +14,7 @@
       <a mat-list-item (click)="sidenav.toggle()" routerLink="/settings"
         >Settings</a
       >
-      <!-- Ajoutez d'autres options du menu ici -->
+      <!-- Add other options settings here -->
     </mat-nav-list>
   </mat-sidenav>
 
@@ -38,7 +38,7 @@
       <app-settings-slidemenu></app-settings-slidemenu>
     </mat-toolbar>
 
-    <!-- Le contenu principal de votre application -->
+    <!-- Main Content of the application -->
     <router-outlet></router-outlet>
   </mat-sidenav-content>
 </mat-sidenav-container>
