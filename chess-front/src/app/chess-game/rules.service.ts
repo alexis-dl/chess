@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
-import { Position } from './position';
-import { Chessboard } from './chessboard';
+import { Position } from './position.model';
+import { Chessboard } from './chessboard.model';
 import { ChessUtilsService } from './chess-utils.service';
 import { cloneDeep } from 'lodash';
 
@@ -11,7 +11,7 @@ export class RulesService {
   constructor(private chessUtilsService: ChessUtilsService) {}
 
   /**
-   * Move the piece from Position A to Position B.
+   * Move the piece from Position A to Position B without verification of validity.
    * @returns the eaten piece if there is one.
    */
   movePiece(
@@ -19,10 +19,39 @@ export class RulesService {
     newPos: Position,
     chessBoard: Chessboard
   ): string {
-    const movingPiece = chessBoard.getPiece(oldPos);
-    const eatenPiece = chessBoard.getPiece(newPos);
-    chessBoard.setPiece('', oldPos);
-    chessBoard.setPiece(movingPiece, newPos);
+    const movingPiece = chessBoard.getPieceByPos(oldPos);
+    let eatenPiece = chessBoard.getPieceByPos(newPos);
+    const isPieceAPawn = this.chessUtilsService.isPawn(movingPiece);
+
+    // move and eat piece
+    chessBoard.setPieceByPos('', oldPos);
+    chessBoard.setPieceByPos(movingPiece, newPos);
+
+    // if move is en passant, eat piece in diagonal
+    const isWhitePawn = movingPiece === 'white-pawn';
+    const isBlackPawn = movingPiece === 'black-pawn';
+    if (
+      ((isWhitePawn && oldPos.y === 4) || (isBlackPawn && oldPos.y === 3)) &&
+      newPos.x === chessBoard.getEnPassantColIndex()
+    ) {
+      const eatenPawnPos = new Position(
+        chessBoard.getEnPassantColIndex(),
+        oldPos.y
+      );
+      eatenPiece = chessBoard.getPieceByPos(eatenPawnPos);
+      chessBoard.setPieceByPos('', eatenPawnPos);
+    }
+
+    // register column for possible en passant
+    if (isPieceAPawn && Math.abs(oldPos.y - newPos.y) === 2) {
+      chessBoard.setEnPassantColIndex(oldPos.x);
+    } else {
+      chessBoard.setEnPassantColIndex(-1); // reseting en passant possibility
+    }
+
+    // toggle turn
+    chessBoard.toggleIsWhiteTurn();
+
     return eatenPiece;
   }
 
@@ -32,7 +61,9 @@ export class RulesService {
     newPos: Position,
     chessBoard: Chessboard
   ): boolean {
-    const color = this.chessUtilsService.getColor(chessBoard.getPiece(oldPos));
+    const color = this.chessUtilsService.getColor(
+      chessBoard.getPieceByPos(oldPos)
+    );
     const cloneChessboard: Chessboard = cloneDeep(chessBoard);
     this.movePiece(oldPos, newPos, cloneChessboard);
 
@@ -54,13 +85,22 @@ export class RulesService {
     );
   }
 
-  // Method that retrieve all available moves for a piece, regarding to its type.
-  // Does not verify if king is checked
+  // Method that retrieve all available moves for a piece, regarding to its type and if it's white/black's turn.
+  // Does NOT verify if king is checked.
   getMovesByPiecePos(piecePos: Position, chessBoard: Chessboard): Position[] {
-    const chessPieceName = chessBoard.getPiece(piecePos);
+    const chessPieceName = chessBoard.getPieceByPos(piecePos);
     const pieceColor = this.chessUtilsService.getColor(chessPieceName);
     const pieceType = this.chessUtilsService.getType(chessPieceName);
     const moves: Position[] = [];
+
+    if (
+      !this.chessUtilsService.isPieceMovableByColor(
+        pieceColor,
+        chessBoard.getIsWhiteTurn()
+      )
+    ) {
+      return moves;
+    }
 
     switch (pieceType) {
       case 'king':
@@ -73,7 +113,9 @@ export class RulesService {
               !newPos.equals(piecePos) &&
               newPos.isInsideTheBoard() &&
               this.chessUtilsService.areColorsDifferent(
-                this.chessUtilsService.getColor(chessBoard.getPiece(newPos)),
+                this.chessUtilsService.getColor(
+                  chessBoard.getPieceByPos(newPos)
+                ),
                 pieceColor
               )
             ) {
@@ -95,7 +137,7 @@ export class RulesService {
                 .addY(deltaY * multiplier);
 
               while (newPos.isInsideTheBoard()) {
-                const pieceAtNewPos = chessBoard.getPiece(newPos);
+                const pieceAtNewPos = chessBoard.getPieceByPos(newPos);
 
                 if (pieceAtNewPos) {
                   const pieceAtNewPosColor =
@@ -132,7 +174,7 @@ export class RulesService {
               .addY(deltaY * multiplier);
 
             while (newPos.isInsideTheBoard()) {
-              const pieceAtNewPos = chessBoard.getPiece(newPos);
+              const pieceAtNewPos = chessBoard.getPieceByPos(newPos);
 
               if (pieceAtNewPos) {
                 const pieceAtNewPosColor =
@@ -171,7 +213,7 @@ export class RulesService {
             }
 
             while (newPos.isInsideTheBoard()) {
-              const pieceAtNewPos = chessBoard.getPiece(newPos);
+              const pieceAtNewPos = chessBoard.getPieceByPos(newPos);
 
               if (pieceAtNewPos) {
                 const pieceAtNewPosColor =
@@ -219,7 +261,7 @@ export class RulesService {
           if (
             newPos.isInsideTheBoard() &&
             this.chessUtilsService.areColorsDifferent(
-              this.chessUtilsService.getColor(chessBoard.getPiece(newPos)),
+              this.chessUtilsService.getColor(chessBoard.getPieceByPos(newPos)),
               pieceColor
             )
           ) {
@@ -233,7 +275,10 @@ export class RulesService {
 
         // Mouvement simple en avant
         const forwardOne = piecePos.addY(direction);
-        if (forwardOne.isInsideTheBoard() && !chessBoard.getPiece(forwardOne)) {
+        if (
+          forwardOne.isInsideTheBoard() &&
+          !chessBoard.getPieceByPos(forwardOne)
+        ) {
           moves.push(forwardOne);
 
           // Mouvement double en avant (disponible uniquement au premier coup)
@@ -242,7 +287,7 @@ export class RulesService {
             const forwardTwo = forwardOne.addY(direction);
             if (
               forwardTwo.isInsideTheBoard() &&
-              !chessBoard.getPiece(forwardTwo)
+              !chessBoard.getPieceByPos(forwardTwo)
             ) {
               moves.push(forwardTwo);
             }
@@ -254,7 +299,9 @@ export class RulesService {
         if (
           attackLeft.isInsideTheBoard() &&
           this.chessUtilsService.areColorsOpposite(
-            this.chessUtilsService.getColor(chessBoard.getPiece(attackLeft)),
+            this.chessUtilsService.getColor(
+              chessBoard.getPieceByPos(attackLeft)
+            ),
             pieceColor
           )
         ) {
@@ -266,14 +313,29 @@ export class RulesService {
         if (
           attackRight.isInsideTheBoard() &&
           this.chessUtilsService.areColorsOpposite(
-            this.chessUtilsService.getColor(chessBoard.getPiece(attackRight)),
+            this.chessUtilsService.getColor(
+              chessBoard.getPieceByPos(attackRight)
+            ),
             pieceColor
           )
         ) {
           moves.push(attackRight);
         }
 
-        //TODO allow en-passant , by registering last move in chessBoard or future game entity
+        // Prise en passant
+        const enPassantColIndex = chessBoard.getEnPassantColIndex();
+        if (enPassantColIndex != -1) {
+          const isWhitePawn = chessPieceName === 'white-pawn';
+          const isBlackPawn = chessPieceName === 'black-pawn';
+          if (
+            ((isWhitePawn && piecePos.y === 4) ||
+              (isBlackPawn && piecePos.y === 3)) &&
+            Math.abs(piecePos.x - enPassantColIndex) === 1
+          ) {
+            const targetRow = isWhitePawn ? 5 : 2;
+            moves.push(new Position(enPassantColIndex, targetRow));
+          }
+        }
         break;
     }
     return moves;
@@ -288,7 +350,7 @@ export class RulesService {
       for (let x = 0; x < Chessboard.BOARD_SIZE; x++) {
         for (let y = 0; y < Chessboard.BOARD_SIZE; y++) {
           const attackingPiecePos = new Position(x, y);
-          const piece = chessBoard.getPiece(attackingPiecePos);
+          const piece = chessBoard.getPieceByPos(attackingPiecePos);
           if (
             piece &&
             piece.startsWith(
@@ -300,7 +362,6 @@ export class RulesService {
               chessBoard
             );
             if (availableMoves.some(move => move.equals(kingPos))) {
-              // alert(pieceColor + ' king checked');
               return true;
             }
           }

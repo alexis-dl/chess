@@ -6,12 +6,27 @@ import { Injectable } from '@angular/core';
 export class ChessUtilsService {
   constructor() {}
 
+  isPawn(pieceName: string) {
+    return pieceName.split('-')[1] === 'pawn';
+  }
+
   getType(pieceName: string) {
     return pieceName.split('-')[1];
   }
 
   getColor(pieceName: string) {
     return pieceName.split('-')[0];
+  }
+
+  isPieceMovableByColor(pieceColor: string, isWhiteTurn: boolean): boolean {
+    if (
+      (pieceColor == 'white' && isWhiteTurn) ||
+      (pieceColor == 'black' && !isWhiteTurn)
+    ) {
+      return true;
+    } else {
+      return false;
+    }
   }
 
   // Return true if colors are white and black, false otherwise

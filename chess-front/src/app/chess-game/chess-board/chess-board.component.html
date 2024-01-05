@@ -12,7 +12,7 @@
             cdkDrag
             cdkDragBoundary=".chess-board"
             [cdkDragData]="{ y: row, x: col }"
-            [pieceType]="chessBoard.pieces[row][col]"
+            [pieceType]="chessBoard.getPiece(col, row)"
             (mousedown)="highlightAllowedMoves(col, row)">
           </app-chess-piece>
         </div>

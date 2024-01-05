@@ -1,8 +1,8 @@
 import { CdkDragDrop } from '@angular/cdk/drag-drop';
 import { Component, OnInit } from '@angular/core';
-import { Position } from '../position';
+import { Position } from '../position.model';
 import { RulesService } from '../rules.service';
-import { Chessboard } from '../chessboard';
+import { Chessboard } from '../chessboard.model';
 import { ChessUtilsService } from '../chess-utils.service';
 
 @Component({
@@ -42,12 +42,17 @@ export class ChessBoardComponent implements OnInit {
     this.highlightedSquares = squaresToHighlight;
   }
 
+  refreshHighlightedSquares() {
+    this.highlightedSquares = [];
+  }
+
   onDrop(event: CdkDragDrop<any>): void {
     const oldPos: Position = event.item.data;
     const newPos: Position = event.container.data;
 
     if (this.rulesService.isMoveValid(oldPos, newPos, this.chessBoard)) {
       this.rulesService.movePiece(oldPos, newPos, this.chessBoard);
+      this.refreshHighlightedSquares();
     }
   }
 }
