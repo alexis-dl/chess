@@ -357,7 +357,6 @@ export class RulesService {
   }
 
   // check if the king of the given color is in check on the given chessboard.
-  // TODO : remove pieceColor and retrieve current player color (isCurrentPlayerKingChecked)
   isKingChecked(pieceColor: string, chessBoard: Chessboard): boolean {
     const kingPos = chessBoard.findPiecePosition(pieceColor + '-king');
 

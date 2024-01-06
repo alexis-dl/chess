@@ -21,6 +21,7 @@ import { SettingsSlidemenuComponent } from './toolbar-sidenav/settings-slidemenu
 import { QuitComponent } from './toolbar-sidenav/quit/quit.component';
 import { OpeningsComponent } from './openings/openings.component';
 import { BotComponent } from './bot/bot.component';
+import { HomeComponent } from './home/home.component';
 
 @NgModule({
   declarations: [
@@ -35,6 +36,7 @@ import { BotComponent } from './bot/bot.component';
     QuitComponent,
     OpeningsComponent,
     BotComponent,
+    HomeComponent,
   ],
   providers: [],
   bootstrap: [AppComponent],
