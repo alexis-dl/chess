@@ -12,6 +12,23 @@ export class Chessboard {
     this.initializeChessBoard();
   }
 
+  getCurrentPlayerPieces(): string[][] {
+    // to get current player pieces we want to set opposite player pieces to ''
+    const currentPlayerColor = this.getPlayerColor();
+    return this.pieces.map(row =>
+      row.map(pieceName =>
+        this.chessUtilsService.getColor(pieceName) === currentPlayerColor
+          ? pieceName
+          : ''
+      )
+    );
+  }
+
+  getPlayerColor(): string {
+    return this.isWhiteTurn ? 'white' : 'black';
+  }
+
+  // y is row and x column
   getPiece(x: number, y: number): string {
     return this.pieces[y][x];
   }

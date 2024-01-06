@@ -10,6 +10,18 @@ import { cloneDeep } from 'lodash';
 export class RulesService {
   constructor(private chessUtilsService: ChessUtilsService) {}
 
+  hasCurrentPlayerAnyMove(chessBoard: Chessboard): boolean {
+    const currentPlayerPieces: string[][] = chessBoard.getCurrentPlayerPieces();
+
+    return currentPlayerPieces.some((row, y) =>
+      row.some(
+        (_, x) =>
+          this.getValidMovesByPiecePos(new Position(x, y), chessBoard)
+            .length !== 0
+      )
+    );
+  }
+
   /**
    * Move the piece from Position A to Position B without verification of validity.
    * @returns the eaten piece if there is one.
@@ -55,15 +67,27 @@ export class RulesService {
     return eatenPiece;
   }
 
-  // Give a validation for a given move
+  /**  Give a validation for a given move :
+        - verify if it's white/black's turn.
+        - verify if own king is checked after the move. */
   isMoveValid(
     oldPos: Position,
     newPos: Position,
     chessBoard: Chessboard
   ): boolean {
-    const color = this.chessUtilsService.getColor(
+    const pieceColor = this.chessUtilsService.getColor(
       chessBoard.getPieceByPos(oldPos)
     );
+
+    if (
+      !this.chessUtilsService.isPieceMovableByColor(
+        pieceColor,
+        chessBoard.getIsWhiteTurn()
+      )
+    ) {
+      return false;
+    }
+
     const cloneChessboard: Chessboard = cloneDeep(chessBoard);
     this.movePiece(oldPos, newPos, cloneChessboard);
 
@@ -72,7 +96,7 @@ export class RulesService {
         new Position(oldPos.x, oldPos.y),
         chessBoard
       ).some(move => move.equals(newPos)) &&
-      !this.isKingChecked(color, cloneChessboard)
+      !this.isKingChecked(pieceColor, cloneChessboard)
     );
   }
   // get all valid moves for a given PiecePos, verifying that the own king is not checked after the move.
@@ -85,22 +109,13 @@ export class RulesService {
     );
   }
 
-  // Method that retrieve all available moves for a piece, regarding to its type and if it's white/black's turn.
-  // Does NOT verify if king is checked.
+  /** Method that retrieve all available moves for a piece, regarding to its type.
+   Does NOT verify if king is checked or if it's white/black's turn (KISS). **/
   getMovesByPiecePos(piecePos: Position, chessBoard: Chessboard): Position[] {
     const chessPieceName = chessBoard.getPieceByPos(piecePos);
     const pieceColor = this.chessUtilsService.getColor(chessPieceName);
     const pieceType = this.chessUtilsService.getType(chessPieceName);
     const moves: Position[] = [];
-
-    if (
-      !this.chessUtilsService.isPieceMovableByColor(
-        pieceColor,
-        chessBoard.getIsWhiteTurn()
-      )
-    ) {
-      return moves;
-    }
 
     switch (pieceType) {
       case 'king':
@@ -342,6 +357,7 @@ export class RulesService {
   }
 
   // check if the king of the given color is in check on the given chessboard.
+  // TODO : remove pieceColor and retrieve current player color (isCurrentPlayerKingChecked)
   isKingChecked(pieceColor: string, chessBoard: Chessboard): boolean {
     const kingPos = chessBoard.findPiecePosition(pieceColor + '-king');
 

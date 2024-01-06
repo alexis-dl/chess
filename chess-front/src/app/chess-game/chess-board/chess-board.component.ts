@@ -53,6 +53,20 @@ export class ChessBoardComponent implements OnInit {
     if (this.rulesService.isMoveValid(oldPos, newPos, this.chessBoard)) {
       this.rulesService.movePiece(oldPos, newPos, this.chessBoard);
       this.refreshHighlightedSquares();
+      // verify game end
+      if (!this.rulesService.hasCurrentPlayerAnyMove(this.chessBoard)) {
+        this.rulesService.hasCurrentPlayerAnyMove(this.chessBoard);
+        if (
+          this.rulesService.isKingChecked(
+            this.chessBoard.getPlayerColor(),
+            this.chessBoard
+          )
+        ) {
+          alert(this.chessBoard.getPlayerColor() + ' king is checkmated');
+        } else {
+          alert(this.chessBoard.getPlayerColor() + ' king is in stalemate');
+        }
+      }
     }
   }
 }
