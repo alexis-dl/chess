@@ -1,16 +1,19 @@
 import { CdkDragDrop } from '@angular/cdk/drag-drop';
-import { Component, OnInit } from '@angular/core';
+import { Component, Input, OnDestroy, OnInit } from '@angular/core';
+import { Subscription } from 'rxjs';
+import { ChessUtilsService } from '../chess-utils.service';
+import { Chessboard } from '../chessboard.model';
 import { Position } from '../position.model';
 import { RulesService } from '../rules.service';
-import { Chessboard } from '../chessboard.model';
-import { ChessUtilsService } from '../chess-utils.service';
 
 @Component({
   selector: 'app-chess-board',
   templateUrl: './chess-board.component.html',
   styleUrls: ['./chess-board.component.scss'],
 })
-export class ChessBoardComponent implements OnInit {
+export class ChessBoardComponent implements OnInit, OnDestroy {
+  @Input() whitePiecesPlayerType: string = 'user';
+  @Input() blackPiecesPlayerType: string = 'user';
   chessBoard: Chessboard = new Chessboard(this.chessUtilsService);
   highlightedSquares: Position[] = [];
 
@@ -19,7 +22,31 @@ export class ChessBoardComponent implements OnInit {
     private chessUtilsService: ChessUtilsService
   ) {}
 
-  ngOnInit(): void {}
+  private subscriptions: Subscription[] = [];
+  ngOnInit(): void {
+    this.subscriptions.push(
+      this.rulesService.currentPlayerCheckmated.subscribe(() => {
+        alert(this.chessBoard.getNextPlayerColor() + ' king is checkmated');
+      })
+    );
+
+    this.subscriptions.push(
+      this.rulesService.currentPlayerStalemated.subscribe(() => {
+        alert(this.chessBoard.getNextPlayerColor() + ' king is in stalemate');
+      })
+    );
+
+    this.subscriptions.push(
+      this.rulesService.nextPlayersTurn.subscribe(() => {
+        if (!this.currentPlayerIsUser()) {
+          alert(
+            this.chessBoard.getCurrentPlayerColor() + " c'est au bot de jouer"
+          );
+          // TODO : make bot play
+        }
+      })
+    );
+  }
 
   getSquareClass(x: number, y: number): { [key: string]: boolean } {
     const currentPosition: Position = new Position(x, y);
@@ -34,12 +61,19 @@ export class ChessBoardComponent implements OnInit {
 
   highlightAllowedMoves(x: number, y: number) {
     const piecePos = new Position(x, y);
-    const squaresToHighlight = this.rulesService.getValidMovesByPiecePos(
-      piecePos,
-      this.chessBoard
-    );
-
-    this.highlightedSquares = squaresToHighlight;
+    if (
+      this.currentPlayerIsUser() &&
+      this.chessUtilsService.isPieceMovableByColor(
+        this.chessBoard.getPieceColorByPos(piecePos),
+        this.chessBoard.getIsWhiteTurn()
+      )
+    ) {
+      const squaresToHighlight = this.rulesService.getValidMovesByPiecePos(
+        piecePos,
+        this.chessBoard
+      );
+      this.highlightedSquares = squaresToHighlight;
+    }
   }
 
   refreshHighlightedSquares() {
@@ -50,23 +84,19 @@ export class ChessBoardComponent implements OnInit {
     const oldPos: Position = event.item.data;
     const newPos: Position = event.container.data;
 
-    if (this.rulesService.isMoveValid(oldPos, newPos, this.chessBoard)) {
-      this.rulesService.movePiece(oldPos, newPos, this.chessBoard);
-      this.refreshHighlightedSquares();
-      // verify game end
-      if (!this.rulesService.hasCurrentPlayerAnyMove(this.chessBoard)) {
-        this.rulesService.hasCurrentPlayerAnyMove(this.chessBoard);
-        if (
-          this.rulesService.isKingChecked(
-            this.chessBoard.getPlayerColor(),
-            this.chessBoard
-          )
-        ) {
-          alert(this.chessBoard.getPlayerColor() + ' king is checkmated');
-        } else {
-          alert(this.chessBoard.getPlayerColor() + ' king is in stalemate');
-        }
-      }
+    this.refreshHighlightedSquares();
+    // prevent user to play when it's bot's turn
+    if (this.currentPlayerIsUser()) {
+      this.rulesService.playMove(oldPos, newPos, this.chessBoard);
     }
+  }
+  private currentPlayerIsUser() {
+    return this.chessBoard.getIsWhiteTurn()
+      ? this.whitePiecesPlayerType === 'user'
+      : this.blackPiecesPlayerType === 'user';
+  }
+
+  ngOnDestroy(): void {
+    this.subscriptions.forEach(subscription => subscription.unsubscribe());
   }
 }

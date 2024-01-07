@@ -15,13 +15,14 @@ import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatIconModule } from '@angular/material/icon';
 import { ToolbarSidenavComponent } from './toolbar-sidenav/toolbar-sidenav.component';
 import { SettingsComponent } from './settings/settings.component';
-import { ChessGameComponent } from './chess-game/chess-game.component';
 import { SlideMenuModule } from 'primeng/slidemenu';
 import { SettingsSlidemenuComponent } from './toolbar-sidenav/settings-slidemenu/settings-slidemenu.component';
 import { QuitComponent } from './toolbar-sidenav/quit/quit.component';
 import { OpeningsComponent } from './openings/openings.component';
 import { BotComponent } from './bot/bot.component';
 import { HomeComponent } from './home/home.component';
+import { ExplorerComponent } from './play/explorer/explorer.component';
+import { PlayVsBotComponent } from './play/play-vs-bot/play-vs-bot.component';
 
 @NgModule({
   declarations: [
@@ -31,12 +32,13 @@ import { HomeComponent } from './home/home.component';
     PlayerPanelComponent,
     ToolbarSidenavComponent,
     SettingsComponent,
-    ChessGameComponent,
     SettingsSlidemenuComponent,
     QuitComponent,
     OpeningsComponent,
     BotComponent,
     HomeComponent,
+    ExplorerComponent,
+    PlayVsBotComponent,
   ],
   providers: [],
   bootstrap: [AppComponent],

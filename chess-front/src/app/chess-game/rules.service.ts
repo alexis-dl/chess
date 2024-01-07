@@ -1,17 +1,58 @@
 import { Injectable } from '@angular/core';
-import { Position } from './position.model';
-import { Chessboard } from './chessboard.model';
-import { ChessUtilsService } from './chess-utils.service';
 import { cloneDeep } from 'lodash';
+import { Subject } from 'rxjs';
+import { ChessUtilsService } from './chess-utils.service';
+import { Chessboard } from './chessboard.model';
+import { Position } from './position.model';
 
 @Injectable({
   providedIn: 'root',
 })
 export class RulesService {
+  /** true for white's turn, false for black's */
+  public nextPlayersTurn: Subject<boolean> = new Subject<boolean>();
+
+  public currentPlayerCheckmated: Subject<void> = new Subject<void>();
+  public currentPlayerStalemated: Subject<void> = new Subject<void>();
+
   constructor(private chessUtilsService: ChessUtilsService) {}
 
-  hasCurrentPlayerAnyMove(chessBoard: Chessboard): boolean {
-    const currentPlayerPieces: string[][] = chessBoard.getCurrentPlayerPieces();
+  playMove(oldPos: Position, newPos: Position, chessBoard: Chessboard) {
+    const pieceColor = chessBoard.getPieceColorByPos(oldPos);
+    if (
+      this.chessUtilsService.isPieceMovableByColor(
+        pieceColor,
+        chessBoard.getIsWhiteTurn()
+      ) &&
+      this.isMoveValid(oldPos, newPos, chessBoard)
+    ) {
+      chessBoard.movePiece(oldPos, newPos);
+      chessBoard.toggleIsWhiteTurn();
+      this.computeGameEndEvents(chessBoard);
+    }
+  }
+
+  /**
+   * Compute checkmates, stalemates and nextPlayerTurn.
+   * TODO : complete with repetition rules (optional)
+   */
+  computeGameEndEvents(chessBoard: Chessboard) {
+    const currentPlayerColor = chessBoard.getCurrentPlayerColor();
+    if (!this.hasPlayerAnyMove(chessBoard, currentPlayerColor)) {
+      if (this.isKingChecked(currentPlayerColor, chessBoard)) {
+        this.currentPlayerCheckmated.next();
+      } else {
+        this.currentPlayerStalemated.next();
+      }
+    } else {
+      //send nextPlayersTurn event when game is not over.
+      this.nextPlayersTurn.next(chessBoard.getIsWhiteTurn());
+    }
+  }
+
+  hasPlayerAnyMove(chessBoard: Chessboard, pieceColor: string): boolean {
+    const currentPlayerPieces: string[][] =
+      chessBoard.getPlayerPiecesByColor(pieceColor);
 
     return currentPlayerPieces.some((row, y) =>
       row.some(
@@ -22,51 +63,6 @@ export class RulesService {
     );
   }
 
-  /**
-   * Move the piece from Position A to Position B without verification of validity.
-   * @returns the eaten piece if there is one.
-   */
-  movePiece(
-    oldPos: Position,
-    newPos: Position,
-    chessBoard: Chessboard
-  ): string {
-    const movingPiece = chessBoard.getPieceByPos(oldPos);
-    let eatenPiece = chessBoard.getPieceByPos(newPos);
-    const isPieceAPawn = this.chessUtilsService.isPawn(movingPiece);
-
-    // move and eat piece
-    chessBoard.setPieceByPos('', oldPos);
-    chessBoard.setPieceByPos(movingPiece, newPos);
-
-    // if move is en passant, eat piece in diagonal
-    const isWhitePawn = movingPiece === 'white-pawn';
-    const isBlackPawn = movingPiece === 'black-pawn';
-    if (
-      ((isWhitePawn && oldPos.y === 4) || (isBlackPawn && oldPos.y === 3)) &&
-      newPos.x === chessBoard.getEnPassantColIndex()
-    ) {
-      const eatenPawnPos = new Position(
-        chessBoard.getEnPassantColIndex(),
-        oldPos.y
-      );
-      eatenPiece = chessBoard.getPieceByPos(eatenPawnPos);
-      chessBoard.setPieceByPos('', eatenPawnPos);
-    }
-
-    // register column for possible en passant
-    if (isPieceAPawn && Math.abs(oldPos.y - newPos.y) === 2) {
-      chessBoard.setEnPassantColIndex(oldPos.x);
-    } else {
-      chessBoard.setEnPassantColIndex(-1); // reseting en passant possibility
-    }
-
-    // toggle turn
-    chessBoard.toggleIsWhiteTurn();
-
-    return eatenPiece;
-  }
-
   /**  Give a validation for a given move :
         - verify if it's white/black's turn.
         - verify if own king is checked after the move. */
@@ -75,10 +71,8 @@ export class RulesService {
     newPos: Position,
     chessBoard: Chessboard
   ): boolean {
-    const pieceColor = this.chessUtilsService.getColor(
-      chessBoard.getPieceByPos(oldPos)
-    );
-
+    // check if movement leads to a check of player's own king.
+    const pieceColor = chessBoard.getPieceColorByPos(oldPos);
     if (
       !this.chessUtilsService.isPieceMovableByColor(
         pieceColor,
@@ -89,7 +83,7 @@ export class RulesService {
     }
 
     const cloneChessboard: Chessboard = cloneDeep(chessBoard);
-    this.movePiece(oldPos, newPos, cloneChessboard);
+    cloneChessboard.movePiece(oldPos, newPos);
 
     return (
       this.getMovesByPiecePos(
@@ -99,21 +93,25 @@ export class RulesService {
       !this.isKingChecked(pieceColor, cloneChessboard)
     );
   }
+
   // get all valid moves for a given PiecePos, verifying that the own king is not checked after the move.
   getValidMovesByPiecePos(
     piecePos: Position,
     chessBoard: Chessboard
   ): Position[] {
-    return this.getMovesByPiecePos(piecePos, chessBoard).filter(getMove =>
-      this.isMoveValid(piecePos, getMove, chessBoard)
+    return this.getMovesByPiecePos(piecePos, chessBoard).filter(newPos =>
+      this.isMoveValid(piecePos, newPos, chessBoard)
     );
   }
 
   /** Method that retrieve all available moves for a piece, regarding to its type.
    Does NOT verify if king is checked or if it's white/black's turn (KISS). **/
-  getMovesByPiecePos(piecePos: Position, chessBoard: Chessboard): Position[] {
+  private getMovesByPiecePos(
+    piecePos: Position,
+    chessBoard: Chessboard
+  ): Position[] {
+    const pieceColor = chessBoard.getPieceColorByPos(piecePos);
     const chessPieceName = chessBoard.getPieceByPos(piecePos);
-    const pieceColor = this.chessUtilsService.getColor(chessPieceName);
     const pieceType = this.chessUtilsService.getType(chessPieceName);
     const moves: Position[] = [];
 
@@ -128,9 +126,7 @@ export class RulesService {
               !newPos.equals(piecePos) &&
               newPos.isInsideTheBoard() &&
               this.chessUtilsService.areColorsDifferent(
-                this.chessUtilsService.getColor(
-                  chessBoard.getPieceByPos(newPos)
-                ),
+                chessBoard.getPieceColorByPos(newPos),
                 pieceColor
               )
             ) {
@@ -276,7 +272,7 @@ export class RulesService {
           if (
             newPos.isInsideTheBoard() &&
             this.chessUtilsService.areColorsDifferent(
-              this.chessUtilsService.getColor(chessBoard.getPieceByPos(newPos)),
+              chessBoard.getPieceColorByPos(newPos),
               pieceColor
             )
           ) {
@@ -356,7 +352,7 @@ export class RulesService {
     return moves;
   }
 
-  // check if the king of the given color is in check on the given chessboard.
+  /** Check if the king of the given color is in check on the given chessboard. */
   isKingChecked(pieceColor: string, chessBoard: Chessboard): boolean {
     const kingPos = chessBoard.findPiecePosition(pieceColor + '-king');
 

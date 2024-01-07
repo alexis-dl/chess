@@ -12,20 +12,65 @@ export class Chessboard {
     this.initializeChessBoard();
   }
 
-  getCurrentPlayerPieces(): string[][] {
-    // to get current player pieces we want to set opposite player pieces to ''
-    const currentPlayerColor = this.getPlayerColor();
+  /**
+   * Move the piece from Position A to Position B without verification of validity.
+   * @returns the eaten piece if there is one.
+   */
+  movePiece(oldPos: Position, newPos: Position): string {
+    const movingPiece = this.getPieceByPos(oldPos);
+    let eatenPiece = this.getPieceByPos(newPos);
+    const isPieceAPawn = this.chessUtilsService.isPawn(movingPiece);
+
+    // move and eat piece
+    this.setPieceByPos('', oldPos);
+    this.setPieceByPos(movingPiece, newPos);
+
+    // if move is en passant, eat piece in diagonal
+    const isWhitePawn = movingPiece === 'white-pawn';
+    const isBlackPawn = movingPiece === 'black-pawn';
+    if (
+      ((isWhitePawn && oldPos.y === 4) || (isBlackPawn && oldPos.y === 3)) &&
+      newPos.x === this.getEnPassantColIndex()
+    ) {
+      const eatenPawnPos = new Position(this.getEnPassantColIndex(), oldPos.y);
+      eatenPiece = this.getPieceByPos(eatenPawnPos);
+      this.setPieceByPos('', eatenPawnPos);
+    }
+
+    // register column for possible en passant
+    if (isPieceAPawn && Math.abs(oldPos.y - newPos.y) === 2) {
+      this.setEnPassantColIndex(oldPos.x);
+    } else {
+      this.setEnPassantColIndex(-1); // reseting en passant possibility
+    }
+    return eatenPiece;
+  }
+
+  getPlayerPiecesByColor(pieceColor: string): string[][] {
+    // we put opposite player's pieces to ''
     return this.pieces.map(row =>
       row.map(pieceName =>
-        this.chessUtilsService.getColor(pieceName) === currentPlayerColor
+        this.chessUtilsService.getColor(pieceName) === pieceColor
           ? pieceName
           : ''
       )
     );
   }
 
-  getPlayerColor(): string {
+  getCurrentPlayerColor(): string {
     return this.isWhiteTurn ? 'white' : 'black';
+  }
+
+  getNextPlayerColor(): string {
+    return this.isWhiteTurn ? 'black' : 'white';
+  }
+
+  getPieceColorByPos(position: Position): string {
+    return this.chessUtilsService.getColor(this.getPieceByPos(position));
+  }
+
+  getPieceColor(x: number, y: number): string {
+    return this.chessUtilsService.getColor(this.getPiece(x, y));
   }
 
   // y is row and x column
