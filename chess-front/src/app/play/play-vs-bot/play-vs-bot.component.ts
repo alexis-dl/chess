@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import { BabyBot } from 'src/app/bot/models/babybot.model';
 import { PlayerType } from 'src/app/player/player-type.enum';
-import { Player } from 'src/app/player/player.interface';
+import { Player } from 'src/app/player/player.model';
 
 @Component({
   selector: 'app-play-vs-bot',
