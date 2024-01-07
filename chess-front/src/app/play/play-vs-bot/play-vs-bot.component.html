@@ -1,3 +1,5 @@
 <app-player-panel [player]="bot"></app-player-panel>
-<app-chess-board blackPiecesPlayerType="bot"></app-chess-board>
+<app-chess-board
+  [whitePiecesPlayerType]="player1.playerType"
+  [blackPiecesPlayerType]="bot.playerType"></app-chess-board>
 <app-player-panel [player]="player1"></app-player-panel>

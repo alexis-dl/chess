@@ -1,6 +1,8 @@
 import { CdkDragDrop } from '@angular/cdk/drag-drop';
 import { Component, Input, OnDestroy, OnInit } from '@angular/core';
 import { Subscription } from 'rxjs';
+import { BotService } from 'src/app/bot/bot.service';
+import { PlayerType } from 'src/app/player/player-type.enum';
 import { ChessUtilsService } from '../chess-utils.service';
 import { Chessboard } from '../chessboard.model';
 import { Position } from '../position.model';
@@ -12,14 +14,15 @@ import { RulesService } from '../rules.service';
   styleUrls: ['./chess-board.component.scss'],
 })
 export class ChessBoardComponent implements OnInit, OnDestroy {
-  @Input() whitePiecesPlayerType: string = 'user';
-  @Input() blackPiecesPlayerType: string = 'user';
+  @Input() whitePiecesPlayerType: PlayerType = PlayerType.User;
+  @Input() blackPiecesPlayerType: PlayerType = PlayerType.User;
   chessBoard: Chessboard = new Chessboard(this.chessUtilsService);
   highlightedSquares: Position[] = [];
 
   constructor(
     private rulesService: RulesService,
-    private chessUtilsService: ChessUtilsService
+    private chessUtilsService: ChessUtilsService,
+    private botService: BotService
   ) {}
 
   private subscriptions: Subscription[] = [];
@@ -38,10 +41,12 @@ export class ChessBoardComponent implements OnInit, OnDestroy {
 
     this.subscriptions.push(
       this.rulesService.nextPlayersTurn.subscribe(() => {
-        if (!this.currentPlayerIsUser()) {
+        if (!this.isCurrentPlayerUser()) {
           alert(
             this.chessBoard.getCurrentPlayerColor() + " c'est au bot de jouer"
           );
+
+          this.botService.play(this.chessBoard, this.getCurrentPlayerType());
           // TODO : make bot play
         }
       })
@@ -62,7 +67,7 @@ export class ChessBoardComponent implements OnInit, OnDestroy {
   highlightAllowedMoves(x: number, y: number) {
     const piecePos = new Position(x, y);
     if (
-      this.currentPlayerIsUser() &&
+      this.isCurrentPlayerUser() &&
       this.chessUtilsService.isPieceMovableByColor(
         this.chessBoard.getPieceColorByPos(piecePos),
         this.chessBoard.getIsWhiteTurn()
@@ -86,14 +91,19 @@ export class ChessBoardComponent implements OnInit, OnDestroy {
 
     this.refreshHighlightedSquares();
     // prevent user to play when it's bot's turn
-    if (this.currentPlayerIsUser()) {
+    if (this.isCurrentPlayerUser()) {
       this.rulesService.playMove(oldPos, newPos, this.chessBoard);
     }
   }
-  private currentPlayerIsUser() {
+
+  private isCurrentPlayerUser(): boolean {
+    return this.getCurrentPlayerType() === PlayerType.User;
+  }
+
+  private getCurrentPlayerType() {
     return this.chessBoard.getIsWhiteTurn()
-      ? this.whitePiecesPlayerType === 'user'
-      : this.blackPiecesPlayerType === 'user';
+      ? this.whitePiecesPlayerType
+      : this.blackPiecesPlayerType;
   }
 
   ngOnDestroy(): void {

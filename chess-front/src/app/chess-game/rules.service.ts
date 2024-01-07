@@ -3,6 +3,7 @@ import { cloneDeep } from 'lodash';
 import { Subject } from 'rxjs';
 import { ChessUtilsService } from './chess-utils.service';
 import { Chessboard } from './chessboard.model';
+import { Move } from './move.model';
 import { Position } from './position.model';
 
 @Injectable({
@@ -17,7 +18,16 @@ export class RulesService {
 
   constructor(private chessUtilsService: ChessUtilsService) {}
 
-  playMove(oldPos: Position, newPos: Position, chessBoard: Chessboard) {
+  /**
+   * Verify if move is playable according to the rules and play it.
+   * Also updates every game linked indicators.
+   * @returns boolean that indicates if the move could have been played.
+   */
+  playMove(
+    oldPos: Position,
+    newPos: Position,
+    chessBoard: Chessboard
+  ): boolean {
     const pieceColor = chessBoard.getPieceColorByPos(oldPos);
     if (
       this.chessUtilsService.isPieceMovableByColor(
@@ -29,7 +39,9 @@ export class RulesService {
       chessBoard.movePiece(oldPos, newPos);
       chessBoard.toggleIsWhiteTurn();
       this.computeGameEndEvents(chessBoard);
+      return true;
     }
+    return false;
   }
 
   /**
@@ -38,7 +50,7 @@ export class RulesService {
    */
   computeGameEndEvents(chessBoard: Chessboard) {
     const currentPlayerColor = chessBoard.getCurrentPlayerColor();
-    if (!this.hasPlayerAnyMove(chessBoard, currentPlayerColor)) {
+    if (!this.hasPlayerAnyMove(chessBoard)) {
       if (this.isKingChecked(currentPlayerColor, chessBoard)) {
         this.currentPlayerCheckmated.next();
       } else {
@@ -50,17 +62,32 @@ export class RulesService {
     }
   }
 
-  hasPlayerAnyMove(chessBoard: Chessboard, pieceColor: string): boolean {
+  getAvailableMoves(chessBoard: Chessboard): Move[] {
+    const currentPlayerColor = chessBoard.getCurrentPlayerColor();
     const currentPlayerPieces: string[][] =
-      chessBoard.getPlayerPiecesByColor(pieceColor);
+      chessBoard.getPlayerPiecesByColor(currentPlayerColor);
+    const allMoves: Move[] = [];
 
-    return currentPlayerPieces.some((row, y) =>
-      row.some(
-        (_, x) =>
-          this.getValidMovesByPiecePos(new Position(x, y), chessBoard)
-            .length !== 0
-      )
-    );
+    currentPlayerPieces.forEach((row, y) => {
+      row.forEach((_, x) => {
+        const oldPos = new Position(x, y);
+        const validMoves = this.getValidMovesByPiecePos(oldPos, chessBoard);
+        validMoves.forEach(newPos => {
+          const move: Move = {
+            oldPos: oldPos,
+            newPos: newPos,
+          };
+          allMoves.push(move);
+        });
+      });
+    });
+
+    return allMoves;
+  }
+
+  hasPlayerAnyMove(chessBoard: Chessboard): boolean {
+    const playerMoves = this.getAvailableMoves(chessBoard);
+    return playerMoves.length > 0;
   }
 
   /**  Give a validation for a given move :

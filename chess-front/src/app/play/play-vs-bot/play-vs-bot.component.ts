@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
-import { Bot } from '../../bot/bot.model';
-import { Player } from '../../player-panel/player.model';
+import { BabyBot } from 'src/app/bot/models/babybot.model';
+import { PlayerType } from 'src/app/player/player-type.enum';
+import { Player } from 'src/app/player/player.interface';
 
 @Component({
   selector: 'app-play-vs-bot',
@@ -9,15 +10,16 @@ import { Player } from '../../player-panel/player.model';
 })
 export class PlayVsBotComponent {
   player1: Player;
-  bot: Bot;
+  bot: Player;
 
   constructor() {
     this.player1 = {
       name: 'Chacalito53',
       elo: 1548,
       profilePicture: 'assets/pictures/chacalito-profile-pic.png',
+      playerType: PlayerType.User,
     };
 
-    this.bot = new Bot();
+    this.bot = new BabyBot();
   }
 }
