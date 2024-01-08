@@ -42,12 +42,8 @@ export class ChessBoardComponent implements OnInit, OnDestroy {
     this.subscriptions.push(
       this.rulesService.nextPlayersTurn.subscribe(() => {
         if (!this.isCurrentPlayerUser()) {
-          alert(
-            this.chessBoard.getCurrentPlayerColor() + " c'est au bot de jouer"
-          );
-
-          this.botService.play(this.chessBoard, this.getCurrentPlayerType());
           // TODO : make bot play
+          this.botService.play(this.chessBoard, this.getCurrentPlayerType());
         }
       })
     );
