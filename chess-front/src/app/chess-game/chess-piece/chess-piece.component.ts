@@ -1,4 +1,5 @@
 import { Component, Input } from '@angular/core';
+import { ChessUtilsService } from '../chess-utils.service';
 
 @Component({
   selector: 'app-chess-piece',
@@ -7,11 +8,9 @@ import { Component, Input } from '@angular/core';
 })
 export class ChessPieceComponent {
   @Input() pieceType!: string;
+  constructor(private chessUtilsService: ChessUtilsService) {}
 
   getPieceImagePath(pieceType: string): string | null {
-    if (pieceType === '') {
-      return null;
-    }
-    return `assets/chess-pieces/${pieceType}.png`;
+    return this.chessUtilsService.getPieceImagePath(pieceType);
   }
 }

@@ -15,6 +15,9 @@
             [pieceType]="chessBoard.getPiece(col, row)"
             (mousedown)="highlightAllowedMoves(col, row)">
           </app-chess-piece>
+          <app-promotion
+            [pieceColor]="row == 7 ? 'white' : 'black'"
+            *ngIf="showPromotion(row, col)"></app-promotion>
         </div>
       </div>
     </div>

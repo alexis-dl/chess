@@ -6,6 +6,7 @@ import { PlayerType } from 'src/app/player/player-type.enum';
 import { ChessUtilsService } from '../chess-utils.service';
 import { Chessboard } from '../chessboard.model';
 import { Position } from '../position.model';
+import { PromotionService } from '../promotion/promotion.service';
 import { RulesService } from '../rules.service';
 
 @Component({
@@ -18,11 +19,13 @@ export class ChessBoardComponent implements OnInit, OnDestroy {
   @Input() blackPiecesPlayerType: PlayerType = PlayerType.User;
   chessBoard: Chessboard = new Chessboard(this.chessUtilsService);
   highlightedSquares: Position[] = [];
+  promotionPosition: Position | null = null;
 
   constructor(
     private rulesService: RulesService,
     private chessUtilsService: ChessUtilsService,
-    private botService: BotService
+    private botService: BotService,
+    private promotionService: PromotionService
   ) {}
 
   private subscriptions: Subscription[] = [];
@@ -47,6 +50,12 @@ export class ChessBoardComponent implements OnInit, OnDestroy {
         }
       })
     );
+
+    this.subscriptions.push(
+      this.promotionService.promotionPosition$.subscribe(pos => {
+        this.promotionPosition = pos;
+      })
+    );
   }
 
   getSquareClass(x: number, y: number): { [key: string]: boolean } {
@@ -66,7 +75,7 @@ export class ChessBoardComponent implements OnInit, OnDestroy {
       this.isCurrentPlayerUser() &&
       this.chessUtilsService.isPieceMovableByColor(
         this.chessBoard.getPieceColorByPos(piecePos),
-        this.chessBoard.getIsWhiteTurn()
+        this.chessBoard
       )
     ) {
       const squaresToHighlight = this.rulesService.getValidMovesByPiecePos(
@@ -90,6 +99,12 @@ export class ChessBoardComponent implements OnInit, OnDestroy {
     if (this.isCurrentPlayerUser()) {
       this.rulesService.playMove(oldPos, newPos, this.chessBoard);
     }
+  }
+
+  showPromotion(row: number, col: number): boolean {
+    return (
+      this.promotionPosition?.x === col && this.promotionPosition?.y === row
+    );
   }
 
   private isCurrentPlayerUser(): boolean {

@@ -69,6 +69,10 @@ export class Chessboard {
     return this.chessUtilsService.getColor(this.getPieceByPos(position));
   }
 
+  getPieceTypeByPos(position: Position): string {
+    return this.chessUtilsService.getType(this.getPieceByPos(position));
+  }
+
   getPieceColor(x: number, y: number): string {
     return this.chessUtilsService.getColor(this.getPiece(x, y));
   }

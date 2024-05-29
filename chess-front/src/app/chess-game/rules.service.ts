@@ -1,10 +1,11 @@
 import { Injectable } from '@angular/core';
 import { cloneDeep } from 'lodash';
-import { Subject } from 'rxjs';
+import { Subject, take } from 'rxjs';
 import { ChessUtilsService } from './chess-utils.service';
 import { Chessboard } from './chessboard.model';
 import { Move } from './move.model';
 import { Position } from './position.model';
+import { PromotionService } from './promotion/promotion.service';
 
 @Injectable({
   providedIn: 'root',
@@ -16,7 +17,10 @@ export class RulesService {
   public currentPlayerCheckmated: Subject<void> = new Subject<void>();
   public currentPlayerStalemated: Subject<void> = new Subject<void>();
 
-  constructor(private chessUtilsService: ChessUtilsService) {}
+  constructor(
+    private chessUtilsService: ChessUtilsService,
+    private promotionService: PromotionService
+  ) {}
 
   /**
    * Verify if move is playable according to the rules and play it.
@@ -30,16 +34,18 @@ export class RulesService {
   ): boolean {
     const pieceColor = chessBoard.getPieceColorByPos(oldPos);
     if (
-      this.chessUtilsService.isPieceMovableByColor(
-        pieceColor,
-        chessBoard.getIsWhiteTurn()
-      ) &&
+      this.chessUtilsService.isPieceMovableByColor(pieceColor, chessBoard) &&
       this.isMoveValid(oldPos, newPos, chessBoard)
     ) {
-      chessBoard.movePiece(oldPos, newPos);
-      chessBoard.toggleIsWhiteTurn();
-      this.computeGameEndEvents(chessBoard);
-      return true;
+      if (this.isPawnPromotion(oldPos, newPos, chessBoard)) {
+        this.triggerPromotionUI(oldPos, newPos, chessBoard);
+        return true;
+      } else {
+        chessBoard.movePiece(oldPos, newPos);
+        chessBoard.toggleIsWhiteTurn();
+        this.computeGameEndEvents(chessBoard);
+        return true;
+      }
     }
     return false;
   }
@@ -48,7 +54,7 @@ export class RulesService {
    * Compute checkmates, stalemates and nextPlayerTurn.
    * TODO : complete with repetition rules (optional)
    */
-  computeGameEndEvents(chessBoard: Chessboard) {
+  private computeGameEndEvents(chessBoard: Chessboard) {
     const currentPlayerColor = chessBoard.getCurrentPlayerColor();
     if (!this.hasPlayerAnyMove(chessBoard)) {
       if (this.isKingChecked(currentPlayerColor, chessBoard)) {
@@ -85,7 +91,7 @@ export class RulesService {
     return allMoves;
   }
 
-  hasPlayerAnyMove(chessBoard: Chessboard): boolean {
+  private hasPlayerAnyMove(chessBoard: Chessboard): boolean {
     const playerMoves = this.getAvailableMoves(chessBoard);
     return playerMoves.length > 0;
   }
@@ -93,19 +99,14 @@ export class RulesService {
   /**  Give a validation for a given move :
         - verify if it's white/black's turn.
         - verify if own king is checked after the move. */
-  isMoveValid(
+  private isMoveValid(
     oldPos: Position,
     newPos: Position,
     chessBoard: Chessboard
   ): boolean {
     // check if movement leads to a check of player's own king.
     const pieceColor = chessBoard.getPieceColorByPos(oldPos);
-    if (
-      !this.chessUtilsService.isPieceMovableByColor(
-        pieceColor,
-        chessBoard.getIsWhiteTurn()
-      )
-    ) {
+    if (!this.chessUtilsService.isPieceMovableByColor(pieceColor, chessBoard)) {
       return false;
     }
 
@@ -380,7 +381,7 @@ export class RulesService {
   }
 
   /** Check if the king of the given color is in check on the given chessboard. */
-  isKingChecked(pieceColor: string, chessBoard: Chessboard): boolean {
+  private isKingChecked(pieceColor: string, chessBoard: Chessboard): boolean {
     const kingPos = chessBoard.findPiecePosition(pieceColor + '-king');
 
     if (kingPos) {
@@ -407,5 +408,37 @@ export class RulesService {
       }
     }
     return false;
+  }
+
+  /**
+   * Checks if the pawn reaches the promotion row.
+   */
+  private isPawnPromotion(
+    oldPos: Position,
+    newPos: Position,
+    chessBoard: Chessboard
+  ): boolean {
+    const isPawn = chessBoard.getPieceTypeByPos(oldPos) === 'pawn';
+    const pieceColor = chessBoard.getPieceColorByPos(oldPos);
+    const isLastRow =
+      (pieceColor === 'white' && newPos.y === 7) ||
+      (pieceColor === 'black' && newPos.y === 0);
+    return isPawn && isLastRow;
+  }
+
+  private triggerPromotionUI(
+    oldPos: Position,
+    newPos: Position,
+    chessBoard: Chessboard
+  ): void {
+    this.promotionService.showPromotionUI(newPos);
+    this.promotionService.promotionPiece$.pipe(take(1)).subscribe(pieceType => {
+      if (pieceType) {
+        chessBoard.movePiece(oldPos, newPos);
+        chessBoard.setPieceByPos(pieceType, newPos);
+        chessBoard.toggleIsWhiteTurn();
+        this.computeGameEndEvents(chessBoard);
+      }
+    });
   }
 }
