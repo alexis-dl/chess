@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
-import { ChessUtilsService } from '../chess-game/chess-utils.service';
 import { Chessboard } from '../chess-game/chessboard.model';
 import { Move } from '../chess-game/move.model';
+import { PromotionService } from '../chess-game/promotion/promotion.service';
 import { RulesService } from '../chess-game/rules.service';
 import { PlayerType } from '../player/player-type.enum';
 
@@ -11,17 +11,24 @@ import { PlayerType } from '../player/player-type.enum';
 export class BotService {
   constructor(
     private rulesService: RulesService,
-    private chessUtilsService: ChessUtilsService
+    private promotionService: PromotionService
   ) {}
 
   /**
    * Make the bot play on the given chessboard, according to the botType.
    * @returns boolean that indicates if the move could have been played.
    */
-  play(chessBoard: Chessboard, botType: PlayerType): boolean {
+  play(chessBoard: Chessboard, botType: PlayerType) {
     const move: Move = this.generateBotMove(chessBoard, botType);
 
-    return this.rulesService.playMove(move.oldPos, move.newPos, chessBoard);
+    this.rulesService.playMove(move.oldPos, move.newPos, chessBoard);
+    if (
+      this.rulesService.isPawnPromotion(move.oldPos, move.newPos, chessBoard)
+    ) {
+      this.promotionService.selectPiece(
+        chessBoard.getCurrentPlayerColor() + '-queen'
+      );
+    }
   }
 
   generateBotMove(chessBoard: Chessboard, botType: PlayerType): Move {

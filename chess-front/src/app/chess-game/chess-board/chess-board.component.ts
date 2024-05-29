@@ -103,7 +103,9 @@ export class ChessBoardComponent implements OnInit, OnDestroy {
 
   showPromotion(row: number, col: number): boolean {
     return (
-      this.promotionPosition?.x === col && this.promotionPosition?.y === row
+      this.isCurrentPlayerUser() &&
+      this.promotionPosition?.x === col &&
+      this.promotionPosition?.y === row
     );
   }
 

@@ -413,7 +413,7 @@ export class RulesService {
   /**
    * Checks if the pawn reaches the promotion row.
    */
-  private isPawnPromotion(
+  isPawnPromotion(
     oldPos: Position,
     newPos: Position,
     chessBoard: Chessboard
