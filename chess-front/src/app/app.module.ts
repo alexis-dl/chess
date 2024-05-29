@@ -13,6 +13,8 @@ import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { ChessBoardComponent } from './chess-game/chess-board/chess-board.component';
 import { ChessPieceComponent } from './chess-game/chess-piece/chess-piece.component';
+import { ClickOutsideDirective } from './chess-game/promotion/click-outside.directive';
+import { PromotionComponent } from './chess-game/promotion/promotion.component';
 import { HomeComponent } from './home/home.component';
 import { OpeningsComponent } from './openings/openings.component';
 import { ExplorerComponent } from './play/explorer/explorer.component';
@@ -37,6 +39,8 @@ import { ToolbarSidenavComponent } from './toolbar-sidenav/toolbar-sidenav.compo
     HomeComponent,
     ExplorerComponent,
     PlayVsBotComponent,
+    PromotionComponent,
+    ClickOutsideDirective,
   ],
   providers: [],
   bootstrap: [AppComponent],

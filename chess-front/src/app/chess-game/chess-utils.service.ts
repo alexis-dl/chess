@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+import { Chessboard } from './chessboard.model';
 
 @Injectable({
   providedIn: 'root',
@@ -18,7 +19,8 @@ export class ChessUtilsService {
     return pieceName.split('-')[0];
   }
 
-  isPieceMovableByColor(pieceColor: string, isWhiteTurn: boolean): boolean {
+  isPieceMovableByColor(pieceColor: string, chessBoard: Chessboard): boolean {
+    const isWhiteTurn = chessBoard.getIsWhiteTurn();
     if (
       (pieceColor == 'white' && isWhiteTurn) ||
       (pieceColor == 'black' && !isWhiteTurn)
@@ -88,5 +90,12 @@ export class ChessUtilsService {
       }
     }
     return ''; // for squares without any pieces
+  }
+
+  getPieceImagePath(pieceType: string): string | null {
+    if (pieceType === '') {
+      return null;
+    }
+    return `assets/chess-pieces/${pieceType}.png`;
   }
 }

@@ -1,0 +1,10 @@
+<div class="promotion-component" appClickOutside (clickOutside)="onCancel()">
+  <div class="border" *ngFor="let piece of pieces">
+    <img
+      class="piece-image"
+      [src]="getPieceImagePath(piece)"
+      [alt]="piece"
+      (click)="onSelect(pieceColor + '-' + piece)" />
+  </div>
+  <mat-icon class="cross-icon" (click)="onCancel()">clear</mat-icon>
+</div>
