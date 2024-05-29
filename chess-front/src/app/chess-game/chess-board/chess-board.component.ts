@@ -93,7 +93,6 @@ export class ChessBoardComponent implements OnInit, OnDestroy {
   onDrop(event: CdkDragDrop<any>): void {
     const oldPos: Position = event.item.data;
     const newPos: Position = event.container.data;
-
     this.refreshHighlightedSquares();
     // prevent user to play when it's bot's turn
     if (this.isCurrentPlayerUser()) {

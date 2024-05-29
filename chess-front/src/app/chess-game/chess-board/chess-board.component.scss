@@ -1,4 +1,5 @@
 .chess-board {
+  position: relative;
   display: grid;
   grid-template-columns: repeat(8, 60px);
   grid-template-rows: repeat(8, 60px);
@@ -38,6 +39,23 @@
 .cdk-drop-list-dragging {
   cursor: grabbing;
 }
+
+.coordinates {
+  position: absolute;
+  font-size: 0.2em;
+  user-select: none;
+  z-index: 1;
+  pointer-events: none; // allow cdk to go through coordinates element
+}
+
+.coordinate-light {
+  fill: rgb(222, 244, 203);
+}
+
+.coordinate-dark {
+  fill: rgb(38, 166, 64);
+}
+
 // .example-custom-placeholder {
 //   z-index: 102;
 //   background: red;
