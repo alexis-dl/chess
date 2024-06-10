@@ -3,11 +3,10 @@
   display: grid;
   grid-template-columns: repeat(8, 60px);
   grid-template-rows: repeat(8, 60px);
-  border: 5.5px solid #333; //cheating using 0.5px to overpass the automatic downsize (can't find origin of the downsize)
-  border-radius: 4px;
-  margin: 20px;
-  width: 490px;
-  height: 490px;
+  outline: 6px solid #333;
+  border-radius: 1px;
+  width: 480px;
+  height: 480px;
 }
 
 .board-container {
