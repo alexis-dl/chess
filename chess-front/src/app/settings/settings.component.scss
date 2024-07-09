@@ -1,8 +1,10 @@
-p {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 50vh; // Ensure full viewport height
-  margin: 0;
-  font-size: 2em; // Adjust the font size as needed
+.header {
+  align-content: start;
+  display: grid;
+  flex: 1 0 auto;
+  gap: 2.4rem;
+  grid-template-columns: 100%;
+  margin: 0 auto;
+  max-width: 108.2rem;
+  width: 100%;
 }
