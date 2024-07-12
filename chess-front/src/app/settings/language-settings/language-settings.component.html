@@ -11,7 +11,7 @@
         <div class="flex align-items-center gap-2" *ngIf="selectedLanguage">
           <img
             [src]="
-              'assets/flags/4x3/' + selectedLanguage.code.toLowerCase() + '.svg'
+              'assets/flags/4x3/' + selectedLanguage.flag.toLowerCase() + '.svg'
             "
             style="width: 18px" />
           <div>{{ selectedLanguage.name }}</div>
@@ -20,7 +20,7 @@
       <ng-template let-language pTemplate="item">
         <div class="flex align-items-center gap-2">
           <img
-            [src]="'assets/flags/4x3/' + language.code.toLowerCase() + '.svg'"
+            [src]="'assets/flags/4x3/' + language.flag.toLowerCase() + '.svg'"
             style="width: 18px" />
           <div>{{ language.name }}</div>
         </div>
