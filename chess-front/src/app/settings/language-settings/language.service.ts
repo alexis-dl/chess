@@ -26,13 +26,15 @@ export class LanguageService {
   getCurrentLanguage() {
     const savedLanguageCode = localStorage.getItem('selectedLanguage'); // language saved in local storage
     const browserLanguageCode = navigator.language.split('-')[0].toUpperCase(); // language of the browser with region removed
-    debugger;
-    return this.languages.find(
+    let currentLanguage = this.languages.find(
       lang =>
-        lang.code === savedLanguageCode ||
-        lang.code === browserLanguageCode ||
-        lang.code === 'FR'
+        lang.code === savedLanguageCode || lang.code === browserLanguageCode
     );
+    if (!currentLanguage) {
+      currentLanguage = this.languages.find(lang => lang.code === 'FR'); // set french as default language
+    }
+
+    return currentLanguage;
   }
 
   setCurrentLanguage(selectedLanguage?: Language) {
