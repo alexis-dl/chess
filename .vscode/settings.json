@@ -1,5 +1,9 @@
 {
-    "java.configuration.updateBuildConfiguration": "interactive",
-    "java.saveActions.organizeImports": true,
-    "java.compile.nullAnalysis.mode": "automatic"
+  "java.configuration.updateBuildConfiguration": "interactive",
+  "java.saveActions.organizeImports": true,
+  "java.compile.nullAnalysis.mode": "automatic",
+  "editor.codeActionsOnSave": {
+    "source.fixAll": "always",
+    "source.organizeImports": "explicit"
+  }
 }
