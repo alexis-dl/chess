@@ -394,4 +394,148 @@ describe('RulesService', () => {
       expect(chessBoard.canCastle('white', false)).toBeTrue();
     });
   });
+
+  describe('history and notation', () => {
+    const sans = (chessBoard: Chessboard) =>
+      chessBoard.getHistory().map(entry => entry.san);
+
+    it('records moves in algebraic notation', () => {
+      const chessBoard = new Chessboard(utils);
+      play(chessBoard, 'e2', 'e4');
+      play(chessBoard, 'd7', 'd5');
+      play(chessBoard, 'e4', 'd5');
+      play(chessBoard, 'g8', 'f6');
+      play(chessBoard, 'f1', 'b5');
+      expect(sans(chessBoard)).toEqual(['e4', 'd5', 'exd5', 'Nf6', 'Bb5+']);
+    });
+
+    it('notes checkmate with #', () => {
+      const chessBoard = new Chessboard(utils);
+      play(chessBoard, 'f2', 'f3');
+      play(chessBoard, 'e7', 'e5');
+      play(chessBoard, 'g2', 'g4');
+      play(chessBoard, 'd8', 'h4');
+      expect(sans(chessBoard)).toEqual(['f3', 'e5', 'g4', 'Qh4#']);
+    });
+
+    it('notes castling', () => {
+      const chessBoard = board({
+        e1: 'white-king',
+        h1: 'white-rook',
+        e8: 'black-king',
+        a8: 'black-rook',
+      });
+      play(chessBoard, 'e1', 'g1');
+      play(chessBoard, 'e8', 'c8');
+      expect(sans(chessBoard)).toEqual(['O-O', 'O-O-O']);
+    });
+
+    it('notes en passant and promotion', () => {
+      const chessBoard = board(
+        {
+          a1: 'white-king',
+          h8: 'black-king',
+          e5: 'white-pawn',
+          d7: 'black-pawn',
+          b7: 'white-pawn',
+        },
+        false
+      );
+      play(chessBoard, 'd7', 'd5');
+      play(chessBoard, 'e5', 'd6');
+      play(chessBoard, 'h8', 'g8');
+      play(chessBoard, 'b7', 'b8');
+      promotionService.selectPiece('white-knight');
+      expect(sans(chessBoard)).toEqual(['d5', 'exd6', 'Kg8', 'b8=N']);
+    });
+
+    it('disambiguates identical pieces by file, then by rank', () => {
+      const chessBoard = board({
+        e1: 'white-king',
+        h8: 'black-king',
+        b1: 'white-knight',
+        f1: 'white-knight',
+        a1: 'white-rook',
+        a5: 'white-rook',
+      });
+      play(chessBoard, 'b1', 'd2');
+      play(chessBoard, 'h8', 'g8');
+      play(chessBoard, 'a1', 'a3');
+      expect(sans(chessBoard)).toEqual(['Nbd2', 'Kg8', 'R1a3']);
+    });
+
+    it('marks captures by pieces', () => {
+      const chessBoard = board({
+        e1: 'white-king',
+        h8: 'black-king',
+        d1: 'white-queen',
+        d7: 'black-pawn',
+      });
+      play(chessBoard, 'd1', 'd7');
+      expect(sans(chessBoard)).toEqual(['Qxd7']);
+    });
+  });
+
+  describe('undoMove', () => {
+    it('restores the previous position and turn', () => {
+      const chessBoard = new Chessboard(utils);
+      const initialPieces = chessBoard.saveState().pieces;
+      play(chessBoard, 'e2', 'e4');
+
+      expect(rules.undoMove(chessBoard)).toBeTrue();
+      expect(chessBoard.getPieces()).toEqual(initialPieces);
+      expect(chessBoard.getIsWhiteTurn()).toBeTrue();
+      expect(chessBoard.getEnPassantColIndex()).toBe(-1);
+      expect(chessBoard.getHistory().length).toBe(0);
+    });
+
+    it('returns false when there is nothing to undo', () => {
+      expect(rules.undoMove(new Chessboard(utils))).toBeFalse();
+    });
+
+    it('restores castling rights and the rook', () => {
+      const chessBoard = board({
+        e1: 'white-king',
+        a1: 'white-rook',
+        h1: 'white-rook',
+        e8: 'black-king',
+      });
+      play(chessBoard, 'e1', 'g1');
+      rules.undoMove(chessBoard);
+      expect(chessBoard.getPieceByPos(sq('h1'))).toBe('white-rook');
+      expect(chessBoard.getPieceByPos(sq('e1'))).toBe('white-king');
+      expect(canMove(chessBoard, 'e1', 'g1')).toBeTrue();
+    });
+
+    it('restores a pawn taken en passant and the en passant right', () => {
+      const chessBoard = board(
+        {
+          e1: 'white-king',
+          e8: 'black-king',
+          e5: 'white-pawn',
+          d7: 'black-pawn',
+        },
+        false
+      );
+      play(chessBoard, 'd7', 'd5');
+      play(chessBoard, 'e5', 'd6');
+      rules.undoMove(chessBoard);
+      expect(chessBoard.getPieceByPos(sq('d5'))).toBe('black-pawn');
+      expect(chessBoard.getPieceByPos(sq('e5'))).toBe('white-pawn');
+      expect(canMove(chessBoard, 'e5', 'd6')).toBeTrue();
+    });
+
+    it('cancels a pending promotion', () => {
+      const chessBoard = board({
+        a1: 'white-king',
+        h1: 'black-king',
+        e7: 'white-pawn',
+      });
+      play(chessBoard, 'e7', 'e8');
+      rules.undoMove(chessBoard);
+      promotionService.selectPiece('white-queen');
+      expect(chessBoard.getPieceByPos(sq('e8'))).toBe('');
+      expect(chessBoard.getPieceByPos(sq('e7'))).toBe('white-pawn');
+    });
+  });
 });

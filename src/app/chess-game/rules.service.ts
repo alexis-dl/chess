@@ -3,9 +3,25 @@ import { Subject, take } from 'rxjs';
 import { ChessUtilsService } from './chess-utils.service';
 import { Chessboard } from './chessboard.model';
 import { Move } from './move.model';
-import { Color, getOpponentColor, toPieceName } from './piece.model';
+import {
+  Color,
+  getOpponentColor,
+  PieceName,
+  PieceType,
+  toPieceName,
+} from './piece.model';
 import { Position } from './position.model';
 import { PromotionService } from './promotion/promotion.service';
+
+/** Piece letters used in standard algebraic notation (pawns have none). */
+const SAN_LETTERS: Record<PieceType, string> = {
+  pawn: '',
+  knight: 'N',
+  bishop: 'B',
+  rook: 'R',
+  queen: 'Q',
+  king: 'K',
+};
 
 /** [deltaX, deltaY] */
 type Direction = readonly [number, number];
@@ -66,21 +82,65 @@ export class RulesService {
     if (this.isPawnPromotion(oldPos, newPos, chessBoard)) {
       this.triggerPromotionUI(oldPos, newPos, chessBoard);
     } else {
-      chessBoard.movePiece(oldPos, newPos);
-      chessBoard.toggleIsWhiteTurn();
-      this.computeGameEndEvents(chessBoard);
+      this.commitMove(oldPos, newPos, chessBoard);
     }
     return true;
   }
 
   /**
-   * Compute checkmates, stalemates and nextPlayerTurn.
-   * TODO : complete with repetition rules (optional)
+   * Undo the last played move. A pending promotion is cancelled.
+   * @returns false when there is no move to undo.
    */
-  private computeGameEndEvents(chessBoard: Chessboard) {
-    const currentPlayerColor = chessBoard.getCurrentPlayerColor();
-    if (!this.hasPlayerAnyMove(chessBoard)) {
-      if (this.isKingChecked(currentPlayerColor, chessBoard)) {
+  undoMove(chessBoard: Chessboard): boolean {
+    this.promotionService.cancelPromotion();
+    const lastEntry = chessBoard.popHistory();
+    if (!lastEntry) {
+      return false;
+    }
+    chessBoard.restoreState(lastEntry.stateBefore);
+    return true;
+  }
+
+  /** True if the king of the player whose turn it is is in check. */
+  isInCheck(chessBoard: Chessboard): boolean {
+    return this.isKingChecked(chessBoard.getCurrentPlayerColor(), chessBoard);
+  }
+
+  /**
+   * Play an already validated move, record it in the history and emit the
+   * game events (checkmate, stalemate or next player's turn).
+   */
+  private commitMove(
+    oldPos: Position,
+    newPos: Position,
+    chessBoard: Chessboard,
+    promotionPiece?: PieceName
+  ): void {
+    const stateBefore = chessBoard.saveState();
+    const sanWithoutCheck = this.getSanWithoutCheck(
+      oldPos,
+      newPos,
+      chessBoard,
+      promotionPiece
+    );
+
+    chessBoard.movePiece(oldPos, newPos);
+    if (promotionPiece) {
+      chessBoard.setPieceByPos(promotionPiece, newPos);
+    }
+    chessBoard.toggleIsWhiteTurn();
+
+    const isInCheck = this.isInCheck(chessBoard);
+    const hasAnyMove = this.hasPlayerAnyMove(chessBoard);
+    const checkSuffix = isInCheck ? (hasAnyMove ? '+' : '#') : '';
+    chessBoard.pushHistory({
+      move: { oldPos, newPos },
+      san: sanWithoutCheck + checkSuffix,
+      stateBefore,
+    });
+
+    if (!hasAnyMove) {
+      if (isInCheck) {
         this.currentPlayerCheckmated.next();
       } else {
         this.currentPlayerStalemated.next();
@@ -89,6 +149,84 @@ export class RulesService {
       //send nextPlayersTurn event when game is not over.
       this.nextPlayersTurn.next(chessBoard.getIsWhiteTurn());
     }
+  }
+
+  /**
+   * Standard algebraic notation of a legal move, computed before playing it
+   * (check/mate suffix excluded).
+   */
+  private getSanWithoutCheck(
+    oldPos: Position,
+    newPos: Position,
+    chessBoard: Chessboard,
+    promotionPiece?: PieceName
+  ): string {
+    const piece = chessBoard.getPieceByPos(oldPos);
+    if (!piece) {
+      return '';
+    }
+    const type = this.chessUtilsService.getType(piece);
+    const destination = newPos.toAlgebraic();
+
+    if (type === 'king' && Math.abs(newPos.x - oldPos.x) === 2) {
+      return newPos.x > oldPos.x ? 'O-O' : 'O-O-O';
+    }
+
+    if (type === 'pawn') {
+      // a diagonal pawn move is always a capture (possibly en passant)
+      const capture =
+        oldPos.x !== newPos.x ? oldPos.toAlgebraic()[0] + 'x' : '';
+      const promotion = promotionPiece
+        ? '=' + SAN_LETTERS[this.chessUtilsService.getType(promotionPiece)]
+        : '';
+      return capture + destination + promotion;
+    }
+
+    const capture = chessBoard.getPieceByPos(newPos) ? 'x' : '';
+    return (
+      SAN_LETTERS[type] +
+      this.getSanDisambiguation(piece, oldPos, newPos, chessBoard) +
+      capture +
+      destination
+    );
+  }
+
+  /**
+   * When several identical pieces can reach the same square, SAN adds the
+   * origin file, else the origin rank, else both (e.g. 'Nbd2', 'R1a3').
+   */
+  private getSanDisambiguation(
+    piece: PieceName,
+    oldPos: Position,
+    newPos: Position,
+    chessBoard: Chessboard
+  ): string {
+    const rivals: Position[] = [];
+    for (let y = 0; y < Chessboard.BOARD_SIZE; y++) {
+      for (let x = 0; x < Chessboard.BOARD_SIZE; x++) {
+        const pos = new Position(x, y);
+        if (
+          !pos.equals(oldPos) &&
+          chessBoard.getPieceByPos(pos) === piece &&
+          this.getValidMovesByPiecePos(pos, chessBoard).some(move =>
+            move.equals(newPos)
+          )
+        ) {
+          rivals.push(pos);
+        }
+      }
+    }
+    if (rivals.length === 0) {
+      return '';
+    }
+    const origin = oldPos.toAlgebraic();
+    if (rivals.every(rival => rival.x !== oldPos.x)) {
+      return origin[0];
+    }
+    if (rivals.every(rival => rival.y !== oldPos.y)) {
+      return origin[1];
+    }
+    return origin;
   }
 
   /** All legal moves of the player whose turn it is. */
@@ -409,10 +547,7 @@ export class RulesService {
     this.promotionService.showPromotionUI(newPos);
     this.promotionService.promotionPiece$.pipe(take(1)).subscribe(piece => {
       if (piece) {
-        chessBoard.movePiece(oldPos, newPos);
-        chessBoard.setPieceByPos(piece, newPos);
-        chessBoard.toggleIsWhiteTurn();
-        this.computeGameEndEvents(chessBoard);
+        this.commitMove(oldPos, newPos, chessBoard, piece);
       }
     });
   }

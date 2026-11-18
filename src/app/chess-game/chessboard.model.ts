@@ -1,4 +1,5 @@
 import { ChessUtilsService } from './chess-utils.service';
+import { Move } from './move.model';
 import { Color, PieceName, PieceType, Square } from './piece.model';
 import { Position } from './position.model';
 
@@ -7,6 +8,22 @@ export interface CastlingRights {
   whiteQueenSide: boolean;
   blackKingSide: boolean;
   blackQueenSide: boolean;
+}
+
+/** Snapshot of everything needed to restore a position. */
+export interface BoardState {
+  pieces: Square[][];
+  isWhiteTurn: boolean;
+  enPassantColIndex: number;
+  castlingRights: CastlingRights;
+}
+
+/** A played move, with its notation and the position before it (for undo). */
+export interface HistoryEntry {
+  move: Move;
+  /** Standard algebraic notation, e.g. 'Nf3', 'exd5', 'O-O', 'e8=Q#'. */
+  san: string;
+  stateBefore: BoardState;
 }
 
 export class Chessboard {
@@ -22,6 +39,7 @@ export class Chessboard {
     blackKingSide: true,
     blackQueenSide: true,
   };
+  private history: HistoryEntry[] = [];
 
   constructor(private chessUtilsService: ChessUtilsService) {
     this.initializeChessBoard();
@@ -112,16 +130,42 @@ export class Chessboard {
   }
 
   /**
-   * Independent copy of the board state (pieces, turn, en passant, castling rights).
+   * Independent copy of the board state (pieces, turn, en passant, castling rights),
+   * used to simulate moves. The history is not copied.
    * The stateless ChessUtilsService is shared, not copied.
    */
   clone(): Chessboard {
     const copy = new Chessboard(this.chessUtilsService);
-    copy.pieces = this.pieces.map(row => [...row]);
-    copy.isWhiteTurn = this.isWhiteTurn;
-    copy.enPassantColIndex = this.enPassantColIndex;
-    copy.castlingRights = { ...this.castlingRights };
+    copy.restoreState(this.saveState());
     return copy;
+  }
+
+  saveState(): BoardState {
+    return {
+      pieces: this.pieces.map(row => [...row]),
+      isWhiteTurn: this.isWhiteTurn,
+      enPassantColIndex: this.enPassantColIndex,
+      castlingRights: { ...this.castlingRights },
+    };
+  }
+
+  restoreState(state: BoardState): void {
+    this.pieces = state.pieces.map(row => [...row]);
+    this.isWhiteTurn = state.isWhiteTurn;
+    this.enPassantColIndex = state.enPassantColIndex;
+    this.castlingRights = { ...state.castlingRights };
+  }
+
+  getHistory(): readonly HistoryEntry[] {
+    return this.history;
+  }
+
+  pushHistory(entry: HistoryEntry): void {
+    this.history.push(entry);
+  }
+
+  popHistory(): HistoryEntry | undefined {
+    return this.history.pop();
   }
 
   getCurrentPlayerColor(): Color {

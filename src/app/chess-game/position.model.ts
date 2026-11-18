@@ -15,6 +15,11 @@ export class Position {
     return new Position(this.x, this.y + deltaY);
   }
 
+  /** Algebraic name of the square, e.g. Position(4, 3) -> 'e4'. */
+  toAlgebraic(): string {
+    return String.fromCharCode(97 + this.x) + (this.y + 1);
+  }
+
   isInsideTheBoard(): boolean {
     return (
       this.x >= 0 &&

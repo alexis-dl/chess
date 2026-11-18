@@ -119,6 +119,43 @@ export class ChessBoardComponent implements OnInit, OnDestroy {
     );
   }
 
+  /** History grouped by full move: [['e4', 'e5'], ['Nf3', 'Nc6'], ['Bb5']]. */
+  get movePairs(): string[][] {
+    const sans = this.chessBoard.getHistory().map(entry => entry.san);
+    const pairs: string[][] = [];
+    for (let i = 0; i < sans.length; i += 2) {
+      pairs.push(sans.slice(i, i + 2));
+    }
+    return pairs;
+  }
+
+  canUndo(): boolean {
+    return (
+      this.isCurrentPlayerUser() &&
+      this.chessBoard
+        .getHistory()
+        .some((_, i) => this.getPlayerTypeForPly(i) === PlayerType.User)
+    );
+  }
+
+  /** Undo moves until it is a user's turn again (i.e. also undo the bot's answer). */
+  undo(): void {
+    this.refreshHighlightedSquares();
+    do {
+      if (!this.rulesService.undoMove(this.chessBoard)) {
+        return;
+      }
+    } while (!this.isCurrentPlayerUser());
+  }
+
+  /** Player type of the side that played the ply at this history index. */
+  private getPlayerTypeForPly(plyIndex: number): PlayerType {
+    const whiteStarted =
+      this.chessBoard.getHistory()[0]?.stateBefore.isWhiteTurn ?? true;
+    const isWhitePly = (plyIndex % 2 === 0) === whiteStarted;
+    return isWhitePly ? this.whitePiecesPlayerType : this.blackPiecesPlayerType;
+  }
+
   private isCurrentPlayerUser(): boolean {
     return this.getCurrentPlayerType() === PlayerType.User;
   }

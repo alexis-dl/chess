@@ -41,4 +41,17 @@
       </div>
     </div>
   </div>
+  <aside class="history-panel">
+    <h3>Moves</h3>
+    <ol class="move-list">
+      <li *ngFor="let pair of movePairs">
+        <span class="move">{{ pair[0] }}</span>
+        <span class="move">{{ pair[1] }}</span>
+      </li>
+    </ol>
+    <button mat-stroked-button (click)="undo()" [disabled]="!canUndo()">
+      <mat-icon>undo</mat-icon>
+      Undo
+    </button>
+  </aside>
 </div>
