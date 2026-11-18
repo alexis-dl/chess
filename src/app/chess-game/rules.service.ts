@@ -328,16 +328,11 @@ export class RulesService {
     if (pieceColor !== chessBoard.getCurrentPlayerColor()) {
       return false;
     }
-    if (
-      !this.getCandidateMovesByPiecePos(oldPos, chessBoard).some(move =>
+    return (
+      this.getCandidateMovesByPiecePos(oldPos, chessBoard).some(move =>
         move.equals(newPos)
-      )
-    ) {
-      return false;
-    }
-    const cloneChessboard = chessBoard.clone();
-    cloneChessboard.movePiece(oldPos, newPos);
-    return !this.isKingChecked(pieceColor, cloneChessboard);
+      ) && this.isKingSafeAfterMove(oldPos, newPos, pieceColor, chessBoard)
+    );
   }
 
   // get all valid moves for a given PiecePos, verifying that the own king is not checked after the move.
@@ -345,9 +340,26 @@ export class RulesService {
     piecePos: Position,
     chessBoard: Chessboard
   ): Position[] {
+    const pieceColor = chessBoard.getPieceColorByPos(piecePos);
+    if (pieceColor !== chessBoard.getCurrentPlayerColor()) {
+      return [];
+    }
     return this.getCandidateMovesByPiecePos(piecePos, chessBoard).filter(
-      newPos => this.isMoveValid(piecePos, newPos, chessBoard)
+      newPos =>
+        this.isKingSafeAfterMove(piecePos, newPos, pieceColor, chessBoard)
     );
+  }
+
+  /** Simulate the move and check that it does not leave the own king in check. */
+  private isKingSafeAfterMove(
+    oldPos: Position,
+    newPos: Position,
+    color: Color,
+    chessBoard: Chessboard
+  ): boolean {
+    const cloneChessboard = chessBoard.clone();
+    cloneChessboard.movePiece(oldPos, newPos);
+    return !this.isKingChecked(color, cloneChessboard);
   }
 
   /** Regular piece moves plus castling moves (castling is not an attacking move). */
@@ -552,34 +564,55 @@ export class RulesService {
     );
   }
 
-  /** Check if any piece of attackerColor attacks the given square. */
+  /**
+   * Check if any piece of attackerColor attacks the given square. Looks from
+   * the square outwards (pawn and knight squares, king neighbours, rays) rather
+   * than generating every enemy move.
+   */
   private isSquareAttacked(
     square: Position,
     attackerColor: Color,
     chessBoard: Chessboard
   ): boolean {
-    for (let x = 0; x < Chessboard.BOARD_SIZE; x++) {
-      for (let y = 0; y < Chessboard.BOARD_SIZE; y++) {
-        const attackingPiecePos = new Position(x, y);
-        const piece = chessBoard.getPieceByPos(attackingPiecePos);
-        if (
-          !piece ||
-          this.chessUtilsService.getColor(piece) !== attackerColor
-        ) {
-          continue;
-        }
-        if (this.chessUtilsService.isPawn(piece)) {
-          // pawns only attack diagonally (forward moves and en passant are not attacks)
-          const direction = attackerColor === 'white' ? 1 : -1;
-          if (square.y === y + direction && Math.abs(square.x - x) === 1) {
-            return true;
+    const pieceAt = ([deltaX, deltaY]: Direction) => {
+      const pos = square.addX(deltaX).addY(deltaY);
+      return pos.isInsideTheBoard() ? chessBoard.getPieceByPos(pos) : '';
+    };
+
+    // pawns only attack diagonally forward: an attacking pawn stands one row behind
+    const pawnRow = attackerColor === 'white' ? -1 : 1;
+    const pawn = toPieceName(attackerColor, 'pawn');
+    if (pieceAt([-1, pawnRow]) === pawn || pieceAt([1, pawnRow]) === pawn) {
+      return true;
+    }
+
+    const knight = toPieceName(attackerColor, 'knight');
+    if (KNIGHT_JUMPS.some(jump => pieceAt(jump) === knight)) {
+      return true;
+    }
+
+    const king = toPieceName(attackerColor, 'king');
+    if (ALL_DIRECTIONS.some(direction => pieceAt(direction) === king)) {
+      return true;
+    }
+
+    const queen = toPieceName(attackerColor, 'queen');
+    const sliders: [Direction[], PieceName][] = [
+      [ROOK_DIRECTIONS, toPieceName(attackerColor, 'rook')],
+      [BISHOP_DIRECTIONS, toPieceName(attackerColor, 'bishop')],
+    ];
+    for (const [directions, slider] of sliders) {
+      for (const [deltaX, deltaY] of directions) {
+        let pos = square.addX(deltaX).addY(deltaY);
+        while (pos.isInsideTheBoard()) {
+          const piece = chessBoard.getPieceByPos(pos);
+          if (piece) {
+            if (piece === slider || piece === queen) {
+              return true;
+            }
+            break;
           }
-        } else if (
-          this.getMovesByPiecePos(attackingPiecePos, chessBoard).some(move =>
-            move.equals(square)
-          )
-        ) {
-          return true;
+          pos = pos.addX(deltaX).addY(deltaY);
         }
       }
     }

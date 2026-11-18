@@ -65,8 +65,16 @@ export class Chessboard {
     ].join(' ');
   }
 
-  constructor(private chessUtilsService: ChessUtilsService) {
-    this.initializeChessBoard();
+  /** Starts from the initial position, or from the given state. */
+  constructor(
+    private chessUtilsService: ChessUtilsService,
+    state?: BoardState
+  ) {
+    if (state) {
+      this.restoreState(state);
+    } else {
+      this.initializeChessBoard();
+    }
   }
 
   /**
@@ -161,9 +169,7 @@ export class Chessboard {
    * The stateless ChessUtilsService is shared, not copied.
    */
   clone(): Chessboard {
-    const copy = new Chessboard(this.chessUtilsService);
-    copy.restoreState(this.saveState());
-    return copy;
+    return new Chessboard(this.chessUtilsService, this.saveState());
   }
 
   saveState(): BoardState {

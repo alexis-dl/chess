@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { BabyBot } from 'src/app/bot/models/babybot.model';
+import { NormalBot } from 'src/app/bot/models/normalbot.model';
 import { PlayerType } from 'src/app/player/player-type.enum';
 import { Player } from 'src/app/player/player.model';
 
@@ -20,6 +20,6 @@ export class PlayVsBotComponent {
       playerType: PlayerType.User,
     };
 
-    this.bot = new BabyBot();
+    this.bot = new NormalBot();
   }
 }

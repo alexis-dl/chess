@@ -15,6 +15,9 @@ const DRAW_REASON_LABELS: Record<DrawReason, string> = {
   'insufficient-material': 'insufficient material',
 };
 
+/** Pause before the bot answers, so that the user's move is displayed first. */
+const BOT_MOVE_DELAY_MS = 300;
+
 /** Square coordinates attached as data to cdkDrag / cdkDropList in the template. */
 interface SquareCoordinates {
   x: number;
@@ -41,6 +44,8 @@ export class ChessBoardComponent implements OnInit, OnDestroy {
   ) {}
 
   private subscriptions: Subscription[] = [];
+  private botTimeout?: ReturnType<typeof setTimeout>;
+
   ngOnInit(): void {
     this.subscriptions.push(
       this.rulesService.currentPlayerCheckmated.subscribe(() => {
@@ -66,8 +71,12 @@ export class ChessBoardComponent implements OnInit, OnDestroy {
     this.subscriptions.push(
       this.rulesService.nextPlayersTurn.subscribe(() => {
         if (!this.isCurrentPlayerUser()) {
-          // TODO : make bot play
-          this.botService.play(this.chessBoard, this.getCurrentPlayerType());
+          // asynchronous: lets the UI render the previous move first, and
+          // avoids an infinite recursion when two bots play each other
+          this.botTimeout = setTimeout(() => {
+            this.botTimeout = undefined;
+            this.botService.play(this.chessBoard, this.getCurrentPlayerType());
+          }, BOT_MOVE_DELAY_MS);
         }
       })
     );
@@ -179,6 +188,7 @@ export class ChessBoardComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    clearTimeout(this.botTimeout);
     this.subscriptions.forEach(subscription => subscription.unsubscribe());
   }
 }
