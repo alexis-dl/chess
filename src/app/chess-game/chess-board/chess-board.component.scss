@@ -85,6 +85,12 @@ app-chess-piece {
   &.draggable {
     cursor: grab;
   }
+
+  // pressed piece, centered on the pointer above its neighbours
+  &.grabbed {
+    z-index: 5;
+    cursor: grabbing;
+  }
 }
 
 .coord {
@@ -122,4 +128,16 @@ app-promotion {
 // onto the next square and prevent dropping there.
 .cdk-drag-placeholder {
   display: none;
+}
+
+// zero-size preview anchored on the pointer, the piece centered on it
+.drag-anchor {
+  width: 0;
+  height: 0;
+  cursor: grabbing;
+
+  img {
+    position: absolute;
+    max-width: none;
+  }
 }

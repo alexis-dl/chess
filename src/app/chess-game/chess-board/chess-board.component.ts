@@ -1,5 +1,14 @@
 import { CdkDragDrop } from '@angular/cdk/drag-drop';
-import { Component, DoCheck, Input, OnDestroy, OnInit } from '@angular/core';
+import {
+  Component,
+  DoCheck,
+  ElementRef,
+  HostListener,
+  Input,
+  OnDestroy,
+  OnInit,
+  ViewChild,
+} from '@angular/core';
 import { Subscription } from 'rxjs';
 import { ChessUtilsService } from '../chess-utils.service';
 import { Chessboard } from '../chessboard.model';
@@ -38,9 +47,20 @@ export class ChessBoardComponent implements OnInit, DoCheck, OnDestroy {
   /** Whether the user may move the pieces of the side to move. */
   @Input() canMove = true;
 
+  @ViewChild('board', { static: true }) boardElement!: ElementRef<HTMLElement>;
+
   squares: SquareView[] = [];
+  /** Size of a square in pixels, used for the dragged piece. */
+  squareSize = 0;
   selectedSquare: Position | null = null;
   promotionPosition: Position | null = null;
+  /** Piece pressed by the user, and the shift that centers it on the pointer. */
+  private grabbed: {
+    x: number;
+    y: number;
+    offsetX: number;
+    offsetY: number;
+  } | null = null;
   private targetKeys = new Set<string>();
   private renderedKey = '';
   private subscription?: Subscription;
@@ -95,11 +115,54 @@ export class ChessBoardComponent implements OnInit, DoCheck, OnDestroy {
     );
   }
 
+  pieceImage(square: SquareView): string | null {
+    return this.chessUtilsService.getPieceImagePath(square.piece);
+  }
+
+  /**
+   * Pressing a piece of the side to move: select it, show its legal moves and
+   * center it under the pointer right away (the drag only starts on move).
+   */
+  grab(square: SquareView, event: MouseEvent | TouchEvent): void {
+    if (!this.canDrag(square)) {
+      return;
+    }
+    const pointer = 'touches' in event ? event.touches[0] : event;
+    const rect = (event.currentTarget as HTMLElement).getBoundingClientRect();
+    this.grabbed = {
+      x: square.x,
+      y: square.y,
+      offsetX: pointer.clientX - (rect.left + rect.width / 2),
+      offsetY: pointer.clientY - (rect.top + rect.height / 2),
+    };
+    this.select(square);
+  }
+
+  /** Releasing the pointer puts a grabbed but not dragged piece back. */
+  @HostListener('document:mouseup')
+  @HostListener('document:touchend')
+  @HostListener('document:touchcancel')
+  release(): void {
+    this.grabbed = null;
+  }
+
+  isGrabbed(square: SquareView): boolean {
+    return this.grabbed?.x === square.x && this.grabbed?.y === square.y;
+  }
+
+  grabTransform(square: SquareView): string | null {
+    return this.grabbed && this.isGrabbed(square)
+      ? `translate(${this.grabbed.offsetX}px, ${this.grabbed.offsetY}px)`
+      : null;
+  }
+
   /** Select a piece of the side to move and show its legal moves. */
   select(square: SquareView): void {
     if (!this.canDrag(square)) {
       return;
     }
+    // measured on grab: the drag preview has the size of a square
+    this.squareSize = this.boardElement.nativeElement.clientWidth / 8;
     const pos = new Position(square.x, square.y);
     this.selectedSquare = pos;
     this.targetKeys = new Set(

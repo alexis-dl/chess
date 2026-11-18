@@ -1,4 +1,4 @@
-<div class="board" cdkDropListGroup>
+<div class="board" #board cdkDropListGroup>
   <div
     *ngFor="let square of squares; trackBy: trackByIndex"
     class="square"
@@ -25,12 +25,26 @@
       *ngIf="square.piece"
       [pieceType]="square.piece"
       [class.draggable]="canDrag(square)"
+      [class.grabbed]="isGrabbed(square)"
+      [style.transform]="grabTransform(square)"
       cdkDrag
       cdkDragBoundary=".board"
       [cdkDragData]="square"
       [cdkDragDisabled]="!canDrag(square)"
-      (mousedown)="select(square)"
-      (touchstart)="select(square)"></app-chess-piece>
+      (mousedown)="grab(square, $event)"
+      (touchstart)="grab(square, $event)">
+      <!-- dragged piece: a zero-size anchor under the pointer, the image
+           centered on it (the library puts the preview's corner on the pointer) -->
+      <div *cdkDragPreview class="drag-anchor">
+        <img
+          [src]="pieceImage(square)"
+          alt=""
+          [style.width.px]="squareSize"
+          [style.height.px]="squareSize"
+          [style.left.px]="-squareSize / 2"
+          [style.top.px]="-squareSize / 2" />
+      </div>
+    </app-chess-piece>
 
     <app-promotion
       *ngIf="showPromotion(square)"
