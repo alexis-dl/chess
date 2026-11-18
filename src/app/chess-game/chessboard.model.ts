@@ -1,12 +1,25 @@
 import { ChessUtilsService } from './chess-utils.service';
 import { Position } from './position.model';
 
+export interface CastlingRights {
+  whiteKingSide: boolean;
+  whiteQueenSide: boolean;
+  blackKingSide: boolean;
+  blackQueenSide: boolean;
+}
+
 export class Chessboard {
   static readonly BOARD_SIZE = 8;
 
   private pieces: string[][] = [];
   private isWhiteTurn: boolean = true;
   private enPassantColIndex: number = -1;
+  private castlingRights: CastlingRights = {
+    whiteKingSide: true,
+    whiteQueenSide: true,
+    blackKingSide: true,
+    blackQueenSide: true,
+  };
 
   constructor(private chessUtilsService: ChessUtilsService) {
     this.initializeChessBoard();
@@ -37,6 +50,20 @@ export class Chessboard {
       this.setPieceByPos('', eatenPawnPos);
     }
 
+    // if move is a castling (king moving two squares), move the rook too
+    if (
+      this.chessUtilsService.getType(movingPiece) === 'king' &&
+      Math.abs(newPos.x - oldPos.x) === 2
+    ) {
+      const isKingSide = newPos.x > oldPos.x;
+      const rookOldPos = new Position(isKingSide ? 7 : 0, oldPos.y);
+      const rookNewPos = new Position(isKingSide ? 5 : 3, oldPos.y);
+      this.setPieceByPos(this.getPieceByPos(rookOldPos), rookNewPos);
+      this.setPieceByPos('', rookOldPos);
+    }
+
+    this.updateCastlingRights(oldPos, newPos);
+
     // register column for possible en passant
     if (isPieceAPawn && Math.abs(oldPos.y - newPos.y) === 2) {
       this.setEnPassantColIndex(oldPos.x);
@@ -44,6 +71,41 @@ export class Chessboard {
       this.setEnPassantColIndex(-1); // reseting en passant possibility
     }
     return eatenPiece;
+  }
+
+  /**
+   * Any move starting from or landing on a king/rook initial square
+   * (king or rook moved, or rook captured) removes the matching castling rights.
+   */
+  private updateCastlingRights(oldPos: Position, newPos: Position): void {
+    for (const pos of [oldPos, newPos]) {
+      if (pos.y === 0) {
+        if (pos.x === 0 || pos.x === 4) this.castlingRights.whiteQueenSide = false;
+        if (pos.x === 7 || pos.x === 4) this.castlingRights.whiteKingSide = false;
+      } else if (pos.y === 7) {
+        if (pos.x === 0 || pos.x === 4) this.castlingRights.blackQueenSide = false;
+        if (pos.x === 7 || pos.x === 4) this.castlingRights.blackKingSide = false;
+      }
+    }
+  }
+
+  canCastle(color: string, kingSide: boolean): boolean {
+    if (color === 'white') {
+      return kingSide
+        ? this.castlingRights.whiteKingSide
+        : this.castlingRights.whiteQueenSide;
+    }
+    return kingSide
+      ? this.castlingRights.blackKingSide
+      : this.castlingRights.blackQueenSide;
+  }
+
+  public getCastlingRights(): CastlingRights {
+    return this.castlingRights;
+  }
+
+  public setCastlingRights(value: CastlingRights) {
+    this.castlingRights = value;
   }
 
   getPlayerPiecesByColor(pieceColor: string): string[][] {

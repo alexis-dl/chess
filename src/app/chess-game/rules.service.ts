@@ -114,7 +114,7 @@ export class RulesService {
     cloneChessboard.movePiece(oldPos, newPos);
 
     return (
-      this.getMovesByPiecePos(
+      this.getCandidateMovesByPiecePos(
         new Position(oldPos.x, oldPos.y),
         chessBoard
       ).some(move => move.equals(newPos)) &&
@@ -127,9 +127,64 @@ export class RulesService {
     piecePos: Position,
     chessBoard: Chessboard
   ): Position[] {
-    return this.getMovesByPiecePos(piecePos, chessBoard).filter(newPos =>
-      this.isMoveValid(piecePos, newPos, chessBoard)
+    return this.getCandidateMovesByPiecePos(piecePos, chessBoard).filter(
+      newPos => this.isMoveValid(piecePos, newPos, chessBoard)
     );
+  }
+
+  /** Regular piece moves plus castling moves (castling is not an attacking move). */
+  private getCandidateMovesByPiecePos(
+    piecePos: Position,
+    chessBoard: Chessboard
+  ): Position[] {
+    return [
+      ...this.getMovesByPiecePos(piecePos, chessBoard),
+      ...this.getCastlingMoves(piecePos, chessBoard),
+    ];
+  }
+
+  /**
+   * Castling destinations for the king at piecePos. Checks castling rights,
+   * empty squares between king and rook, king not in check and not passing
+   * through an attacked square. The destination square is checked by isMoveValid.
+   */
+  private getCastlingMoves(
+    piecePos: Position,
+    chessBoard: Chessboard
+  ): Position[] {
+    if (chessBoard.getPieceTypeByPos(piecePos) !== 'king') {
+      return [];
+    }
+    const color = chessBoard.getPieceColorByPos(piecePos);
+    const row = color === 'white' ? 0 : 7;
+    if (piecePos.x !== 4 || piecePos.y !== row) {
+      return [];
+    }
+    const opponentColor = this.chessUtilsService.getOpponentColor(color);
+    if (this.isSquareAttacked(piecePos, opponentColor, chessBoard)) {
+      return [];
+    }
+
+    const moves: Position[] = [];
+    const sides = [
+      { kingSide: true, rookX: 7, emptyXs: [5, 6], passX: 5, destX: 6 },
+      { kingSide: false, rookX: 0, emptyXs: [1, 2, 3], passX: 3, destX: 2 },
+    ];
+    for (const side of sides) {
+      if (
+        chessBoard.canCastle(color, side.kingSide) &&
+        chessBoard.getPiece(side.rookX, row) === color + '-rook' &&
+        side.emptyXs.every(x => !chessBoard.getPiece(x, row)) &&
+        !this.isSquareAttacked(
+          new Position(side.passX, row),
+          opponentColor,
+          chessBoard
+        )
+      ) {
+        moves.push(new Position(side.destX, row));
+      }
+    }
+    return moves;
   }
 
   /** Method that retrieve all available moves for a piece, regarding to its type.
@@ -383,27 +438,44 @@ export class RulesService {
   /** Check if the king of the given color is in check on the given chessboard. */
   private isKingChecked(pieceColor: string, chessBoard: Chessboard): boolean {
     const kingPos = chessBoard.findPiecePosition(pieceColor + '-king');
+    return (
+      kingPos !== null &&
+      this.isSquareAttacked(
+        kingPos,
+        this.chessUtilsService.getOpponentColor(pieceColor),
+        chessBoard
+      )
+    );
+  }
 
-    if (kingPos) {
-      // Iterate over all opponent's pieces and check if any can attack the king
-      for (let x = 0; x < Chessboard.BOARD_SIZE; x++) {
-        for (let y = 0; y < Chessboard.BOARD_SIZE; y++) {
-          const attackingPiecePos = new Position(x, y);
-          const piece = chessBoard.getPieceByPos(attackingPiecePos);
+  /** Check if any piece of attackerColor attacks the given square. */
+  private isSquareAttacked(
+    square: Position,
+    attackerColor: string,
+    chessBoard: Chessboard
+  ): boolean {
+    for (let x = 0; x < Chessboard.BOARD_SIZE; x++) {
+      for (let y = 0; y < Chessboard.BOARD_SIZE; y++) {
+        const attackingPiecePos = new Position(x, y);
+        const piece = chessBoard.getPieceByPos(attackingPiecePos);
+        if (!piece || this.chessUtilsService.getColor(piece) !== attackerColor) {
+          continue;
+        }
+        if (this.chessUtilsService.isPawn(piece)) {
+          // pawns only attack diagonally (forward moves and en passant are not attacks)
+          const direction = attackerColor === 'white' ? 1 : -1;
           if (
-            piece &&
-            piece.startsWith(
-              this.chessUtilsService.getOpponentColor(pieceColor)
-            )
+            square.y === y + direction &&
+            Math.abs(square.x - x) === 1
           ) {
-            const availableMoves: Position[] = this.getMovesByPiecePos(
-              attackingPiecePos,
-              chessBoard
-            );
-            if (availableMoves.some(move => move.equals(kingPos))) {
-              return true;
-            }
+            return true;
           }
+        } else if (
+          this.getMovesByPiecePos(attackingPiecePos, chessBoard).some(move =>
+            move.equals(square)
+          )
+        ) {
+          return true;
         }
       }
     }
