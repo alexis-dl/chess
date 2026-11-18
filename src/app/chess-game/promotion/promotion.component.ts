@@ -10,6 +10,8 @@ import { PromotionService } from './promotion.service';
 })
 export class PromotionComponent {
   @Input() pieceColor: Color = 'white';
+  /** Open towards the top (when promoting on the bottom edge of the board). */
+  @Input() upward = false;
   pieces: PromotionPieceType[] = ['queen', 'rook', 'knight', 'bishop'];
 
   constructor(

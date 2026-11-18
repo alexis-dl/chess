@@ -4,6 +4,7 @@ import { HomeComponent } from './home/home.component';
 import { OpeningsComponent } from './openings/openings.component';
 import { ExplorerComponent } from './play/explorer/explorer.component';
 import { PlayVsBotComponent } from './play/play-vs-bot/play-vs-bot.component';
+import { PuzzlesComponent } from './puzzles/puzzles.component';
 import { BoardSettingsComponent } from './settings/board-settings/board-settings.component';
 import { LanguageSettingsComponent } from './settings/language-settings/language-settings.component';
 import { SettingsComponent } from './settings/settings.component';
@@ -15,6 +16,7 @@ import { QuitComponent } from './toolbar-sidenav/quit/quit.component';
 const routes: Routes = [
   { path: 'home', component: HomeComponent },
   { path: 'play', component: PlayVsBotComponent },
+  { path: 'puzzles', component: PuzzlesComponent },
   { path: 'explorer', component: ExplorerComponent },
   { path: 'openings', component: OpeningsComponent },
   {

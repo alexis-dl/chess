@@ -46,6 +46,10 @@ export class ChessBoardComponent implements OnInit, DoCheck, OnDestroy {
   @Input() chessBoard: Chessboard = new Chessboard(this.chessUtilsService);
   /** Whether the user may move the pieces of the side to move. */
   @Input() canMove = true;
+  /** Side shown at the bottom of the board. */
+  @Input() orientation: Color = 'white';
+  /** Square to point out to the user (puzzle hint). */
+  @Input() hintSquare: Position | null = null;
 
   @ViewChild('board', { static: true }) boardElement!: ElementRef<HTMLElement>;
 
@@ -202,6 +206,18 @@ export class ChessBoardComponent implements OnInit, DoCheck, OnDestroy {
     return square.y === 7 ? 'white' : 'black';
   }
 
+  /** The promotion picker opens towards the center of the board. */
+  promotionUpward(square: SquareView): boolean {
+    const promotesOnBottomEdge =
+      (this.promotionColor(square) === 'black') ===
+      (this.orientation === 'white');
+    return promotesOnBottomEdge;
+  }
+
+  isHint(square: SquareView): boolean {
+    return this.hintSquare?.x === square.x && this.hintSquare?.y === square.y;
+  }
+
   private move(from: Position, to: Position): void {
     if (this.canMove) {
       this.rulesService.playMove(from, to, this.chessBoard);
@@ -212,7 +228,8 @@ export class ChessBoardComponent implements OnInit, DoCheck, OnDestroy {
   private computeRenderKey(): string {
     return (
       Chessboard.getPositionKey(this.chessBoard.saveState()) +
-      this.chessBoard.getHistory().length
+      this.chessBoard.getHistory().length +
+      this.orientation
     );
   }
 
@@ -230,9 +247,14 @@ export class ChessBoardComponent implements OnInit, DoCheck, OnDestroy {
         )
       : null;
 
+    // squares in display order: from the top-left corner, row by row
+    const flipped = this.orientation === 'black';
+    const last = Chessboard.BOARD_SIZE - 1;
     const squares: SquareView[] = [];
-    for (let y = Chessboard.BOARD_SIZE - 1; y >= 0; y--) {
-      for (let x = 0; x < Chessboard.BOARD_SIZE; x++) {
+    for (let row = 0; row <= last; row++) {
+      for (let col = 0; col <= last; col++) {
+        const x = flipped ? last - col : col;
+        const y = flipped ? row : last - row;
         const pos = new Position(x, y);
         squares.push({
           x,
@@ -243,8 +265,9 @@ export class ChessBoardComponent implements OnInit, DoCheck, OnDestroy {
             !!lastMove &&
             (lastMove.oldPos.equals(pos) || lastMove.newPos.equals(pos)),
           isCheck: !!checkedKing && checkedKing.equals(pos),
-          rankLabel: x === 0 ? String(y + 1) : null,
-          fileLabel: y === 0 ? FILES[x] : null,
+          // ranks along the left edge, files along the bottom edge
+          rankLabel: col === 0 ? String(y + 1) : null,
+          fileLabel: row === last ? FILES[x] : null,
         });
       }
     }

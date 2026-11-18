@@ -88,6 +88,16 @@ a {
   }
 }
 
+.btn-primary {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: #fff;
+
+  &:hover:not(:disabled) {
+    background: #8cab69;
+  }
+}
+
 .btn-icon {
   width: 38px;
   padding: 0;

@@ -6,6 +6,7 @@
     [class.dark]="!square.isLight"
     [class.last-move]="square.isLastMove"
     [class.check]="square.isCheck"
+    [class.hint]="isHint(square)"
     [class.selected]="isSelected(square)"
     [class.target]="isTarget(square)"
     [class.occupied]="square.piece"
@@ -48,6 +49,7 @@
 
     <app-promotion
       *ngIf="showPromotion(square)"
-      [pieceColor]="promotionColor(square)"></app-promotion>
+      [pieceColor]="promotionColor(square)"
+      [upward]="promotionUpward(square)"></app-promotion>
   </div>
 </div>
