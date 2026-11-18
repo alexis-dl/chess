@@ -9,8 +9,12 @@
   gap: 4px;
   margin-bottom: 16px;
   border-bottom: 1px solid var(--border);
+  overflow-x: auto; // 4 tabs don't fit on a phone
+  scrollbar-width: none;
 
   a {
+    flex: none;
+    white-space: nowrap;
     margin-bottom: -1px;
     padding: 10px 16px;
     border-bottom: 2px solid transparent;
@@ -65,4 +69,69 @@ h1 {
     height: 20px;
     font-size: 20px;
   }
+}
+
+@media (max-width: 480px) {
+  .tabs a {
+    padding: 8px 8px;
+    font-size: 0.82em;
+  }
+}
+
+.lessons {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 24px;
+}
+
+.lesson-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 18px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--surface-raised);
+  color: inherit;
+  text-decoration: none;
+  transition:
+    border-color 0.15s,
+    background 0.15s;
+
+  &:hover {
+    border-color: var(--accent);
+    background: var(--accent-soft);
+  }
+
+  .mat-icon {
+    flex: none;
+    color: var(--text-muted);
+  }
+}
+
+.lesson-text {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.lesson-title {
+  color: var(--text-strong);
+  font-size: 1.05em;
+  font-weight: 600;
+}
+
+.lesson-summary {
+  color: var(--text-muted);
+  font-size: 0.9em;
+  line-height: 1.5;
+}
+
+.lesson-steps {
+  flex: none;
+  color: var(--text-faint);
+  font-size: 0.85em;
 }

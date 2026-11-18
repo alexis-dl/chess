@@ -2,6 +2,7 @@ import { Component, DoCheck, OnDestroy, OnInit } from '@angular/core';
 import { ChessUtilsService } from '../chess-game/chess-utils.service';
 import { Chessboard } from '../chess-game/chessboard.model';
 import { parseFen } from '../chess-game/fen';
+import { formatMoveList } from '../chess-game/move-list';
 import {
   Color,
   PromotionPieceType,
@@ -218,23 +219,8 @@ export class PuzzlesComponent implements OnInit, DoCheck, OnDestroy {
 
   /** '1. Qd8+ Bxd8 2. Re8#', or '1... Qg1+ ...' when Black starts. */
   private computeMovesText(): string {
-    const history = this.chessBoard.getHistory();
-    const whiteStarts = history[0]?.stateBefore.isWhiteTurn ?? true;
-    let moveNumber = this.fullmoveNumber;
-    return history
-      .map((entry, i) => {
-        const isWhiteMove = (i % 2 === 0) === whiteStarts;
-        let text = entry.san;
-        if (isWhiteMove) {
-          text = `${moveNumber}. ${text}`;
-        } else {
-          if (i === 0) {
-            text = `${moveNumber}... ${text}`;
-          }
-          moveNumber++;
-        }
-        return text;
-      })
+    return formatMoveList(this.chessBoard.getHistory(), this.fullmoveNumber)
+      .map(item => item.label)
       .join(' ');
   }
 

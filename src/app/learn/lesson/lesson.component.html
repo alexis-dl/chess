@@ -1,0 +1,122 @@
+<div class="lesson-page" *ngIf="lesson; else notFound">
+  <aside class="panel toc">
+    <a class="back" [routerLink]="['/learn', lesson.section]">
+      <mat-icon>arrow_back</mat-icon>
+      {{ section?.title }}
+    </a>
+    <h1>{{ lesson.title }}</h1>
+    <ol class="steps">
+      <li *ngFor="let item of lesson.steps; let i = index">
+        <button
+          type="button"
+          [class.current]="i === stepIndex"
+          (click)="goToStep(i)">
+          <span class="step-number">{{ i + 1 }}</span>
+          <span>{{ item.title }}</span>
+        </button>
+      </li>
+    </ol>
+  </aside>
+
+  <main class="board-area">
+    <app-chess-board
+      [chessBoard]="chessBoard"
+      [canMove]="false"
+      [shapes]="shapes"></app-chess-board>
+  </main>
+
+  <section class="panel content">
+    <header class="content-header">
+      <span class="step-count"
+        >Step {{ stepIndex + 1 }} / {{ lesson.steps.length }}</span
+      >
+      <h2>{{ step.title }}</h2>
+    </header>
+
+    <div class="text">
+      <p *ngFor="let paragraph of step.text">{{ paragraph }}</p>
+    </div>
+
+    <div class="line" *ngIf="lineLength">
+      <div class="moves">
+        <button
+          *ngFor="let move of moveItems"
+          type="button"
+          class="move"
+          [class.current]="move.ply === ply"
+          (click)="goToPly(move.ply)">
+          {{ move.label }}
+        </button>
+      </div>
+      <div class="line-controls">
+        <button
+          type="button"
+          class="btn btn-icon"
+          aria-label="Start of the line"
+          [disabled]="ply === 0"
+          (click)="goToPly(0)">
+          <mat-icon>first_page</mat-icon>
+        </button>
+        <button
+          type="button"
+          class="btn btn-icon"
+          aria-label="Previous move"
+          [disabled]="ply === 0"
+          (click)="goToPly(ply - 1)">
+          <mat-icon>chevron_left</mat-icon>
+        </button>
+        <button
+          type="button"
+          class="btn btn-icon"
+          aria-label="Next move"
+          [disabled]="ply === lineLength"
+          (click)="goToPly(ply + 1)">
+          <mat-icon>chevron_right</mat-icon>
+        </button>
+        <button
+          type="button"
+          class="btn btn-icon"
+          aria-label="End of the line"
+          [disabled]="ply === lineLength"
+          (click)="goToPly(lineLength)">
+          <mat-icon>last_page</mat-icon>
+        </button>
+      </div>
+    </div>
+
+    <footer class="step-nav">
+      <button
+        type="button"
+        class="btn"
+        [disabled]="stepIndex === 0"
+        (click)="goToStep(stepIndex - 1)">
+        <mat-icon>arrow_back</mat-icon>
+        Previous
+      </button>
+      <button
+        *ngIf="stepIndex < lesson.steps.length - 1; else backToSection"
+        type="button"
+        class="btn btn-primary"
+        (click)="goToStep(stepIndex + 1)">
+        Next step
+        <mat-icon>arrow_forward</mat-icon>
+      </button>
+      <ng-template #backToSection>
+        <a
+          class="btn btn-primary"
+          [routerLink]="['/learn', lesson.section]"
+          [attr.title]="'Back to ' + section?.title">
+          Finish
+          <mat-icon>check</mat-icon>
+        </a>
+      </ng-template>
+    </footer>
+  </section>
+</div>
+
+<ng-template #notFound>
+  <div class="not-found">
+    <p>This lesson does not exist.</p>
+    <a class="btn" routerLink="/learn">Back to Learn</a>
+  </div>
+</ng-template>

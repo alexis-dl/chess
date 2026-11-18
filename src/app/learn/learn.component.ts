@@ -1,8 +1,10 @@
 import { Component } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { map } from 'rxjs';
+import { Lesson, LESSONS } from './lessons/lesson.model';
 
-export type LearnSectionId = 'opening' | 'middlegame' | 'endgame';
+export type LearnSectionId =
+  'opening' | 'middlegame' | 'endgame' | 'pawn-structures';
 
 export interface LearnSection {
   id: LearnSectionId;
@@ -29,6 +31,12 @@ export const LEARN_SECTIONS: LearnSection[] = [
     description:
       'Turn an advantage into a win with the techniques of the last phase of the game.',
   },
+  {
+    id: 'pawn-structures',
+    title: 'Pawn structures',
+    description:
+      'Read the pawns to find the right plan: isolated pawns, hanging pawns, chains, majorities and more.',
+  },
 ];
 
 /** One of the Learn sections, chosen by the route data. */
@@ -48,4 +56,8 @@ export class LearnComponent {
   );
 
   constructor(private route: ActivatedRoute) {}
+
+  lessonsFor(sectionId: LearnSectionId): Lesson[] {
+    return LESSONS.filter(lesson => lesson.section === sectionId);
+  }
 }

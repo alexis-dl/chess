@@ -62,6 +62,20 @@ export class ChessBoardComponent implements OnInit, DoCheck, OnDestroy {
   /** Square to point out to the user (puzzle hint). */
   @Input() hintSquare: Position | null = null;
 
+  /** Arrows and circles provided by the page (e.g. a lesson), kept on screen. */
+  @Input() set shapes(
+    shapes: {
+      circles: CircleAnnotation[];
+      arrows: ArrowAnnotation[];
+    } | null
+  ) {
+    this.presetCircles = shapes?.circles ?? [];
+    this.presetArrows = shapes?.arrows ?? [];
+    this.refreshAnnotationViews();
+  }
+  private presetCircles: CircleAnnotation[] = [];
+  private presetArrows: ArrowAnnotation[] = [];
+
   @ViewChild('board', { static: true }) boardElement!: ElementRef<HTMLElement>;
 
   squares: SquareView[] = [];
@@ -367,12 +381,14 @@ export class ChessBoardComponent implements OnInit, DoCheck, OnDestroy {
       drawing.from.x === drawing.to.x &&
       drawing.from.y === drawing.to.y;
     const circles = [
+      ...this.presetCircles.map(circle => ({ ...circle, preview: false })),
       ...this.circles.map(circle => ({ ...circle, preview: false })),
       ...(drawing && isCircle
         ? [{ square: drawing.from, color: drawing.color, preview: true }]
         : []),
     ];
     const arrows = [
+      ...this.presetArrows.map(arrow => ({ ...arrow, preview: false })),
       ...this.arrows.map(arrow => ({ ...arrow, preview: false })),
       ...(drawing && !isCircle ? [{ ...drawing, preview: true }] : []),
     ];

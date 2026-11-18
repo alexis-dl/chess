@@ -11,9 +11,27 @@
   <section class="panel">
     <h1>{{ section.title }}</h1>
     <p class="description">{{ section.description }}</p>
-    <p class="soon">
-      <mat-icon>schedule</mat-icon>
-      Lessons coming soon.
-    </p>
+
+    <ng-container *ngIf="lessonsFor(section.id) as lessons">
+      <div class="lessons" *ngIf="lessons.length; else soon">
+        <a
+          *ngFor="let lesson of lessons"
+          class="lesson-card"
+          [routerLink]="['/learn', section.id, lesson.id]">
+          <span class="lesson-text">
+            <span class="lesson-title">{{ lesson.title }}</span>
+            <span class="lesson-summary">{{ lesson.summary }}</span>
+          </span>
+          <span class="lesson-steps">{{ lesson.steps.length }} steps</span>
+          <mat-icon>chevron_right</mat-icon>
+        </a>
+      </div>
+    </ng-container>
+    <ng-template #soon>
+      <p class="soon">
+        <mat-icon>schedule</mat-icon>
+        Lessons coming soon.
+      </p>
+    </ng-template>
   </section>
 </div>
