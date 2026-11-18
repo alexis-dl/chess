@@ -1,0 +1,61 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.moves {
+  position: relative;
+  flex: 1;
+  overflow-y: auto;
+  font-size: 0.95em;
+}
+
+.move-row {
+  display: grid;
+  grid-template-columns: 44px 1fr 1fr;
+  line-height: 2.1;
+}
+
+.move-number {
+  background: var(--surface-sunken);
+  color: var(--text-faint);
+  text-align: center;
+}
+
+.move {
+  padding: 0 0 0 12px;
+  border: none;
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  line-height: inherit;
+  text-align: left;
+
+  &:disabled {
+    cursor: default;
+  }
+
+  &.selectable {
+    cursor: pointer;
+
+    &:hover {
+      background: var(--surface-raised);
+      color: var(--text-strong);
+    }
+  }
+
+  &.current,
+  &.current:hover {
+    background: var(--accent-soft);
+    color: var(--text-strong);
+    font-weight: 600;
+  }
+}
+
+.moves-empty {
+  padding: 24px 16px;
+  color: var(--text-muted);
+  font-style: italic;
+  text-align: center;
+}

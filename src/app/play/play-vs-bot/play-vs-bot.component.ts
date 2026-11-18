@@ -1,12 +1,4 @@
-import {
-  AfterViewChecked,
-  Component,
-  DoCheck,
-  ElementRef,
-  OnDestroy,
-  OnInit,
-  ViewChild,
-} from '@angular/core';
+import { Component, DoCheck, OnDestroy, OnInit } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { BotService } from 'src/app/bot/bot.service';
 import { BabyBot } from 'src/app/bot/models/babybot.model';
@@ -61,11 +53,7 @@ interface MaterialSummary {
   templateUrl: './play-vs-bot.component.html',
   styleUrls: ['./play-vs-bot.component.scss'],
 })
-export class PlayVsBotComponent
-  implements OnInit, DoCheck, AfterViewChecked, OnDestroy
-{
-  @ViewChild('moveList') moveList?: ElementRef<HTMLElement>;
-
+export class PlayVsBotComponent implements OnInit, DoCheck, OnDestroy {
   readonly user: Player = {
     name: 'Chacalito53',
     elo: 1548,
@@ -77,14 +65,13 @@ export class PlayVsBotComponent
 
   chessBoard: Chessboard = new Chessboard(this.chessUtilsService);
   result: GameResult | null = null;
-  movePairs: string[][] = [];
+  moves: string[] = [];
   material: MaterialSummary = {
     captured: { white: [], black: [] },
     balance: 0,
   };
 
   private renderedKey = '';
-  private scrolledPlies = 0;
   private botTimeout?: ReturnType<typeof setTimeout>;
   private subscriptions: Subscription[] = [];
 
@@ -108,10 +95,6 @@ export class PlayVsBotComponent
       this.chessBoard.getHistory().length > 0 &&
       (this.isUserTurn || this.result !== null)
     );
-  }
-
-  get lastPly(): number {
-    return this.chessBoard.getHistory().length - 1;
   }
 
   ngOnInit(): void {
@@ -145,18 +128,8 @@ export class PlayVsBotComponent
       this.chessBoard.getHistory().length;
     if (key !== this.renderedKey) {
       this.renderedKey = key;
-      this.movePairs = this.computeMovePairs();
+      this.moves = this.chessBoard.getHistory().map(entry => entry.san);
       this.material = this.computeMaterial();
-    }
-  }
-
-  /** Keep the last move visible in the move list. */
-  ngAfterViewChecked(): void {
-    const plies = this.chessBoard.getHistory().length;
-    if (plies !== this.scrolledPlies && this.moveList) {
-      this.scrolledPlies = plies;
-      const list = this.moveList.nativeElement;
-      list.scrollTop = list.scrollHeight;
     }
   }
 
@@ -203,15 +176,6 @@ export class PlayVsBotComponent
         this.botService.play(chessBoard, this.bot.playerType);
       }
     }, BOT_MOVE_DELAY_MS);
-  }
-
-  private computeMovePairs(): string[][] {
-    const sans = this.chessBoard.getHistory().map(entry => entry.san);
-    const pairs: string[][] = [];
-    for (let i = 0; i < sans.length; i += 2) {
-      pairs.push(sans.slice(i, i + 2));
-    }
-    return pairs;
   }
 
   private computeMaterial(): MaterialSummary {

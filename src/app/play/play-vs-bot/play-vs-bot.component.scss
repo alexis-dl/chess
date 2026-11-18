@@ -131,41 +131,8 @@ app-player-panel {
   background: var(--surface-raised);
 }
 
-.moves {
+app-move-list {
   flex: 1;
-  overflow-y: auto;
-  font-size: 0.95em;
-}
-
-.move-row {
-  display: grid;
-  grid-template-columns: 44px 1fr 1fr;
-  line-height: 2.1;
-}
-
-.move-number {
-  background: var(--surface-sunken);
-  color: var(--text-faint);
-  text-align: center;
-}
-
-.move {
-  padding-left: 12px;
-  color: var(--text);
-
-  &.current {
-    background: var(--accent-soft);
-    color: var(--text-strong);
-    font-weight: 600;
-  }
-}
-
-.moves-empty {
-  margin: 0;
-  padding: 24px 16px;
-  color: var(--text-muted);
-  font-style: italic;
-  text-align: center;
 }
 
 .result {
@@ -228,7 +195,7 @@ app-player-panel {
     height: auto;
   }
 
-  .moves {
+  app-move-list {
     max-height: 180px;
   }
 }

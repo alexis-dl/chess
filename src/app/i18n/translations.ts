@@ -37,6 +37,13 @@ const en = {
   'quit.playAgain': 'Play again',
   'explorer.title': 'Explorer',
   'explorer.description': 'Free board: play the moves of both sides.',
+  'explorer.empty': 'Play a move for either side.',
+  'explorer.flip': 'Flip board',
+  'explorer.reset': 'Reset',
+  'moves.first': 'Starting position',
+  'moves.previous': 'Previous move',
+  'moves.next': 'Next move',
+  'moves.last': 'Last move',
 
   // pieces (image descriptions, promotion)
   'piece.queen': 'queen',
@@ -154,6 +161,13 @@ const fr: Record<TranslationKey, string> = {
   'quit.playAgain': 'Rejouer',
   'explorer.title': 'Explorateur',
   'explorer.description': 'Plateau libre : jouez les coups des deux camps.',
+  'explorer.empty': 'Jouez un coup pour l’un ou l’autre camp.',
+  'explorer.flip': 'Retourner l’échiquier',
+  'explorer.reset': 'Réinitialiser',
+  'moves.first': 'Position de départ',
+  'moves.previous': 'Coup précédent',
+  'moves.next': 'Coup suivant',
+  'moves.last': 'Dernier coup',
 
   // pieces
   'piece.queen': 'dame',

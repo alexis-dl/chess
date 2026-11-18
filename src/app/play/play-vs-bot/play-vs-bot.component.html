@@ -41,20 +41,9 @@
       [captured]="material.captured.black"
       [advantage]="-material.balance"></app-player-panel>
 
-    <div class="moves" #moveList>
-      <div class="move-row" *ngFor="let pair of movePairs; let i = index">
-        <span class="move-number">{{ i + 1 }}</span>
-        <span class="move" [class.current]="i * 2 === lastPly">{{
-          pair[0]
-        }}</span>
-        <span class="move" [class.current]="i * 2 + 1 === lastPly">{{
-          pair[1]
-        }}</span>
-      </div>
-      <p class="moves-empty" *ngIf="!movePairs.length">
-        {{ 'play.firstMove' | t }}
-      </p>
-    </div>
+    <app-move-list [moves]="moves" [currentPly]="moves.length">
+      {{ 'play.firstMove' | t }}
+    </app-move-list>
 
     <div class="result" *ngIf="result">
       <span class="result-title">{{ result.title | t }}</span>
