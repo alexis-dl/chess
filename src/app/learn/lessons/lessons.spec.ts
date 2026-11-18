@@ -42,7 +42,7 @@ describe('LESSONS', () => {
   for (const lesson of LESSONS) {
     describe(lesson.id, () => {
       lesson.steps.forEach((step, index) => {
-        it(`step ${index + 1} (${step.title}) has legal moves and shapes`, () => {
+        it(`step ${index + 1} (${step.title.en}) has legal moves and shapes`, () => {
           playLine(step.fen, step.moves);
           for (const shape of step.shapes ?? []) {
             const squares =
@@ -59,7 +59,7 @@ describe('LESSONS', () => {
   describe('iqp', () => {
     const iqp = LESSONS.find(lesson => lesson.id === 'iqp');
     const step = (title: string) => {
-      const found = iqp?.steps.find(s => s.title.startsWith(title));
+      const found = iqp?.steps.find(s => s.title.en.startsWith(title));
       if (!found) {
         throw new Error(`no step ${title}`);
       }

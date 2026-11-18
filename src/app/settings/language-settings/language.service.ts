@@ -1,55 +1,50 @@
 import { Injectable } from '@angular/core';
 import { MessageService } from 'primeng/api';
+import { I18nService } from 'src/app/i18n/i18n.service';
+import { AppLanguage } from 'src/app/i18n/localized';
 import { Language } from './language';
 
 @Injectable({
   providedIn: 'root',
 })
 export class LanguageService {
+  /** Languages the interface is translated into, named in their own language. */
   languages: Language[] = [
-    { name: 'French', code: 'FR', flag: 'FR' },
+    { name: 'Français', code: 'FR', flag: 'FR' },
     { name: 'English', code: 'EN', flag: 'GB' },
-    { name: 'Spanish', code: 'ES', flag: 'ES' },
-    { name: 'German', code: 'DE', flag: 'DE' },
-    { name: 'Brazilian', code: 'BR', flag: 'BR' },
-    { name: 'Chinese', code: 'CN', flag: 'CN' },
-    { name: 'Indian', code: 'IN', flag: 'IN' },
-    { name: 'Japanese', code: 'JP', flag: 'JP' },
   ];
 
-  constructor(private messageService: MessageService) {}
+  constructor(
+    private messageService: MessageService,
+    private i18n: I18nService
+  ) {}
 
   getAvailableLanguages(): Language[] {
     return this.languages;
   }
 
-  getCurrentLanguage() {
-    const savedLanguageCode = localStorage.getItem('selectedLanguage'); // language saved in local storage
-    const browserLanguageCode = navigator.language.split('-')[0].toUpperCase(); // language of the browser with region removed
-    let currentLanguage = this.languages.find(
-      lang =>
-        lang.code === savedLanguageCode || lang.code === browserLanguageCode
+  getCurrentLanguage(): Language | undefined {
+    return this.languages.find(
+      lang => lang.code.toLowerCase() === this.i18n.language
     );
-    if (!currentLanguage) {
-      currentLanguage = this.languages.find(lang => lang.code === 'FR'); // set french as default language
-    }
-
-    return currentLanguage;
   }
 
+  /** Switch the interface language right away and confirm with a toast. */
   setCurrentLanguage(selectedLanguage?: Language) {
     if (selectedLanguage) {
-      localStorage.setItem('selectedLanguage', selectedLanguage?.code);
+      this.i18n.setLanguage(selectedLanguage.code.toLowerCase() as AppLanguage);
       this.messageService.add({
         severity: 'success',
-        summary: 'Success',
-        detail: 'Language set to ' + selectedLanguage.name,
+        summary: this.i18n.t('settings.language.success'),
+        detail: this.i18n.t('settings.language.saved', {
+          language: selectedLanguage.name,
+        }),
       });
     } else {
       this.messageService.add({
         severity: 'error',
-        summary: 'Error',
-        detail: 'No language selected',
+        summary: this.i18n.t('settings.language.error'),
+        detail: this.i18n.t('settings.language.none'),
       });
     }
   }

@@ -5,8 +5,10 @@
   </a>
 
   <nav class="nav">
-    <a routerLink="/play" routerLinkActive="active">Play</a>
-    <a routerLink="/puzzles" routerLinkActive="active">Puzzles</a>
+    <a routerLink="/play" routerLinkActive="active">{{ 'nav.play' | t }}</a>
+    <a routerLink="/puzzles" routerLinkActive="active">{{
+      'nav.puzzles' | t
+    }}</a>
 
     <div
       class="nav-menu"
@@ -21,7 +23,7 @@
         aria-haspopup="true"
         [attr.aria-expanded]="learnOpen"
         (click)="closeLearn()">
-        Learn
+        {{ 'nav.learn' | t }}
       </a>
       <div class="dropdown" *ngIf="learnOpen">
         <div class="dropdown-panel">
@@ -30,16 +32,18 @@
             [routerLink]="['/learn', section.id]"
             routerLinkActive="current"
             (click)="closeLearn()">
-            {{ section.title }}
+            {{ section.title | localize }}
           </a>
         </div>
       </div>
     </div>
 
-    <a routerLink="/explorer" routerLinkActive="active">Explorer</a>
-    <a class="settings-link" routerLink="/settings" routerLinkActive="active"
-      >Settings</a
-    >
+    <a routerLink="/explorer" routerLinkActive="active">{{
+      'nav.explorer' | t
+    }}</a>
+    <a class="settings-link" routerLink="/settings" routerLinkActive="active">{{
+      'nav.settings' | t
+    }}</a>
   </nav>
 
   <app-settings-slidemenu class="menu"></app-settings-slidemenu>

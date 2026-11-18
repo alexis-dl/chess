@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { map } from 'rxjs';
+import { Localized } from '../i18n/localized';
 import { Lesson, LESSONS } from './lessons/lesson.model';
 
 export type LearnSectionId =
@@ -8,34 +9,42 @@ export type LearnSectionId =
 
 export interface LearnSection {
   id: LearnSectionId;
-  title: string;
-  description: string;
+  title: Localized;
+  description: Localized;
 }
 
 export const LEARN_SECTIONS: LearnSection[] = [
   {
     id: 'opening',
-    title: 'Opening',
-    description:
-      'Start the game well: control the center, develop your pieces and keep your king safe.',
+    title: { en: 'Opening', fr: 'Ouverture' },
+    description: {
+      en: 'Start the game well: control the center, develop your pieces and keep your king safe.',
+      fr: 'Bien commencer la partie : contrôler le centre, développer ses pièces et mettre son roi à l’abri.',
+    },
   },
   {
     id: 'middlegame',
-    title: 'Middlegame',
-    description:
-      'Find a plan, spot the tactics and build an attack once the pieces are out.',
+    title: { en: 'Middlegame', fr: 'Milieu de partie' },
+    description: {
+      en: 'Find a plan, spot the tactics and build an attack once the pieces are out.',
+      fr: 'Trouver un plan, repérer la tactique et construire une attaque une fois les pièces sorties.',
+    },
   },
   {
     id: 'endgame',
-    title: 'Endgame',
-    description:
-      'Turn an advantage into a win with the techniques of the last phase of the game.',
+    title: { en: 'Endgame', fr: 'Finale' },
+    description: {
+      en: 'Turn an advantage into a win with the techniques of the last phase of the game.',
+      fr: 'Transformer un avantage en victoire grâce aux techniques de la dernière phase de la partie.',
+    },
   },
   {
     id: 'pawn-structures',
-    title: 'Pawn structures',
-    description:
-      'Read the pawns to find the right plan: isolated pawns, hanging pawns, chains, majorities and more.',
+    title: { en: 'Pawn structures', fr: 'Structures de pions' },
+    description: {
+      en: 'Read the pawns to find the right plan: isolated pawns, hanging pawns, chains, majorities and more.',
+      fr: 'Lire les pions pour trouver le bon plan : pions isolés, pions pendants, chaînes, majorités et plus encore.',
+    },
   },
 ];
 

@@ -6,7 +6,7 @@ import { Move } from '../chess-game/move.model';
 import { PromotionPieceType } from '../chess-game/piece.model';
 import { RulesService } from '../chess-game/rules.service';
 import { parseUci } from './puzzle-moves';
-import { PUZZLES } from './puzzle.model';
+import { mateIn, PUZZLES } from './puzzle.model';
 
 /** Validates the puzzle collection with the rules engine. */
 describe('PUZZLES', () => {
@@ -62,11 +62,10 @@ describe('PUZZLES', () => {
   };
 
   for (const puzzle of PUZZLES) {
-    describe(`${puzzle.id} (${puzzle.goal})`, () => {
-      const solverMoves = Math.ceil(puzzle.solution.length / 2);
-
-      it('has a goal matching its solution length', () => {
-        expect(puzzle.goal).toBe(`Mate in ${solverMoves}`);
+    const solverMoves = mateIn(puzzle);
+    describe(`${puzzle.id} (mate in ${solverMoves})`, () => {
+      it('has a solution in an odd number of moves (ends with the solver)', () => {
+        expect(puzzle.solution.length % 2).toBe(1);
       });
 
       it('has a legal solution ending in checkmate', () => {

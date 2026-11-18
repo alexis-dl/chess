@@ -7,14 +7,16 @@
     *ngFor="let piece of pieces"
     type="button"
     class="option"
-    [attr.aria-label]="'Promote to ' + piece"
+    [attr.aria-label]="
+      'board.promoteTo' | t: { piece: (pieceNameKey(piece) | t) }
+    "
     (click)="onSelect(piece)">
-    <img [src]="getPieceImagePath(piece)" [alt]="piece" />
+    <img [src]="getPieceImagePath(piece)" alt="" />
   </button>
   <button
     type="button"
     class="cancel"
-    aria-label="Cancel promotion"
+    [attr.aria-label]="'board.cancelPromotion' | t"
     (click)="onCancel()">
     <mat-icon>close</mat-icon>
   </button>

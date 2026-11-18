@@ -12,7 +12,8 @@ import { Position } from '../chess-game/position.model';
 import { PromotionService } from '../chess-game/promotion/promotion.service';
 import { RulesService } from '../chess-game/rules.service';
 import { parseUci, toUci } from './puzzle-moves';
-import { Puzzle, PUZZLES } from './puzzle.model';
+import { mateIn, Puzzle, PUZZLES } from './puzzle.model';
+import { TranslationKey } from '../i18n/translations';
 
 /** Pause before the opponent's answer, and between moves of a revealed solution. */
 const OPPONENT_DELAY_MS = 500;
@@ -59,8 +60,18 @@ export class PuzzlesComponent implements OnInit, DoCheck, OnDestroy {
     return this.puzzles[this.index];
   }
 
-  get solverName(): string {
-    return this.solverColor === 'white' ? 'White' : 'Black';
+  get findMoveKey(): TranslationKey {
+    return this.solverColor === 'white'
+      ? 'puzzles.findWhite'
+      : 'puzzles.findBlack';
+  }
+
+  themeKey(puzzle: Puzzle): TranslationKey {
+    return `puzzles.theme.${puzzle.theme}`;
+  }
+
+  mateIn(puzzle: Puzzle): number {
+    return mateIn(puzzle);
   }
 
   get canMove(): boolean {

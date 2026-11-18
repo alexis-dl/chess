@@ -3,12 +3,12 @@
     <header class="info-header">
       <mat-icon class="info-icon">smart_toy</mat-icon>
       <div>
-        <div class="info-title">Casual · vs computer</div>
-        <div class="info-subtitle">You play the white pieces</div>
+        <div class="info-title">{{ 'play.mode' | t }}</div>
+        <div class="info-subtitle">{{ 'play.youPlayWhite' | t }}</div>
       </div>
     </header>
 
-    <div class="section-title">Opponent</div>
+    <div class="section-title">{{ 'play.opponent' | t }}</div>
     <button
       *ngFor="let candidate of bots"
       type="button"
@@ -18,7 +18,11 @@
       <img [src]="candidate.profilePicture" alt="" />
       <span class="bot-text">
         <span class="bot-name">{{ candidate.name }}</span>
-        <span class="bot-description">{{ botDescription(candidate) }}</span>
+        <span
+          class="bot-description"
+          *ngIf="botDescription(candidate) as key"
+          >{{ key | t }}</span
+        >
       </span>
     </button>
   </aside>
@@ -33,7 +37,7 @@
     <app-player-panel
       [player]="bot"
       [active]="!isUserTurn && !result"
-      status="thinking…"
+      [status]="'play.thinking' | t"
       [captured]="material.captured.black"
       [advantage]="-material.balance"></app-player-panel>
 
@@ -48,35 +52,35 @@
         }}</span>
       </div>
       <p class="moves-empty" *ngIf="!movePairs.length">
-        Your turn — make the first move.
+        {{ 'play.firstMove' | t }}
       </p>
     </div>
 
     <div class="result" *ngIf="result">
-      <span class="result-title">{{ result.title }}</span>
-      <span class="result-detail">{{ result.detail }}</span>
+      <span class="result-title">{{ result.title | t }}</span>
+      <span class="result-detail">{{ result.detail | t }}</span>
     </div>
 
     <div class="controls">
       <button
         type="button"
         class="btn btn-icon"
-        title="Take back"
-        aria-label="Take back"
+        [title]="'play.takeBack' | t"
+        [attr.aria-label]="'play.takeBack' | t"
         [disabled]="!canUndo"
         (click)="undo()">
         <mat-icon>undo</mat-icon>
       </button>
       <button type="button" class="btn" (click)="newGame()">
         <mat-icon>refresh</mat-icon>
-        New game
+        {{ 'play.newGame' | t }}
       </button>
     </div>
 
     <app-player-panel
       [player]="user"
       [active]="isUserTurn && !result"
-      status="your turn"
+      [status]="'play.yourTurn' | t"
       [captured]="material.captured.white"
       [advantage]="material.balance"></app-player-panel>
   </section>

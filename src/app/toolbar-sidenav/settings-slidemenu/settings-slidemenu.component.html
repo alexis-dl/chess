@@ -1,7 +1,7 @@
 <button
   mat-icon-button
   class="example-icon"
-  aria-label="Settings"
+  [attr.aria-label]="'nav.settings' | t"
   (click)="menu.toggle($event)">
   <mat-icon>settings</mat-icon>
 </button>

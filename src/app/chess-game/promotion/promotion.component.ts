@@ -2,6 +2,7 @@ import { Component, Input } from '@angular/core';
 import { ChessUtilsService } from '../chess-utils.service';
 import { Color, PromotionPieceType, toPieceName } from '../piece.model';
 import { PromotionService } from './promotion.service';
+import { TranslationKey } from 'src/app/i18n/translations';
 
 @Component({
   selector: 'app-promotion',
@@ -21,6 +22,11 @@ export class PromotionComponent {
 
   onSelect(pieceType: PromotionPieceType): void {
     this.promotionService.selectPiece(toPieceName(this.pieceColor, pieceType));
+  }
+
+  /** Translation key of a piece name, for the button labels. */
+  pieceNameKey(pieceType: PromotionPieceType): TranslationKey {
+    return `piece.${pieceType}`;
   }
 
   onCancel(): void {

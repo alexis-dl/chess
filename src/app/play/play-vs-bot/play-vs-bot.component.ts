@@ -23,19 +23,14 @@ import { PromotionService } from 'src/app/chess-game/promotion/promotion.service
 import { DrawReason, RulesService } from 'src/app/chess-game/rules.service';
 import { PlayerType } from 'src/app/player/player-type.enum';
 import { Player } from 'src/app/player/player.model';
+import { TranslationKey } from 'src/app/i18n/translations';
 
 /** Pause before the bot answers, so that the user's move is displayed first. */
 const BOT_MOVE_DELAY_MS = 300;
 
-const DRAW_REASON_LABELS: Record<DrawReason, string> = {
-  'fifty-move-rule': 'Fifty-move rule',
-  'threefold-repetition': 'Threefold repetition',
-  'insufficient-material': 'Insufficient material',
-};
-
-const BOT_DESCRIPTIONS: Partial<Record<PlayerType, string>> = {
-  [PlayerType.Random]: 'Plays random legal moves',
-  [PlayerType.Minimax]: 'Looks 4 moves ahead',
+const BOT_DESCRIPTIONS: Partial<Record<PlayerType, TranslationKey>> = {
+  [PlayerType.Random]: 'play.bot.random',
+  [PlayerType.Minimax]: 'play.bot.minimax',
 };
 
 /** Pieces in the order they are displayed once captured, with their value. */
@@ -47,9 +42,10 @@ const MATERIAL: { type: PieceType; value: number; startCount: number }[] = [
   { type: 'queen', value: 9, startCount: 1 },
 ];
 
+/** Translation keys, so that the result follows a language change. */
 interface GameResult {
-  title: string;
-  detail: string;
+  title: TranslationKey;
+  detail: TranslationKey;
 }
 
 interface MaterialSummary {
@@ -124,15 +120,15 @@ export class PlayVsBotComponent
         // the side to move is the one that is mated
         const winner = this.chessBoard.getNextPlayerColor();
         this.result = {
-          title: 'Checkmate',
-          detail: (winner === 'white' ? 'White' : 'Black') + ' wins',
+          title: 'result.checkmate',
+          detail: winner === 'white' ? 'result.whiteWins' : 'result.blackWins',
         };
       }),
       this.rulesService.currentPlayerStalemated.subscribe(() => {
-        this.result = { title: 'Stalemate', detail: 'Draw' };
+        this.result = { title: 'result.stalemate', detail: 'result.draw' };
       }),
-      this.rulesService.gameDrawn.subscribe(reason => {
-        this.result = { title: 'Draw', detail: DRAW_REASON_LABELS[reason] };
+      this.rulesService.gameDrawn.subscribe((reason: DrawReason) => {
+        this.result = { title: 'result.draw', detail: `draw.${reason}` };
       }),
       this.rulesService.nextPlayersTurn.subscribe(() => {
         if (!this.isUserTurn) {
@@ -169,8 +165,8 @@ export class PlayVsBotComponent
     this.subscriptions.forEach(subscription => subscription.unsubscribe());
   }
 
-  botDescription(bot: Player): string {
-    return BOT_DESCRIPTIONS[bot.playerType] ?? '';
+  botDescription(bot: Player): TranslationKey | null {
+    return BOT_DESCRIPTIONS[bot.playerType] ?? null;
   }
 
   /** Take back the last user move (and the bot's answer). */

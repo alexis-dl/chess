@@ -9,6 +9,7 @@ import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
+import { LocalizePipe, TranslatePipe } from './i18n/translate.pipe';
 import { ChessBoardComponent } from './chess-game/chess-board/chess-board.component';
 import { ChessPieceComponent } from './chess-game/chess-piece/chess-piece.component';
 import { ClickOutsideDirective } from './chess-game/promotion/click-outside.directive';
@@ -46,6 +47,8 @@ import { ToastModule } from 'primeng/toast';
 @NgModule({
   declarations: [
     AppComponent,
+    TranslatePipe,
+    LocalizePipe,
     ChessBoardComponent,
     ChessPieceComponent,
     PlayerPanelComponent,

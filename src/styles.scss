@@ -206,3 +206,12 @@ a {
 .p-button:focus {
   box-shadow: 0 0 0 2px var(--accent-soft);
 }
+
+// ----- placeholder pages -----
+
+.coming-soon {
+  margin: 0;
+  padding: 3.2rem;
+  color: var(--text-muted);
+  font-style: italic;
+}

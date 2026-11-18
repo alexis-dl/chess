@@ -1,34 +1,53 @@
-import { Component } from '@angular/core';
-import { Router } from '@angular/router';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { MenuItem, PrimeIcons } from 'primeng/api';
+import { Subscription } from 'rxjs';
+import { I18nService } from '../i18n/i18n.service';
 
 @Component({
   selector: 'app-settings',
   templateUrl: './settings.component.html',
   styleUrls: ['./settings.component.scss'],
 })
-export class SettingsComponent {
-  constructor(private router: Router) {}
+export class SettingsComponent implements OnInit, OnDestroy {
+  items: MenuItem[] = [];
+  private subscription?: Subscription;
 
-  items: MenuItem[] = [
-    {
-      label: 'User',
-      icon: PrimeIcons.USER,
-      routerLink: 'user',
-    },
-    { label: 'Board & Pieces', icon: PrimeIcons.TH_LARGE, routerLink: 'board' },
-    { label: 'Themes', icon: PrimeIcons.PALETTE, routerLink: 'themes' },
-    { label: 'Languages', icon: PrimeIcons.LANGUAGE, routerLink: 'languages' },
-    { label: 'Sounds', icon: PrimeIcons.MEGAPHONE, routerLink: 'sounds' },
-  ];
-  activeItem: MenuItem = this.items[0];
+  constructor(private i18n: I18nService) {}
 
-  // languages: any[] = [
-  //   { label: 'English', value: 'en' },
-  //   { label: 'Spanish', value: 'es' },
-  //   { label: 'French', value: 'fr' },
-  //   { label: 'German', value: 'de' },
-  // ];
+  /** PrimeNG menus take plain labels: rebuild them when the language changes. */
+  ngOnInit(): void {
+    this.subscription = this.i18n.language$.subscribe(() => {
+      this.items = [
+        {
+          label: this.i18n.t('settings.tabs.user'),
+          icon: PrimeIcons.USER,
+          routerLink: 'user',
+        },
+        {
+          label: this.i18n.t('settings.tabs.board'),
+          icon: PrimeIcons.TH_LARGE,
+          routerLink: 'board',
+        },
+        {
+          label: this.i18n.t('settings.tabs.themes'),
+          icon: PrimeIcons.PALETTE,
+          routerLink: 'themes',
+        },
+        {
+          label: this.i18n.t('settings.tabs.languages'),
+          icon: PrimeIcons.LANGUAGE,
+          routerLink: 'languages',
+        },
+        {
+          label: this.i18n.t('settings.tabs.sounds'),
+          icon: PrimeIcons.MEGAPHONE,
+          routerLink: 'sounds',
+        },
+      ];
+    });
+  }
 
-  selectedLanguage: string = 'language';
+  ngOnDestroy(): void {
+    this.subscription?.unsubscribe();
+  }
 }

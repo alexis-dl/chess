@@ -3,9 +3,12 @@
     <header class="list-header">
       <mat-icon class="list-icon">extension</mat-icon>
       <div>
-        <div class="list-title">Puzzles</div>
+        <div class="list-title">{{ 'puzzles.title' | t }}</div>
         <div class="list-subtitle">
-          {{ solved.size }} / {{ puzzles.length }} solved
+          {{
+            'puzzles.solvedCount'
+              | t: { solved: solved.size, total: puzzles.length }
+          }}
         </div>
       </div>
     </header>
@@ -18,8 +21,10 @@
       (click)="load(i)">
       <span class="puzzle-number">{{ i + 1 }}</span>
       <span class="puzzle-text">
-        <span class="puzzle-theme">{{ item.theme }}</span>
-        <span class="puzzle-goal">{{ item.goal }}</span>
+        <span class="puzzle-theme">{{ themeKey(item) | t }}</span>
+        <span class="puzzle-goal">{{
+          'puzzles.mateIn' | t: { moves: mateIn(item) }
+        }}</span>
       </span>
       <mat-icon class="solved-icon" *ngIf="solved.has(item.id)"
         >check_circle</mat-icon
@@ -44,29 +49,30 @@
       <div>
         <ng-container [ngSwitch]="status">
           <ng-container *ngSwitchCase="'solved'">
-            <div class="status-title">Solved!</div>
+            <div class="status-title">{{ 'puzzles.solved' | t }}</div>
             <div class="status-detail">
-              {{ puzzle.goal }} · {{ puzzle.theme }}
+              {{ 'puzzles.mateIn' | t: { moves: mateIn(puzzle) } }} ·
+              {{ themeKey(puzzle) | t }}
             </div>
           </ng-container>
           <ng-container *ngSwitchCase="'revealed'">
-            <div class="status-title">Solution</div>
-            <div class="status-detail">Give the next one a try.</div>
+            <div class="status-title">{{ 'puzzles.solution' | t }}</div>
+            <div class="status-detail">{{ 'puzzles.nextTry' | t }}</div>
           </ng-container>
           <ng-container *ngSwitchDefault>
             <ng-container [ngSwitch]="feedback">
               <ng-container *ngSwitchCase="'good'">
-                <div class="status-title">Best move!</div>
-                <div class="status-detail">Keep going…</div>
+                <div class="status-title">{{ 'puzzles.bestMove' | t }}</div>
+                <div class="status-detail">{{ 'puzzles.keepGoing' | t }}</div>
               </ng-container>
               <ng-container *ngSwitchCase="'wrong'">
-                <div class="status-title">That's not the move</div>
-                <div class="status-detail">Try something else.</div>
+                <div class="status-title">{{ 'puzzles.wrong' | t }}</div>
+                <div class="status-detail">{{ 'puzzles.tryElse' | t }}</div>
               </ng-container>
               <ng-container *ngSwitchDefault>
-                <div class="status-title">Your turn</div>
+                <div class="status-title">{{ 'puzzles.yourTurn' | t }}</div>
                 <div class="status-detail">
-                  Find the best move for {{ solverName }}.
+                  {{ findMoveKey | t }}
                 </div>
               </ng-container>
             </ng-container>
@@ -76,8 +82,8 @@
     </div>
 
     <div class="goal">
-      <span class="goal-label">Goal</span>
-      <span>{{ puzzle.goal }}</span>
+      <span class="goal-label">{{ 'puzzles.goal' | t }}</span>
+      <span>{{ 'puzzles.mateIn' | t: { moves: mateIn(puzzle) } }}</span>
     </div>
 
     <p class="moves" *ngIf="movesText">{{ movesText }}</p>
@@ -89,21 +95,21 @@
         [disabled]="!canMove"
         (click)="showHint()">
         <mat-icon>lightbulb</mat-icon>
-        Hint
+        {{ 'puzzles.hint' | t }}
       </button>
       <button type="button" class="btn" (click)="revealSolution()">
         <mat-icon>visibility</mat-icon>
-        Solution
+        {{ 'puzzles.solution' | t }}
       </button>
     </div>
     <ng-template #doneControls>
       <div class="controls">
         <button type="button" class="btn" (click)="retry()">
           <mat-icon>replay</mat-icon>
-          Retry
+          {{ 'puzzles.retry' | t }}
         </button>
         <button type="button" class="btn btn-primary" (click)="next()">
-          Next puzzle
+          {{ 'puzzles.next' | t }}
           <mat-icon>arrow_forward</mat-icon>
         </button>
       </div>

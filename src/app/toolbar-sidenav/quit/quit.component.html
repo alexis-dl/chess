@@ -1,6 +1,6 @@
 <main class="quit">
-  <h1>Thanks for playing</h1>
+  <h1>{{ 'quit.title' | t }}</h1>
   <img src="assets/pictures/alexis-archer.png" alt="Alexis Archer" />
-  <p>Chess game created by Alexis DA LAGE</p>
-  <a class="btn" routerLink="/play">Play again</a>
+  <p>{{ 'quit.credit' | t: { author: 'Alexis DA LAGE' } }}</p>
+  <a class="btn" routerLink="/play">{{ 'quit.playAgain' | t }}</a>
 </main>

@@ -1,16 +1,16 @@
 <div class="learn" *ngIf="section$ | async as section">
-  <nav class="tabs" aria-label="Learn sections">
+  <nav class="tabs" [attr.aria-label]="'learn.sections' | t">
     <a
       *ngFor="let item of sections"
       [routerLink]="['/learn', item.id]"
       routerLinkActive="active">
-      {{ item.title }}
+      {{ item.title | localize }}
     </a>
   </nav>
 
   <section class="panel">
-    <h1>{{ section.title }}</h1>
-    <p class="description">{{ section.description }}</p>
+    <h1>{{ section.title | localize }}</h1>
+    <p class="description">{{ section.description | localize }}</p>
 
     <ng-container *ngIf="lessonsFor(section.id) as lessons">
       <div class="lessons" *ngIf="lessons.length; else soon">
@@ -19,10 +19,12 @@
           class="lesson-card"
           [routerLink]="['/learn', section.id, lesson.id]">
           <span class="lesson-text">
-            <span class="lesson-title">{{ lesson.title }}</span>
-            <span class="lesson-summary">{{ lesson.summary }}</span>
+            <span class="lesson-title">{{ lesson.title | localize }}</span>
+            <span class="lesson-summary">{{ lesson.summary | localize }}</span>
           </span>
-          <span class="lesson-steps">{{ lesson.steps.length }} steps</span>
+          <span class="lesson-steps">{{
+            'learn.steps' | t: { count: lesson.steps.length }
+          }}</span>
           <mat-icon>chevron_right</mat-icon>
         </a>
       </div>
@@ -30,7 +32,7 @@
     <ng-template #soon>
       <p class="soon">
         <mat-icon>schedule</mat-icon>
-        Lessons coming soon.
+        {{ 'learn.comingSoon' | t }}
       </p>
     </ng-template>
   </section>

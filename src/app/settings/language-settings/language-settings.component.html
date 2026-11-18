@@ -1,18 +1,22 @@
 <div class="container">
   <div class="settings-form-group">
-    <label class="form-label-label required" for="languages">Language : </label>
+    <label class="form-label-label required" for="languages"
+      >{{ 'settings.language.label' | t }} :
+    </label>
     <p-dropdown
+      inputId="languages"
       [options]="languages"
       [(ngModel)]="selectedLanguage"
       optionLabel="name"
       [showClear]="true"
-      placeholder="Select a language">
+      [placeholder]="'settings.language.placeholder' | t">
       <ng-template pTemplate="selectedItem">
         <div class="flex align-items-center gap-2" *ngIf="selectedLanguage">
           <img
             [src]="
               'assets/flags/4x3/' + selectedLanguage.flag.toLowerCase() + '.svg'
             "
+            alt=""
             style="width: 18px" />
           <div>{{ selectedLanguage.name }}</div>
         </div>
@@ -21,6 +25,7 @@
         <div class="flex align-items-center gap-2">
           <img
             [src]="'assets/flags/4x3/' + language.flag.toLowerCase() + '.svg'"
+            alt=""
             style="width: 18px" />
           <div>{{ language.name }}</div>
         </div>
@@ -29,7 +34,10 @@
 
     <div>
       <br />
-      <p-button pRipple label="Submit" (click)="onSubmitLanguage()"></p-button>
+      <p-button
+        pRipple
+        [label]="'settings.language.submit' | t"
+        (click)="onSubmitLanguage()"></p-button>
       <p-toast></p-toast>
     </div>
   </div>
