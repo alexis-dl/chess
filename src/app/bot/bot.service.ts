@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Chessboard } from '../chess-game/chessboard.model';
 import { Move } from '../chess-game/move.model';
+import { toPieceName } from '../chess-game/piece.model';
 import { PromotionService } from '../chess-game/promotion/promotion.service';
 import { RulesService } from '../chess-game/rules.service';
 import { PlayerType } from '../player/player-type.enum';
@@ -26,7 +27,7 @@ export class BotService {
       this.rulesService.isPawnPromotion(move.oldPos, move.newPos, chessBoard)
     ) {
       this.promotionService.selectPiece(
-        chessBoard.getCurrentPlayerColor() + '-queen'
+        toPieceName(chessBoard.getCurrentPlayerColor(), 'queen')
       );
     }
   }

@@ -1,5 +1,6 @@
 import { Component, Input } from '@angular/core';
 import { ChessUtilsService } from '../chess-utils.service';
+import { Color, PromotionPieceType, toPieceName } from '../piece.model';
 import { PromotionService } from './promotion.service';
 
 @Component({
@@ -8,25 +9,25 @@ import { PromotionService } from './promotion.service';
   styleUrls: ['./promotion.component.scss'],
 })
 export class PromotionComponent {
-  @Input() pieceColor?: string;
-  pieces = ['queen', 'rook', 'knight', 'bishop'];
+  @Input() pieceColor: Color = 'white';
+  pieces: PromotionPieceType[] = ['queen', 'rook', 'knight', 'bishop'];
 
   constructor(
     private chessUtilsService: ChessUtilsService,
     private promotionService: PromotionService
   ) {}
 
-  onSelect(piece: string): void {
-    this.promotionService.selectPiece(piece);
+  onSelect(pieceType: PromotionPieceType): void {
+    this.promotionService.selectPiece(toPieceName(this.pieceColor, pieceType));
   }
 
   onCancel(): void {
     this.promotionService.cancelPromotion();
   }
 
-  getPieceImagePath(piece: string): string | null {
+  getPieceImagePath(pieceType: PromotionPieceType): string | null {
     return this.chessUtilsService.getPieceImagePath(
-      this.pieceColor + '-' + piece
+      toPieceName(this.pieceColor, pieceType)
     );
   }
 }

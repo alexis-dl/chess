@@ -1,101 +1,69 @@
 import { Injectable } from '@angular/core';
 import { Chessboard } from './chessboard.model';
+import {
+  Color,
+  PieceName,
+  PieceType,
+  Square,
+  toPieceName,
+} from './piece.model';
+
+const BACK_RANK: PieceType[] = [
+  'rook',
+  'knight',
+  'bishop',
+  'queen',
+  'king',
+  'bishop',
+  'knight',
+  'rook',
+];
 
 @Injectable({
   providedIn: 'root',
 })
 export class ChessUtilsService {
-  constructor() {}
-
-  isPawn(pieceName: string) {
-    return pieceName.split('-')[1] === 'pawn';
+  isPawn(square: Square): boolean {
+    return this.getType(square) === 'pawn';
   }
 
-  getType(pieceName: string) {
-    return pieceName.split('-')[1];
+  /** Type of the piece, or null for an empty square. */
+  getType(piece: PieceName): PieceType;
+  getType(square: Square): PieceType | null;
+  getType(square: Square): PieceType | null {
+    return square ? (square.split('-')[1] as PieceType) : null;
   }
 
-  getColor(pieceName: string) {
-    return pieceName.split('-')[0];
+  /** Color of the piece, or null for an empty square. */
+  getColor(piece: PieceName): Color;
+  getColor(square: Square): Color | null;
+  getColor(square: Square): Color | null {
+    return square ? (square.split('-')[0] as Color) : null;
   }
 
-  isPieceMovableByColor(pieceColor: string, chessBoard: Chessboard): boolean {
-    const isWhiteTurn = chessBoard.getIsWhiteTurn();
-    if (
-      (pieceColor == 'white' && isWhiteTurn) ||
-      (pieceColor == 'black' && !isWhiteTurn)
-    ) {
-      return true;
-    } else {
-      return false;
+  isPieceMovableByColor(
+    pieceColor: Color | null,
+    chessBoard: Chessboard
+  ): boolean {
+    return pieceColor === chessBoard.getCurrentPlayerColor();
+  }
+
+  getInitialChessPiece(rowIndex: number, colIndex: number): Square {
+    switch (rowIndex) {
+      case 0:
+        return toPieceName('white', BACK_RANK[colIndex]);
+      case 1:
+        return 'white-pawn';
+      case 6:
+        return 'black-pawn';
+      case 7:
+        return toPieceName('black', BACK_RANK[colIndex]);
+      default:
+        return '';
     }
   }
 
-  // Return true if colors are white and black, false otherwise
-  areColorsOpposite(color1: string, color2: string): boolean {
-    return color1 !== '' && color2 !== '' && color1 !== color2;
-  }
-  // Return true if colors are differents (colors can be empty )
-  areColorsDifferent(color1: string, color2: string): boolean {
-    return color1 !== color2;
-  }
-
-  getOpponentColor(pieceColor: string): string {
-    if (pieceColor == 'white') {
-      return 'black';
-    } else {
-      return 'white';
-    }
-  }
-
-  getInitialChessPiece(rowIndex: number, colIndex: number): string {
-    //static board with the initial position of pieces
-    const row = rowIndex;
-
-    if (row === 0) {
-      switch (colIndex) {
-        case 0:
-        case 7:
-          return 'white-rook';
-        case 1:
-        case 6:
-          return 'white-knight';
-        case 2:
-        case 5:
-          return 'white-bishop';
-        case 3:
-          return 'white-queen';
-        case 4:
-          return 'white-king';
-      }
-    } else if (row === 1) {
-      return 'white-pawn';
-    } else if (row === 6) {
-      return 'black-pawn';
-    } else if (row === 7) {
-      switch (colIndex) {
-        case 0:
-        case 7:
-          return 'black-rook';
-        case 1:
-        case 6:
-          return 'black-knight';
-        case 2:
-        case 5:
-          return 'black-bishop';
-        case 3:
-          return 'black-queen';
-        case 4:
-          return 'black-king';
-      }
-    }
-    return ''; // for squares without any pieces
-  }
-
-  getPieceImagePath(pieceType: string): string | null {
-    if (pieceType === '') {
-      return null;
-    }
-    return `assets/chess-pieces/${pieceType}.png`;
+  getPieceImagePath(square: Square): string | null {
+    return square ? `assets/chess-pieces/${square}.png` : null;
   }
 }

@@ -1,5 +1,6 @@
 import { Component, Input } from '@angular/core';
 import { ChessUtilsService } from '../chess-utils.service';
+import { Square } from '../piece.model';
 
 @Component({
   selector: 'app-chess-piece',
@@ -7,10 +8,10 @@ import { ChessUtilsService } from '../chess-utils.service';
   styleUrls: ['./chess-piece.component.scss'],
 })
 export class ChessPieceComponent {
-  @Input() pieceType!: string;
+  @Input() pieceType!: Square;
   constructor(private chessUtilsService: ChessUtilsService) {}
 
-  getPieceImagePath(pieceType: string): string | null {
+  getPieceImagePath(pieceType: Square): string | null {
     return this.chessUtilsService.getPieceImagePath(pieceType);
   }
 }

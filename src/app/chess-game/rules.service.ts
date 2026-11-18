@@ -3,8 +3,37 @@ import { Subject, take } from 'rxjs';
 import { ChessUtilsService } from './chess-utils.service';
 import { Chessboard } from './chessboard.model';
 import { Move } from './move.model';
+import { Color, getOpponentColor, toPieceName } from './piece.model';
 import { Position } from './position.model';
 import { PromotionService } from './promotion/promotion.service';
+
+/** [deltaX, deltaY] */
+type Direction = readonly [number, number];
+
+const ROOK_DIRECTIONS: Direction[] = [
+  [1, 0],
+  [-1, 0],
+  [0, 1],
+  [0, -1],
+];
+const BISHOP_DIRECTIONS: Direction[] = [
+  [1, 1],
+  [1, -1],
+  [-1, 1],
+  [-1, -1],
+];
+/** Queen slides and king steps in all 8 directions. */
+const ALL_DIRECTIONS: Direction[] = [...ROOK_DIRECTIONS, ...BISHOP_DIRECTIONS];
+const KNIGHT_JUMPS: Direction[] = [
+  [2, 1],
+  [1, 2],
+  [-1, 2],
+  [-2, 1],
+  [-2, -1],
+  [-1, -2],
+  [1, -2],
+  [2, -1],
+];
 
 @Injectable({
   providedIn: 'root',
@@ -31,22 +60,17 @@ export class RulesService {
     newPos: Position,
     chessBoard: Chessboard
   ): boolean {
-    const pieceColor = chessBoard.getPieceColorByPos(oldPos);
-    if (
-      this.chessUtilsService.isPieceMovableByColor(pieceColor, chessBoard) &&
-      this.isMoveValid(oldPos, newPos, chessBoard)
-    ) {
-      if (this.isPawnPromotion(oldPos, newPos, chessBoard)) {
-        this.triggerPromotionUI(oldPos, newPos, chessBoard);
-        return true;
-      } else {
-        chessBoard.movePiece(oldPos, newPos);
-        chessBoard.toggleIsWhiteTurn();
-        this.computeGameEndEvents(chessBoard);
-        return true;
-      }
+    if (!this.isMoveValid(oldPos, newPos, chessBoard)) {
+      return false;
     }
-    return false;
+    if (this.isPawnPromotion(oldPos, newPos, chessBoard)) {
+      this.triggerPromotionUI(oldPos, newPos, chessBoard);
+    } else {
+      chessBoard.movePiece(oldPos, newPos);
+      chessBoard.toggleIsWhiteTurn();
+      this.computeGameEndEvents(chessBoard);
+    }
+    return true;
   }
 
   /**
@@ -67,58 +91,52 @@ export class RulesService {
     }
   }
 
+  /** All legal moves of the player whose turn it is. */
   getAvailableMoves(chessBoard: Chessboard): Move[] {
     const currentPlayerColor = chessBoard.getCurrentPlayerColor();
-    const currentPlayerPieces: string[][] =
-      chessBoard.getPlayerPiecesByColor(currentPlayerColor);
     const allMoves: Move[] = [];
 
-    currentPlayerPieces.forEach((row, y) => {
-      row.forEach((_, x) => {
+    for (let y = 0; y < Chessboard.BOARD_SIZE; y++) {
+      for (let x = 0; x < Chessboard.BOARD_SIZE; x++) {
         const oldPos = new Position(x, y);
-        const validMoves = this.getValidMovesByPiecePos(oldPos, chessBoard);
-        validMoves.forEach(newPos => {
-          const move: Move = {
-            oldPos: oldPos,
-            newPos: newPos,
-          };
-          allMoves.push(move);
-        });
-      });
-    });
-
+        if (chessBoard.getPieceColorByPos(oldPos) !== currentPlayerColor) {
+          continue;
+        }
+        for (const newPos of this.getValidMovesByPiecePos(oldPos, chessBoard)) {
+          allMoves.push({ oldPos, newPos });
+        }
+      }
+    }
     return allMoves;
   }
 
   private hasPlayerAnyMove(chessBoard: Chessboard): boolean {
-    const playerMoves = this.getAvailableMoves(chessBoard);
-    return playerMoves.length > 0;
+    return this.getAvailableMoves(chessBoard).length > 0;
   }
 
   /**  Give a validation for a given move :
         - verify if it's white/black's turn.
+        - verify that the piece can reach the square.
         - verify if own king is checked after the move. */
   private isMoveValid(
     oldPos: Position,
     newPos: Position,
     chessBoard: Chessboard
   ): boolean {
-    // check if movement leads to a check of player's own king.
     const pieceColor = chessBoard.getPieceColorByPos(oldPos);
-    if (!this.chessUtilsService.isPieceMovableByColor(pieceColor, chessBoard)) {
+    if (pieceColor !== chessBoard.getCurrentPlayerColor()) {
       return false;
     }
-
-    const cloneChessboard: Chessboard = chessBoard.clone();
+    if (
+      !this.getCandidateMovesByPiecePos(oldPos, chessBoard).some(move =>
+        move.equals(newPos)
+      )
+    ) {
+      return false;
+    }
+    const cloneChessboard = chessBoard.clone();
     cloneChessboard.movePiece(oldPos, newPos);
-
-    return (
-      this.getCandidateMovesByPiecePos(
-        new Position(oldPos.x, oldPos.y),
-        chessBoard
-      ).some(move => move.equals(newPos)) &&
-      !this.isKingChecked(pieceColor, cloneChessboard)
-    );
+    return !this.isKingChecked(pieceColor, cloneChessboard);
   }
 
   // get all valid moves for a given PiecePos, verifying that the own king is not checked after the move.
@@ -151,15 +169,16 @@ export class RulesService {
     piecePos: Position,
     chessBoard: Chessboard
   ): Position[] {
-    if (chessBoard.getPieceTypeByPos(piecePos) !== 'king') {
+    const piece = chessBoard.getPieceByPos(piecePos);
+    if (piece !== 'white-king' && piece !== 'black-king') {
       return [];
     }
-    const color = chessBoard.getPieceColorByPos(piecePos);
+    const color = this.chessUtilsService.getColor(piece);
     const row = color === 'white' ? 0 : 7;
     if (piecePos.x !== 4 || piecePos.y !== row) {
       return [];
     }
-    const opponentColor = this.chessUtilsService.getOpponentColor(color);
+    const opponentColor = getOpponentColor(color);
     if (this.isSquareAttacked(piecePos, opponentColor, chessBoard)) {
       return [];
     }
@@ -172,7 +191,7 @@ export class RulesService {
     for (const side of sides) {
       if (
         chessBoard.canCastle(color, side.kingSide) &&
-        chessBoard.getPiece(side.rookX, row) === color + '-rook' &&
+        chessBoard.getPiece(side.rookX, row) === toPieceName(color, 'rook') &&
         side.emptyXs.every(x => !chessBoard.getPiece(x, row)) &&
         !this.isSquareAttacked(
           new Position(side.passX, row),
@@ -192,271 +211,150 @@ export class RulesService {
     piecePos: Position,
     chessBoard: Chessboard
   ): Position[] {
-    const pieceColor = chessBoard.getPieceColorByPos(piecePos);
-    const chessPieceName = chessBoard.getPieceByPos(piecePos);
-    const pieceType = this.chessUtilsService.getType(chessPieceName);
+    const piece = chessBoard.getPieceByPos(piecePos);
+    if (!piece) {
+      return [];
+    }
+    const color = this.chessUtilsService.getColor(piece);
+
+    switch (this.chessUtilsService.getType(piece)) {
+      case 'king':
+        return this.getStepMoves(piecePos, color, ALL_DIRECTIONS, chessBoard);
+      case 'queen':
+        return this.getSlidingMoves(
+          piecePos,
+          color,
+          ALL_DIRECTIONS,
+          chessBoard
+        );
+      case 'rook':
+        return this.getSlidingMoves(
+          piecePos,
+          color,
+          ROOK_DIRECTIONS,
+          chessBoard
+        );
+      case 'bishop':
+        return this.getSlidingMoves(
+          piecePos,
+          color,
+          BISHOP_DIRECTIONS,
+          chessBoard
+        );
+      case 'knight':
+        return this.getStepMoves(piecePos, color, KNIGHT_JUMPS, chessBoard);
+      case 'pawn':
+        return this.getPawnMoves(piecePos, color, chessBoard);
+    }
+  }
+
+  /**
+   * Moves of a sliding piece (queen, rook, bishop): goes as far as possible in
+   * each direction, stopping on the first piece met (included if it is an enemy).
+   */
+  private getSlidingMoves(
+    piecePos: Position,
+    color: Color,
+    directions: Direction[],
+    chessBoard: Chessboard
+  ): Position[] {
     const moves: Position[] = [];
-
-    switch (pieceType) {
-      case 'king': {
-        const deltasKing = [-1, 0, 1];
-
-        for (const deltaX of deltasKing) {
-          for (const deltaY of deltasKing) {
-            const newPos = piecePos.addX(deltaX).addY(deltaY);
-            if (
-              !newPos.equals(piecePos) &&
-              newPos.isInsideTheBoard() &&
-              this.chessUtilsService.areColorsDifferent(
-                chessBoard.getPieceColorByPos(newPos),
-                pieceColor
-              )
-            ) {
-              moves.push(newPos);
-            }
-          }
+    for (const [deltaX, deltaY] of directions) {
+      let newPos = piecePos.addX(deltaX).addY(deltaY);
+      while (newPos.isInsideTheBoard()) {
+        const targetColor = chessBoard.getPieceColorByPos(newPos);
+        if (targetColor !== color) {
+          moves.push(newPos);
         }
-        break;
-      }
-      case 'queen': {
-        const deltasQueen = [-1, 0, 1];
-
-        for (const deltaX of deltasQueen) {
-          for (const deltaY of deltasQueen) {
-            // Exclude actual position of the queen
-            if (deltaX !== 0 || deltaY !== 0) {
-              let multiplier = 1;
-              let newPos = piecePos
-                .addX(deltaX * multiplier)
-                .addY(deltaY * multiplier);
-
-              while (newPos.isInsideTheBoard()) {
-                const pieceAtNewPos = chessBoard.getPieceByPos(newPos);
-
-                if (pieceAtNewPos) {
-                  const pieceAtNewPosColor =
-                    this.chessUtilsService.getColor(pieceAtNewPos);
-
-                  if (
-                    this.chessUtilsService.areColorsDifferent(
-                      pieceAtNewPosColor,
-                      pieceColor
-                    )
-                  ) {
-                    moves.push(newPos);
-                  }
-                  // Stop the loop when a piece is encountered, regardless of color
-                  break;
-                }
-                moves.push(newPos);
-                multiplier++;
-                newPos = piecePos
-                  .addX(deltaX * multiplier)
-                  .addY(deltaY * multiplier);
-              }
-            }
-          }
+        if (targetColor !== null) {
+          break;
         }
-        break;
-      }
-      case 'bishop': {
-        const deltasBishop = [-1, 1];
-        for (const deltaX of deltasBishop) {
-          for (const deltaY of deltasBishop) {
-            let multiplier = 1;
-            let newPos = piecePos
-              .addX(deltaX * multiplier)
-              .addY(deltaY * multiplier);
-
-            while (newPos.isInsideTheBoard()) {
-              const pieceAtNewPos = chessBoard.getPieceByPos(newPos);
-
-              if (pieceAtNewPos) {
-                const pieceAtNewPosColor =
-                  this.chessUtilsService.getColor(pieceAtNewPos);
-
-                if (
-                  this.chessUtilsService.areColorsDifferent(
-                    pieceAtNewPosColor,
-                    pieceColor
-                  )
-                ) {
-                  moves.push(newPos);
-                }
-                // Stop the loop when a piece is encountered, regardless of color
-                break;
-              }
-              moves.push(newPos);
-              multiplier++;
-              newPos = piecePos
-                .addX(deltaX * multiplier)
-                .addY(deltaY * multiplier);
-            }
-          }
-        }
-        break;
-      }
-      case 'rook': {
-        const deltas = [-1, 1];
-        for (const delta of deltas) {
-          for (const axis of ['X', 'Y']) {
-            let multiplier = 1;
-            let newPos: Position;
-            if (axis === 'X') {
-              newPos = piecePos.addX(delta * multiplier);
-            } else {
-              newPos = piecePos.addY(delta * multiplier);
-            }
-
-            while (newPos.isInsideTheBoard()) {
-              const pieceAtNewPos = chessBoard.getPieceByPos(newPos);
-
-              if (pieceAtNewPos) {
-                const pieceAtNewPosColor =
-                  this.chessUtilsService.getColor(pieceAtNewPos);
-
-                if (
-                  this.chessUtilsService.areColorsDifferent(
-                    pieceAtNewPosColor,
-                    pieceColor
-                  )
-                ) {
-                  moves.push(newPos);
-                }
-                // Stop the loop when a piece is encountered, regardless of color
-                break;
-              }
-              moves.push(newPos);
-              multiplier++;
-              if (axis === 'X') {
-                newPos = piecePos.addX(delta * multiplier);
-              } else {
-                newPos = piecePos.addY(delta * multiplier);
-              }
-            }
-          }
-        }
-        break;
-      }
-      case 'knight': {
-        const knightDeltas = [
-          { deltaX: 2, deltaY: 1 },
-          { deltaX: 1, deltaY: 2 },
-          { deltaX: -1, deltaY: 2 },
-          { deltaX: -2, deltaY: 1 },
-          { deltaX: -2, deltaY: -1 },
-          { deltaX: -1, deltaY: -2 },
-          { deltaX: 1, deltaY: -2 },
-          { deltaX: 2, deltaY: -1 },
-        ];
-
-        for (const delta of knightDeltas) {
-          const newPos = new Position(
-            piecePos.x + delta.deltaX,
-            piecePos.y + delta.deltaY
-          );
-          if (
-            newPos.isInsideTheBoard() &&
-            this.chessUtilsService.areColorsDifferent(
-              chessBoard.getPieceColorByPos(newPos),
-              pieceColor
-            )
-          ) {
-            moves.push(newPos);
-          }
-        }
-        break;
-      }
-      case 'pawn': {
-        // Déterminer la direction du mouvement en fonction de la couleur du pion
-        const direction = pieceColor === 'white' ? 1 : -1;
-
-        // Mouvement simple en avant
-        const forwardOne = piecePos.addY(direction);
-        if (
-          forwardOne.isInsideTheBoard() &&
-          !chessBoard.getPieceByPos(forwardOne)
-        ) {
-          moves.push(forwardOne);
-
-          // Mouvement double en avant (disponible uniquement au premier coup)
-          const initialRow = pieceColor === 'white' ? 1 : 6;
-          if (piecePos.y === initialRow) {
-            const forwardTwo = forwardOne.addY(direction);
-            if (
-              forwardTwo.isInsideTheBoard() &&
-              !chessBoard.getPieceByPos(forwardTwo)
-            ) {
-              moves.push(forwardTwo);
-            }
-          }
-        }
-
-        // Attaque en diagonale à gauche
-        const attackLeft = piecePos.addX(-1).addY(direction);
-        if (
-          attackLeft.isInsideTheBoard() &&
-          this.chessUtilsService.areColorsOpposite(
-            this.chessUtilsService.getColor(
-              chessBoard.getPieceByPos(attackLeft)
-            ),
-            pieceColor
-          )
-        ) {
-          moves.push(attackLeft);
-        }
-
-        // Attaque en diagonale à droite
-        const attackRight = piecePos.addX(1).addY(direction);
-        if (
-          attackRight.isInsideTheBoard() &&
-          this.chessUtilsService.areColorsOpposite(
-            this.chessUtilsService.getColor(
-              chessBoard.getPieceByPos(attackRight)
-            ),
-            pieceColor
-          )
-        ) {
-          moves.push(attackRight);
-        }
-
-        // Prise en passant
-        const enPassantColIndex = chessBoard.getEnPassantColIndex();
-        if (enPassantColIndex != -1) {
-          const isWhitePawn = chessPieceName === 'white-pawn';
-          const isBlackPawn = chessPieceName === 'black-pawn';
-          if (
-            ((isWhitePawn && piecePos.y === 4) ||
-              (isBlackPawn && piecePos.y === 3)) &&
-            Math.abs(piecePos.x - enPassantColIndex) === 1
-          ) {
-            const targetRow = isWhitePawn ? 5 : 2;
-            moves.push(new Position(enPassantColIndex, targetRow));
-          }
-        }
-        break;
+        newPos = newPos.addX(deltaX).addY(deltaY);
       }
     }
     return moves;
   }
 
+  /**
+   * Moves of a stepping piece (king, knight): one jump per delta, onto an empty
+   * square or an enemy piece.
+   */
+  private getStepMoves(
+    piecePos: Position,
+    color: Color,
+    deltas: Direction[],
+    chessBoard: Chessboard
+  ): Position[] {
+    return deltas
+      .map(([deltaX, deltaY]) => piecePos.addX(deltaX).addY(deltaY))
+      .filter(
+        newPos =>
+          newPos.isInsideTheBoard() &&
+          chessBoard.getPieceColorByPos(newPos) !== color
+      );
+  }
+
+  private getPawnMoves(
+    piecePos: Position,
+    color: Color,
+    chessBoard: Chessboard
+  ): Position[] {
+    const moves: Position[] = [];
+    const direction = color === 'white' ? 1 : -1;
+
+    // one square forward, then two from the initial row
+    const forwardOne = piecePos.addY(direction);
+    if (
+      forwardOne.isInsideTheBoard() &&
+      !chessBoard.getPieceByPos(forwardOne)
+    ) {
+      moves.push(forwardOne);
+
+      const initialRow = color === 'white' ? 1 : 6;
+      const forwardTwo = forwardOne.addY(direction);
+      if (piecePos.y === initialRow && !chessBoard.getPieceByPos(forwardTwo)) {
+        moves.push(forwardTwo);
+      }
+    }
+
+    // diagonal captures
+    const opponentColor = getOpponentColor(color);
+    for (const deltaX of [-1, 1]) {
+      const attackPos = piecePos.addX(deltaX).addY(direction);
+      if (
+        attackPos.isInsideTheBoard() &&
+        chessBoard.getPieceColorByPos(attackPos) === opponentColor
+      ) {
+        moves.push(attackPos);
+      }
+    }
+
+    // en passant
+    const enPassantColIndex = chessBoard.getEnPassantColIndex();
+    const enPassantRow = color === 'white' ? 4 : 3;
+    if (
+      enPassantColIndex !== -1 &&
+      piecePos.y === enPassantRow &&
+      Math.abs(piecePos.x - enPassantColIndex) === 1
+    ) {
+      moves.push(new Position(enPassantColIndex, enPassantRow + direction));
+    }
+    return moves;
+  }
+
   /** Check if the king of the given color is in check on the given chessboard. */
-  private isKingChecked(pieceColor: string, chessBoard: Chessboard): boolean {
-    const kingPos = chessBoard.findPiecePosition(pieceColor + '-king');
+  private isKingChecked(color: Color, chessBoard: Chessboard): boolean {
+    const kingPos = chessBoard.findPiecePosition(toPieceName(color, 'king'));
     return (
       kingPos !== null &&
-      this.isSquareAttacked(
-        kingPos,
-        this.chessUtilsService.getOpponentColor(pieceColor),
-        chessBoard
-      )
+      this.isSquareAttacked(kingPos, getOpponentColor(color), chessBoard)
     );
   }
 
   /** Check if any piece of attackerColor attacks the given square. */
   private isSquareAttacked(
     square: Position,
-    attackerColor: string,
+    attackerColor: Color,
     chessBoard: Chessboard
   ): boolean {
     for (let x = 0; x < Chessboard.BOARD_SIZE; x++) {
@@ -509,10 +407,10 @@ export class RulesService {
     chessBoard: Chessboard
   ): void {
     this.promotionService.showPromotionUI(newPos);
-    this.promotionService.promotionPiece$.pipe(take(1)).subscribe(pieceType => {
-      if (pieceType) {
+    this.promotionService.promotionPiece$.pipe(take(1)).subscribe(piece => {
+      if (piece) {
         chessBoard.movePiece(oldPos, newPos);
-        chessBoard.setPieceByPos(pieceType, newPos);
+        chessBoard.setPieceByPos(piece, newPos);
         chessBoard.toggleIsWhiteTurn();
         this.computeGameEndEvents(chessBoard);
       }

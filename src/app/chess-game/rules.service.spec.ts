@@ -1,6 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { ChessUtilsService } from './chess-utils.service';
 import { Chessboard } from './chessboard.model';
+import { PieceName, Square } from './piece.model';
 import { Position } from './position.model';
 import { PromotionService } from './promotion/promotion.service';
 import { RulesService } from './rules.service';
@@ -16,12 +17,12 @@ describe('RulesService', () => {
 
   /** Build an empty board containing only the given pieces. */
   const board = (
-    setup: Record<string, string>,
+    setup: Record<string, PieceName>,
     whiteTurn = true
   ): Chessboard => {
     const chessBoard = new Chessboard(utils);
     chessBoard.setPieces(
-      Array.from({ length: 8 }, () => Array<string>(8).fill(''))
+      Array.from({ length: 8 }, () => Array<Square>(8).fill(''))
     );
     for (const [square, piece] of Object.entries(setup)) {
       chessBoard.setPieceByPos(piece, sq(square));
@@ -280,7 +281,7 @@ describe('RulesService', () => {
   });
 
   describe('castling', () => {
-    const base = {
+    const base: Record<string, PieceName> = {
       e1: 'white-king',
       a1: 'white-rook',
       h1: 'white-rook',

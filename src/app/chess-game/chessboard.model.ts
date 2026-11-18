@@ -1,4 +1,5 @@
 import { ChessUtilsService } from './chess-utils.service';
+import { Color, PieceName, PieceType, Square } from './piece.model';
 import { Position } from './position.model';
 
 export interface CastlingRights {
@@ -11,9 +12,10 @@ export interface CastlingRights {
 export class Chessboard {
   static readonly BOARD_SIZE = 8;
 
-  private pieces: string[][] = [];
-  private isWhiteTurn: boolean = true;
-  private enPassantColIndex: number = -1;
+  /** pieces[y][x]: y is the row (0 = white's back rank), x the column. */
+  private pieces: Square[][] = [];
+  private isWhiteTurn = true;
+  private enPassantColIndex = -1;
   private castlingRights: CastlingRights = {
     whiteKingSide: true,
     whiteQueenSide: true,
@@ -29,10 +31,10 @@ export class Chessboard {
    * Move the piece from Position A to Position B without verification of validity.
    * @returns the eaten piece if there is one.
    */
-  movePiece(oldPos: Position, newPos: Position): string {
+  movePiece(oldPos: Position, newPos: Position): Square {
     const movingPiece = this.getPieceByPos(oldPos);
+    const movingType = this.chessUtilsService.getType(movingPiece);
     let eatenPiece = this.getPieceByPos(newPos);
-    const isPieceAPawn = this.chessUtilsService.isPawn(movingPiece);
 
     // move and eat piece
     this.setPieceByPos('', oldPos);
@@ -43,18 +45,15 @@ export class Chessboard {
     const isBlackPawn = movingPiece === 'black-pawn';
     if (
       ((isWhitePawn && oldPos.y === 4) || (isBlackPawn && oldPos.y === 3)) &&
-      newPos.x === this.getEnPassantColIndex()
+      newPos.x === this.enPassantColIndex
     ) {
-      const eatenPawnPos = new Position(this.getEnPassantColIndex(), oldPos.y);
+      const eatenPawnPos = new Position(this.enPassantColIndex, oldPos.y);
       eatenPiece = this.getPieceByPos(eatenPawnPos);
       this.setPieceByPos('', eatenPawnPos);
     }
 
     // if move is a castling (king moving two squares), move the rook too
-    if (
-      this.chessUtilsService.getType(movingPiece) === 'king' &&
-      Math.abs(newPos.x - oldPos.x) === 2
-    ) {
+    if (movingType === 'king' && Math.abs(newPos.x - oldPos.x) === 2) {
       const isKingSide = newPos.x > oldPos.x;
       const rookOldPos = new Position(isKingSide ? 7 : 0, oldPos.y);
       const rookNewPos = new Position(isKingSide ? 5 : 3, oldPos.y);
@@ -65,10 +64,10 @@ export class Chessboard {
     this.updateCastlingRights(oldPos, newPos);
 
     // register column for possible en passant
-    if (isPieceAPawn && Math.abs(oldPos.y - newPos.y) === 2) {
-      this.setEnPassantColIndex(oldPos.x);
+    if (movingType === 'pawn' && Math.abs(oldPos.y - newPos.y) === 2) {
+      this.enPassantColIndex = oldPos.x;
     } else {
-      this.setEnPassantColIndex(-1); // reseting en passant possibility
+      this.enPassantColIndex = -1; // reseting en passant possibility
     }
     return eatenPiece;
   }
@@ -93,7 +92,7 @@ export class Chessboard {
     }
   }
 
-  canCastle(color: string, kingSide: boolean): boolean {
+  canCastle(color: Color, kingSide: boolean): boolean {
     if (color === 'white') {
       return kingSide
         ? this.castlingRights.whiteKingSide
@@ -125,118 +124,77 @@ export class Chessboard {
     return copy;
   }
 
-  getPlayerPiecesByColor(pieceColor: string): string[][] {
-    // we put opposite player's pieces to ''
-    return this.pieces.map(row =>
-      row.map(pieceName =>
-        this.chessUtilsService.getColor(pieceName) === pieceColor
-          ? pieceName
-          : ''
-      )
-    );
-  }
-
-  getCurrentPlayerColor(): string {
+  getCurrentPlayerColor(): Color {
     return this.isWhiteTurn ? 'white' : 'black';
   }
 
-  getNextPlayerColor(): string {
+  getNextPlayerColor(): Color {
     return this.isWhiteTurn ? 'black' : 'white';
   }
 
-  getPieceColorByPos(position: Position): string {
+  getPieceColorByPos(position: Position): Color | null {
     return this.chessUtilsService.getColor(this.getPieceByPos(position));
   }
 
-  getPieceTypeByPos(position: Position): string {
+  getPieceTypeByPos(position: Position): PieceType | null {
     return this.chessUtilsService.getType(this.getPieceByPos(position));
   }
 
-  getPieceColor(x: number, y: number): string {
-    return this.chessUtilsService.getColor(this.getPiece(x, y));
-  }
-
-  // y is row and x column
-  getPiece(x: number, y: number): string {
+  getPiece(x: number, y: number): Square {
     return this.pieces[y][x];
   }
 
-  setPiece(pieceName: string, x: number, y: number) {
-    this.pieces[y][x] = pieceName;
+  setPiece(square: Square, x: number, y: number) {
+    this.pieces[y][x] = square;
   }
 
-  getPieceByPos(position: Position): string {
+  getPieceByPos(position: Position): Square {
     return this.getPiece(position.x, position.y);
   }
 
-  setPieceByPos(pieceName: string, position: Position) {
-    this.setPiece(pieceName, position.x, position.y);
+  setPieceByPos(square: Square, position: Position) {
+    this.setPiece(square, position.x, position.y);
   }
 
-  findPiecePosition(pieceName: string): Position | null {
+  findPiecePosition(pieceName: PieceName): Position | null {
     for (let row = 0; row < this.pieces.length; row++) {
       const col = this.pieces[row].findIndex(value => value === pieceName);
       if (col !== -1) {
         return new Position(col, row);
       }
     }
-    return null; // Element not found, but shouldn't happen
+    return null;
   }
 
   private initializeChessBoard(): void {
-    for (let i = 0; i < 8; i++) {
-      this.pieces[i] = [];
-      for (let j = 0; j < 8; j++) {
-        // Initial chess pieces setup can be adjusted based on your needs
-        this.pieces[i][j] = this.chessUtilsService.getInitialChessPiece(i, j);
+    for (let y = 0; y < Chessboard.BOARD_SIZE; y++) {
+      this.pieces[y] = [];
+      for (let x = 0; x < Chessboard.BOARD_SIZE; x++) {
+        this.pieces[y][x] = this.chessUtilsService.getInitialChessPiece(y, x);
       }
     }
   }
 
-  /**
-   * Getter pieces
-   * @return {string[][] }
-   */
-  public getPieces(): string[][] {
+  public getPieces(): Square[][] {
     return this.pieces;
   }
 
-  /**
-   * Getter isWhiteTurn
-   * @return {boolean }
-   */
+  public setPieces(value: Square[][]) {
+    this.pieces = value;
+  }
+
   public getIsWhiteTurn(): boolean {
     return this.isWhiteTurn;
   }
 
-  /**
-   * Getter enPassantColIndex
-   * @return {number }
-   */
-  public getEnPassantColIndex(): number {
-    return this.enPassantColIndex;
-  }
-
-  /**
-   * Setter pieces
-   * @param {string[][] } value
-   */
-  public setPieces(value: string[][]) {
-    this.pieces = value;
-  }
-
-  /**
-   * Setter isWhiteTurn
-   * @param {boolean } value
-   */
   public setIsWhiteTurn(value: boolean) {
     this.isWhiteTurn = value;
   }
 
-  /**
-   * Setter enPassantColIndex
-   * @param {number } value
-   */
+  public getEnPassantColIndex(): number {
+    return this.enPassantColIndex;
+  }
+
   public setEnPassantColIndex(value: number) {
     this.enPassantColIndex = value;
   }

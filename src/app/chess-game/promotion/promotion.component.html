@@ -4,7 +4,7 @@
       class="piece-image"
       [src]="getPieceImagePath(piece)"
       [alt]="piece"
-      (click)="onSelect(pieceColor + '-' + piece)" />
+      (click)="onSelect(piece)" />
   </div>
   <mat-icon class="cross-icon" (click)="onCancel()">clear</mat-icon>
 </div>

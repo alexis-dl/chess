@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Subject } from 'rxjs';
+import { PieceName } from '../piece.model';
 import { Position } from '../position.model';
 
 @Injectable({
@@ -9,7 +10,7 @@ export class PromotionService {
   private promotionPositionSubject = new Subject<Position | null>();
   promotionPosition$ = this.promotionPositionSubject.asObservable();
 
-  private promotionPieceSubject = new Subject<string | null>();
+  private promotionPieceSubject = new Subject<PieceName | null>();
   promotionPiece$ = this.promotionPieceSubject.asObservable();
 
   constructor() {}
@@ -18,7 +19,7 @@ export class PromotionService {
     this.promotionPositionSubject.next(pos);
   }
 
-  selectPiece(piece: string) {
+  selectPiece(piece: PieceName) {
     this.promotionPositionSubject.next(null);
     this.promotionPieceSubject.next(piece);
   }
