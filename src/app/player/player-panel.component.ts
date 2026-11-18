@@ -20,6 +20,6 @@ export class PlayerPanelComponent {
   @Input() advantage = 0;
 
   pieceImage(piece: PieceName): string {
-    return `assets/chess-pieces/${piece}.png`;
+    return `assets/chess-pieces/${piece}.svg`;
   }
 }

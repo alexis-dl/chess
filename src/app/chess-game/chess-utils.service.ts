@@ -64,6 +64,6 @@ export class ChessUtilsService {
   }
 
   getPieceImagePath(square: Square): string | null {
-    return square ? `assets/chess-pieces/${square}.png` : null;
+    return square ? `assets/chess-pieces/${square}.svg` : null;
   }
 }

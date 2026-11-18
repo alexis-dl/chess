@@ -11,11 +11,10 @@
   width: 100%;
   height: 100%;
 
+  // vector pieces: they include their own margin and stay sharp at any size
   img {
-    width: 92%;
-    height: 92%;
-    object-fit: contain;
+    width: 100%;
+    height: 100%;
     pointer-events: none; // no native image drag, let cdk handle it
-    filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.25));
   }
 }
