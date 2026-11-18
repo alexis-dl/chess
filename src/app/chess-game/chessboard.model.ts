@@ -16,6 +16,7 @@ export interface BoardState {
   isWhiteTurn: boolean;
   enPassantColIndex: number;
   castlingRights: CastlingRights;
+  halfmoveClock: number;
 }
 
 /** A played move, with its notation and the position before it (for undo). */
@@ -39,7 +40,30 @@ export class Chessboard {
     blackKingSide: true,
     blackQueenSide: true,
   };
+  /** Plies since the last capture or pawn move (fifty-move rule). */
+  private halfmoveClock = 0;
   private history: HistoryEntry[] = [];
+
+  /**
+   * Key identifying a position for the repetition rule: same pieces, same
+   * player to move, same castling and en passant rights.
+   */
+  static getPositionKey(state: BoardState): string {
+    const rights = state.castlingRights;
+    return [
+      state.pieces.map(row => row.join(',')).join('/'),
+      state.isWhiteTurn ? 'w' : 'b',
+      [
+        rights.whiteKingSide,
+        rights.whiteQueenSide,
+        rights.blackKingSide,
+        rights.blackQueenSide,
+      ]
+        .map(right => (right ? 1 : 0))
+        .join(''),
+      state.enPassantColIndex,
+    ].join(' ');
+  }
 
   constructor(private chessUtilsService: ChessUtilsService) {
     this.initializeChessBoard();
@@ -87,6 +111,8 @@ export class Chessboard {
     } else {
       this.enPassantColIndex = -1; // reseting en passant possibility
     }
+    this.halfmoveClock =
+      movingType === 'pawn' || eatenPiece ? 0 : this.halfmoveClock + 1;
     return eatenPiece;
   }
 
@@ -146,6 +172,7 @@ export class Chessboard {
       isWhiteTurn: this.isWhiteTurn,
       enPassantColIndex: this.enPassantColIndex,
       castlingRights: { ...this.castlingRights },
+      halfmoveClock: this.halfmoveClock,
     };
   }
 
@@ -154,6 +181,15 @@ export class Chessboard {
     this.isWhiteTurn = state.isWhiteTurn;
     this.enPassantColIndex = state.enPassantColIndex;
     this.castlingRights = { ...state.castlingRights };
+    this.halfmoveClock = state.halfmoveClock;
+  }
+
+  getHalfmoveClock(): number {
+    return this.halfmoveClock;
+  }
+
+  setHalfmoveClock(value: number): void {
+    this.halfmoveClock = value;
   }
 
   getHistory(): readonly HistoryEntry[] {

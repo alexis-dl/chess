@@ -13,6 +13,10 @@ import {
 import { Position } from './position.model';
 import { PromotionService } from './promotion/promotion.service';
 
+/** Draws applied automatically (stalemate has its own event). */
+export type DrawReason =
+  'fifty-move-rule' | 'threefold-repetition' | 'insufficient-material';
+
 /** Piece letters used in standard algebraic notation (pawns have none). */
 const SAN_LETTERS: Record<PieceType, string> = {
   pawn: '',
@@ -60,6 +64,7 @@ export class RulesService {
 
   public currentPlayerCheckmated: Subject<void> = new Subject<void>();
   public currentPlayerStalemated: Subject<void> = new Subject<void>();
+  public gameDrawn: Subject<DrawReason> = new Subject<DrawReason>();
 
   constructor(
     private chessUtilsService: ChessUtilsService,
@@ -145,10 +150,68 @@ export class RulesService {
       } else {
         this.currentPlayerStalemated.next();
       }
+      return;
+    }
+    const drawReason = this.getDrawReason(chessBoard);
+    if (drawReason) {
+      this.gameDrawn.next(drawReason);
     } else {
       //send nextPlayersTurn event when game is not over.
       this.nextPlayersTurn.next(chessBoard.getIsWhiteTurn());
     }
+  }
+
+  /** Automatic draw that applies to the current position, if any. */
+  getDrawReason(chessBoard: Chessboard): DrawReason | null {
+    if (this.isInsufficientMaterial(chessBoard)) {
+      return 'insufficient-material';
+    }
+    if (this.isThreefoldRepetition(chessBoard)) {
+      return 'threefold-repetition';
+    }
+    if (chessBoard.getHalfmoveClock() >= 100) {
+      return 'fifty-move-rule';
+    }
+    return null;
+  }
+
+  /** The current position has occurred at least 3 times. */
+  isThreefoldRepetition(chessBoard: Chessboard): boolean {
+    const currentKey = Chessboard.getPositionKey(chessBoard.saveState());
+    const previousOccurrences = chessBoard
+      .getHistory()
+      .filter(
+        entry => Chessboard.getPositionKey(entry.stateBefore) === currentKey
+      ).length;
+    return previousOccurrences + 1 >= 3;
+  }
+
+  /**
+   * Neither side can checkmate: king against king, king and a single minor
+   * piece against king, or only bishops all standing on squares of one color.
+   */
+  isInsufficientMaterial(chessBoard: Chessboard): boolean {
+    const minorPieces: { type: PieceType; squareColor: number }[] = [];
+    for (let y = 0; y < Chessboard.BOARD_SIZE; y++) {
+      for (let x = 0; x < Chessboard.BOARD_SIZE; x++) {
+        const type = chessBoard.getPieceTypeByPos(new Position(x, y));
+        if (type === null || type === 'king') {
+          continue;
+        }
+        if (type !== 'knight' && type !== 'bishop') {
+          return false; // a pawn, rook or queen can always mate
+        }
+        minorPieces.push({ type, squareColor: (x + y) % 2 });
+      }
+    }
+    return (
+      minorPieces.length <= 1 ||
+      minorPieces.every(
+        piece =>
+          piece.type === 'bishop' &&
+          piece.squareColor === minorPieces[0].squareColor
+      )
+    );
   }
 
   /**

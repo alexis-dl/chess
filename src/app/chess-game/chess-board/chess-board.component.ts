@@ -7,7 +7,13 @@ import { ChessUtilsService } from '../chess-utils.service';
 import { Chessboard } from '../chessboard.model';
 import { Position } from '../position.model';
 import { PromotionService } from '../promotion/promotion.service';
-import { RulesService } from '../rules.service';
+import { DrawReason, RulesService } from '../rules.service';
+
+const DRAW_REASON_LABELS: Record<DrawReason, string> = {
+  'fifty-move-rule': 'the fifty-move rule',
+  'threefold-repetition': 'threefold repetition',
+  'insufficient-material': 'insufficient material',
+};
 
 /** Square coordinates attached as data to cdkDrag / cdkDropList in the template. */
 interface SquareCoordinates {
@@ -48,6 +54,12 @@ export class ChessBoardComponent implements OnInit, OnDestroy {
         alert(
           this.chessBoard.getCurrentPlayerColor() + ' king is in stalemate'
         );
+      })
+    );
+
+    this.subscriptions.push(
+      this.rulesService.gameDrawn.subscribe(reason => {
+        alert('Draw by ' + DRAW_REASON_LABELS[reason]);
       })
     );
 

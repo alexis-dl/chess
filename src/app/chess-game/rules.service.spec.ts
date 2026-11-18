@@ -538,4 +538,132 @@ describe('RulesService', () => {
       expect(chessBoard.getPieceByPos(sq('e7'))).toBe('white-pawn');
     });
   });
+
+  describe('draws', () => {
+    let drawReasons: string[];
+    let nextTurns: number;
+
+    beforeEach(() => {
+      drawReasons = [];
+      nextTurns = 0;
+      rules.gameDrawn.subscribe(reason => drawReasons.push(reason));
+      rules.nextPlayersTurn.subscribe(() => nextTurns++);
+    });
+
+    describe('fifty-move rule', () => {
+      it('draws after 100 plies without capture or pawn move', () => {
+        const chessBoard = board({
+          e1: 'white-king',
+          a1: 'white-rook',
+          e8: 'black-king',
+        });
+        chessBoard.setHalfmoveClock(99);
+        play(chessBoard, 'a1', 'a2');
+        expect(chessBoard.getHalfmoveClock()).toBe(100);
+        expect(drawReasons).toEqual(['fifty-move-rule']);
+        expect(nextTurns).toBe(0);
+      });
+
+      it('resets the counter on a pawn move', () => {
+        const chessBoard = new Chessboard(utils);
+        play(chessBoard, 'g1', 'f3');
+        expect(chessBoard.getHalfmoveClock()).toBe(1);
+        play(chessBoard, 'e7', 'e5');
+        expect(chessBoard.getHalfmoveClock()).toBe(0);
+      });
+
+      it('resets the counter on a capture', () => {
+        const chessBoard = board({
+          e1: 'white-king',
+          a1: 'white-rook',
+          a7: 'black-knight',
+          e8: 'black-king',
+        });
+        chessBoard.setHalfmoveClock(42);
+        play(chessBoard, 'a1', 'a7');
+        expect(chessBoard.getHalfmoveClock()).toBe(0);
+      });
+
+      it('is restored by undo', () => {
+        const chessBoard = new Chessboard(utils);
+        play(chessBoard, 'g1', 'f3');
+        play(chessBoard, 'g8', 'f6');
+        rules.undoMove(chessBoard);
+        expect(chessBoard.getHalfmoveClock()).toBe(1);
+      });
+    });
+
+    describe('threefold repetition', () => {
+      const shuffleKnights = (chessBoard: Chessboard) => {
+        play(chessBoard, 'g1', 'f3');
+        play(chessBoard, 'g8', 'f6');
+        play(chessBoard, 'f3', 'g1');
+        play(chessBoard, 'f6', 'g8');
+      };
+
+      it('draws when the same position occurs a third time', () => {
+        const chessBoard = new Chessboard(utils);
+        shuffleKnights(chessBoard); // initial position seen twice
+        expect(drawReasons).toEqual([]);
+        shuffleKnights(chessBoard); // ... and a third time
+        expect(drawReasons).toEqual(['threefold-repetition']);
+        expect(rules.isThreefoldRepetition(chessBoard)).toBeTrue();
+      });
+
+      it('does not count positions with different castling rights', () => {
+        const chessBoard = board({
+          e1: 'white-king',
+          h1: 'white-rook',
+          e8: 'black-king',
+          h8: 'black-rook',
+        });
+        // the first king moves lose the castling rights: the starting
+        // position is never repeated
+        play(chessBoard, 'e1', 'f1');
+        play(chessBoard, 'e8', 'f8');
+        play(chessBoard, 'f1', 'e1');
+        play(chessBoard, 'f8', 'e8');
+        play(chessBoard, 'e1', 'f1');
+        play(chessBoard, 'e8', 'f8');
+        play(chessBoard, 'f1', 'e1');
+        play(chessBoard, 'f8', 'e8');
+        expect(drawReasons).toEqual([]);
+      });
+    });
+
+    describe('insufficient material', () => {
+      it('draws when only the two kings remain', () => {
+        const chessBoard = board({
+          d1: 'white-king',
+          d2: 'black-queen',
+          e8: 'black-king',
+        });
+        play(chessBoard, 'd1', 'd2');
+        expect(drawReasons).toEqual(['insufficient-material']);
+      });
+
+      it('recognises the drawn material balances', () => {
+        const kings = { e1: 'white-king', e8: 'black-king' } as const;
+        const insufficient = (setup: Record<string, PieceName>) =>
+          rules.isInsufficientMaterial(board({ ...kings, ...setup }));
+
+        expect(insufficient({})).toBeTrue();
+        expect(insufficient({ b1: 'white-knight' })).toBeTrue();
+        expect(insufficient({ c1: 'white-bishop' })).toBeTrue();
+        // bishops on squares of the same color (c1 and f8 are both dark)
+        expect(
+          insufficient({ c1: 'white-bishop', f8: 'black-bishop' })
+        ).toBeTrue();
+        // bishops on squares of different colors
+        expect(
+          insufficient({ c1: 'white-bishop', c8: 'black-bishop' })
+        ).toBeFalse();
+        expect(
+          insufficient({ b1: 'white-knight', g8: 'black-knight' })
+        ).toBeFalse();
+        expect(insufficient({ a2: 'white-pawn' })).toBeFalse();
+        expect(insufficient({ a1: 'white-rook' })).toBeFalse();
+      });
+    });
+  });
 });
