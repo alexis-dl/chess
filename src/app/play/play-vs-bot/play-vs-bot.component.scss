@@ -1,0 +1,234 @@
+.game {
+  --board-size: clamp(
+    320px,
+    min(calc(100vh - 112px), calc(100vw - 680px)),
+    780px
+  );
+  display: grid;
+  grid-template-areas: 'info board panel';
+  grid-template-columns: 250px var(--board-size) 310px;
+  gap: 20px;
+  justify-content: center;
+  align-items: start;
+  padding: 24px 16px;
+}
+
+.panel {
+  background: var(--surface);
+  border-radius: 6px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+}
+
+// ----- left: game information -----
+
+.game-info {
+  grid-area: info;
+  padding: 16px;
+}
+
+.info-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--border);
+}
+
+.info-icon {
+  width: 36px;
+  height: 36px;
+  font-size: 36px;
+  color: var(--text-muted);
+}
+
+.info-title {
+  color: var(--text-strong);
+  font-weight: 600;
+}
+
+.info-subtitle {
+  color: var(--text-muted);
+  font-size: 0.85em;
+}
+
+.section-title {
+  margin: 16px 0 8px;
+  color: var(--text-muted);
+  font-size: 0.75em;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.bot-choice {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  margin-bottom: 6px;
+  padding: 8px 10px;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition:
+    background 0.15s,
+    border-color 0.15s;
+
+  img {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: var(--surface-raised);
+  }
+
+  &:hover {
+    background: var(--surface-raised);
+  }
+
+  &.selected {
+    border-color: var(--accent);
+    background: var(--accent-soft);
+  }
+}
+
+.bot-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.bot-name {
+  color: var(--text-strong);
+  font-weight: 600;
+}
+
+.bot-description {
+  color: var(--text-muted);
+  font-size: 0.8em;
+}
+
+// ----- center: board -----
+
+.board-area {
+  grid-area: board;
+}
+
+// ----- right: players, moves, controls -----
+
+.game-panel {
+  grid-area: panel;
+  display: flex;
+  flex-direction: column;
+  height: var(--board-size);
+  overflow: hidden;
+}
+
+app-player-panel {
+  flex: none;
+  background: var(--surface-raised);
+}
+
+.moves {
+  flex: 1;
+  overflow-y: auto;
+  font-size: 0.95em;
+}
+
+.move-row {
+  display: grid;
+  grid-template-columns: 44px 1fr 1fr;
+  line-height: 2.1;
+}
+
+.move-number {
+  background: var(--surface-sunken);
+  color: var(--text-faint);
+  text-align: center;
+}
+
+.move {
+  padding-left: 12px;
+  color: var(--text);
+
+  &.current {
+    background: var(--accent-soft);
+    color: var(--text-strong);
+    font-weight: 600;
+  }
+}
+
+.moves-empty {
+  margin: 0;
+  padding: 24px 16px;
+  color: var(--text-muted);
+  font-style: italic;
+  text-align: center;
+}
+
+.result {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 14px;
+  border-top: 1px solid var(--border);
+}
+
+.result-title {
+  color: var(--text-strong);
+  font-size: 1.15em;
+  font-weight: 600;
+}
+
+.result-detail {
+  color: var(--text-muted);
+  font-size: 0.9em;
+}
+
+.controls {
+  display: flex;
+  gap: 8px;
+  padding: 10px;
+  border-top: 1px solid var(--border);
+
+  .btn:last-child {
+    flex: 1;
+  }
+}
+
+// ----- smaller screens -----
+
+@media (max-width: 1180px) {
+  .game {
+    --board-size: clamp(
+      300px,
+      min(calc(100vh - 112px), calc(100vw - 380px)),
+      720px
+    );
+    grid-template-areas:
+      'board panel'
+      'info info';
+    grid-template-columns: var(--board-size) 310px;
+  }
+}
+
+@media (max-width: 760px) {
+  .game {
+    --board-size: calc(100vw - 32px);
+    grid-template-areas:
+      'board'
+      'panel'
+      'info';
+    grid-template-columns: var(--board-size);
+  }
+
+  .game-panel {
+    height: auto;
+  }
+
+  .moves {
+    max-height: 180px;
+  }
+}

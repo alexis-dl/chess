@@ -1,15 +1,198 @@
-@import 'primeng/resources/themes/lara-light-blue/theme.css';
+@import 'primeng/resources/themes/lara-dark-blue/theme.css';
 @import 'primeicons/primeicons.css';
 @import 'primeng/resources/primeng.min.css';
+
+:root {
+  // surfaces, from the page background up to raised elements
+  --bg: #161512;
+  --surface-sunken: #1e1d1a;
+  --surface: #262421;
+  --surface-raised: #302e2b;
+  --border: #3a3835;
+
+  --text-faint: #6f6c68;
+  --text-muted: #9a9792;
+  --text: #c8c5c0;
+  --text-strong: #eceae6;
+
+  --accent: #7c9a5a;
+  --accent-soft: rgba(124, 154, 90, 0.22);
+  --danger: #d0614f;
+
+  // board
+  --square-light: #eddcbd;
+  --square-dark: #b48a65;
+  --square-last-move: rgba(205, 190, 70, 0.45);
+  --square-selected: rgba(110, 140, 60, 0.55);
+  --move-hint: rgba(40, 60, 30, 0.42);
+  --move-hint-hover: rgba(110, 140, 60, 0.45);
+}
 
 html,
 body {
   height: 100%;
 }
+
 body {
   margin: 0;
-  font-family: Roboto, 'Helvetica Neue', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  font-family:
+    'Noto Sans',
+    system-ui,
+    -apple-system,
+    'Segoe UI',
+    Roboto,
+    sans-serif;
+  font-size: 15px;
+  -webkit-font-smoothing: antialiased;
+}
 
-  background-color: #f0f0f0;
-  color: #333;
+a {
+  color: var(--accent);
+}
+
+// ----- buttons -----
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 38px;
+  padding: 0 14px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--surface-raised);
+  color: var(--text-strong);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background 0.15s,
+    border-color 0.15s;
+
+  .mat-icon {
+    width: 20px;
+    height: 20px;
+    font-size: 20px;
+  }
+
+  &:hover:not(:disabled) {
+    background: var(--border);
+  }
+
+  &:disabled {
+    color: var(--text-faint);
+    cursor: default;
+  }
+}
+
+.btn-icon {
+  width: 38px;
+  padding: 0;
+}
+
+// ----- drag & drop (the preview is attached to <body>) -----
+
+.cdk-drag-preview {
+  z-index: 1000;
+  cursor: grabbing;
+}
+
+.cdk-drag-animating {
+  transition: transform 150ms cubic-bezier(0, 0, 0.2, 1);
+}
+
+.cdk-drop-list-dragging {
+  cursor: grabbing;
+}
+
+// ----- scrollbars -----
+
+* {
+  scrollbar-color: var(--border) transparent;
+  scrollbar-width: thin;
+}
+
+// ----- PrimeNG: align its dark theme (navy) with our warm grey palette -----
+
+.p-component {
+  font-family: inherit;
+}
+
+.p-tabmenu .p-tabmenu-nav {
+  padding: 0 16px;
+  border-color: var(--border);
+}
+
+.p-tabmenu .p-tabmenu-nav .p-tabmenuitem .p-menuitem-link {
+  background: transparent;
+  border-color: transparent;
+  color: var(--text-muted);
+}
+
+.p-tabmenu
+  .p-tabmenu-nav
+  .p-tabmenuitem:not(.p-highlight):not(.p-disabled):hover
+  .p-menuitem-link {
+  background: transparent;
+  border-color: var(--text-faint);
+  color: var(--text-strong);
+}
+
+.p-tabmenu .p-tabmenu-nav .p-tabmenuitem.p-highlight .p-menuitem-link {
+  background: transparent;
+  border-color: var(--accent);
+  color: var(--text-strong);
+}
+
+.p-tabmenu
+  .p-tabmenu-nav
+  .p-tabmenuitem
+  .p-menuitem-link:not(.p-disabled):focus {
+  box-shadow: inset 0 0 0 2px var(--accent-soft);
+}
+
+.p-dropdown,
+.p-dropdown-panel,
+.p-slidemenu,
+.p-slidemenu.p-slidemenu-overlay,
+.p-toast .p-toast-message {
+  background: var(--surface);
+  border-color: var(--border);
+}
+
+.p-dropdown:not(.p-disabled):hover,
+.p-dropdown:not(.p-disabled).p-focus {
+  border-color: var(--accent);
+  box-shadow: none;
+}
+
+.p-dropdown-panel .p-dropdown-items .p-dropdown-item.p-highlight {
+  background: var(--accent-soft);
+  color: var(--text-strong);
+}
+
+.p-dropdown-panel
+  .p-dropdown-items
+  .p-dropdown-item:not(.p-highlight):not(.p-disabled):hover,
+.p-slidemenu .p-menuitem-link:not(.p-disabled):hover {
+  background: var(--surface-raised);
+}
+
+.p-button {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+
+.p-button:enabled:hover {
+  background: #8cab69;
+  border-color: #8cab69;
+  color: #fff;
+}
+
+.p-button:focus {
+  box-shadow: 0 0 0 2px var(--accent-soft);
 }

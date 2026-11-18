@@ -1,194 +1,190 @@
 import { CdkDragDrop } from '@angular/cdk/drag-drop';
-import { Component, Input, OnDestroy, OnInit } from '@angular/core';
+import { Component, DoCheck, Input, OnDestroy, OnInit } from '@angular/core';
 import { Subscription } from 'rxjs';
-import { BotService } from 'src/app/bot/bot.service';
-import { PlayerType } from 'src/app/player/player-type.enum';
 import { ChessUtilsService } from '../chess-utils.service';
 import { Chessboard } from '../chessboard.model';
+import { Color, Square } from '../piece.model';
 import { Position } from '../position.model';
 import { PromotionService } from '../promotion/promotion.service';
-import { DrawReason, RulesService } from '../rules.service';
+import { RulesService } from '../rules.service';
 
-const DRAW_REASON_LABELS: Record<DrawReason, string> = {
-  'fifty-move-rule': 'the fifty-move rule',
-  'threefold-repetition': 'threefold repetition',
-  'insufficient-material': 'insufficient material',
-};
+const FILES = 'abcdefgh';
 
-/** Pause before the bot answers, so that the user's move is displayed first. */
-const BOT_MOVE_DELAY_MS = 300;
-
-/** Square coordinates attached as data to cdkDrag / cdkDropList in the template. */
-interface SquareCoordinates {
+/** Everything the template needs to draw one square. */
+export interface SquareView {
   x: number;
   y: number;
+  piece: Square;
+  isLight: boolean;
+  isLastMove: boolean;
+  isCheck: boolean;
+  /** Rank number shown on the left column, file letter on the bottom row. */
+  rankLabel: string | null;
+  fileLabel: string | null;
 }
 
+/**
+ * Displays a chessboard (white at the bottom) and lets the user play moves by
+ * drag & drop or by clicking the piece then the destination square.
+ * The game flow (turns, bot, end of game) is handled by the parent.
+ */
 @Component({
   selector: 'app-chess-board',
   templateUrl: './chess-board.component.html',
   styleUrls: ['./chess-board.component.scss'],
 })
-export class ChessBoardComponent implements OnInit, OnDestroy {
-  @Input() whitePiecesPlayerType: PlayerType = PlayerType.User;
-  @Input() blackPiecesPlayerType: PlayerType = PlayerType.User;
-  chessBoard: Chessboard = new Chessboard(this.chessUtilsService);
-  highlightedSquares: Position[] = [];
+export class ChessBoardComponent implements OnInit, DoCheck, OnDestroy {
+  @Input() chessBoard: Chessboard = new Chessboard(this.chessUtilsService);
+  /** Whether the user may move the pieces of the side to move. */
+  @Input() canMove = true;
+
+  squares: SquareView[] = [];
+  selectedSquare: Position | null = null;
   promotionPosition: Position | null = null;
+  private targetKeys = new Set<string>();
+  private renderedKey = '';
+  private subscription?: Subscription;
 
   constructor(
     private rulesService: RulesService,
     private chessUtilsService: ChessUtilsService,
-    private botService: BotService,
     private promotionService: PromotionService
   ) {}
 
-  private subscriptions: Subscription[] = [];
-  private botTimeout?: ReturnType<typeof setTimeout>;
-
   ngOnInit(): void {
-    this.subscriptions.push(
-      this.rulesService.currentPlayerCheckmated.subscribe(() => {
-        // the turn has already been toggled: the current player is the one who is mated
-        alert(this.chessBoard.getCurrentPlayerColor() + ' king is checkmated');
-      })
-    );
-
-    this.subscriptions.push(
-      this.rulesService.currentPlayerStalemated.subscribe(() => {
-        alert(
-          this.chessBoard.getCurrentPlayerColor() + ' king is in stalemate'
-        );
-      })
-    );
-
-    this.subscriptions.push(
-      this.rulesService.gameDrawn.subscribe(reason => {
-        alert('Draw by ' + DRAW_REASON_LABELS[reason]);
-      })
-    );
-
-    this.subscriptions.push(
-      this.rulesService.nextPlayersTurn.subscribe(() => {
-        if (!this.isCurrentPlayerUser()) {
-          // asynchronous: lets the UI render the previous move first, and
-          // avoids an infinite recursion when two bots play each other
-          this.botTimeout = setTimeout(() => {
-            this.botTimeout = undefined;
-            this.botService.play(this.chessBoard, this.getCurrentPlayerType());
-          }, BOT_MOVE_DELAY_MS);
-        }
-      })
-    );
-
-    this.subscriptions.push(
-      this.promotionService.promotionPosition$.subscribe(pos => {
-        this.promotionPosition = pos;
-      })
+    this.subscription = this.promotionService.promotionPosition$.subscribe(
+      pos => (this.promotionPosition = pos)
     );
   }
 
-  getSquareClass(x: number, y: number): { [key: string]: boolean } {
-    const currentPosition: Position = new Position(x, y);
-    return {
-      'white-square': (x + y) % 2 === 0,
-      'black-square': (x + y) % 2 !== 0,
-      'highlight-square': this.highlightedSquares.some(square =>
-        currentPosition.equals(square)
-      ),
-    };
-  }
-
-  highlightAllowedMoves(x: number, y: number) {
-    const piecePos = new Position(x, y);
-    if (
-      this.isCurrentPlayerUser() &&
-      this.chessUtilsService.isPieceMovableByColor(
-        this.chessBoard.getPieceColorByPos(piecePos),
-        this.chessBoard
-      )
-    ) {
-      const squaresToHighlight = this.rulesService.getValidMovesByPiecePos(
-        piecePos,
-        this.chessBoard
-      );
-      this.highlightedSquares = squaresToHighlight;
+  /** Rebuild the squares only when the position actually changed. */
+  ngDoCheck(): void {
+    const key = this.computeRenderKey();
+    if (key !== this.renderedKey) {
+      this.renderedKey = key;
+      this.clearSelection();
+      this.squares = this.buildSquares();
     }
-  }
-
-  refreshHighlightedSquares() {
-    this.highlightedSquares = [];
-  }
-
-  onDrop(
-    event: CdkDragDrop<SquareCoordinates, SquareCoordinates, SquareCoordinates>
-  ): void {
-    const oldPos = new Position(event.item.data.x, event.item.data.y);
-    const newPos = new Position(event.container.data.x, event.container.data.y);
-    this.refreshHighlightedSquares();
-    // prevent user to play when it's bot's turn
-    if (this.isCurrentPlayerUser()) {
-      this.rulesService.playMove(oldPos, newPos, this.chessBoard);
-    }
-  }
-
-  showPromotion(row: number, col: number): boolean {
-    return (
-      this.isCurrentPlayerUser() &&
-      this.promotionPosition?.x === col &&
-      this.promotionPosition?.y === row
-    );
-  }
-
-  /** History grouped by full move: [['e4', 'e5'], ['Nf3', 'Nc6'], ['Bb5']]. */
-  get movePairs(): string[][] {
-    const sans = this.chessBoard.getHistory().map(entry => entry.san);
-    const pairs: string[][] = [];
-    for (let i = 0; i < sans.length; i += 2) {
-      pairs.push(sans.slice(i, i + 2));
-    }
-    return pairs;
-  }
-
-  canUndo(): boolean {
-    return (
-      this.isCurrentPlayerUser() &&
-      this.chessBoard
-        .getHistory()
-        .some((_, i) => this.getPlayerTypeForPly(i) === PlayerType.User)
-    );
-  }
-
-  /** Undo moves until it is a user's turn again (i.e. also undo the bot's answer). */
-  undo(): void {
-    this.refreshHighlightedSquares();
-    do {
-      if (!this.rulesService.undoMove(this.chessBoard)) {
-        return;
-      }
-    } while (!this.isCurrentPlayerUser());
-  }
-
-  /** Player type of the side that played the ply at this history index. */
-  private getPlayerTypeForPly(plyIndex: number): PlayerType {
-    const whiteStarted =
-      this.chessBoard.getHistory()[0]?.stateBefore.isWhiteTurn ?? true;
-    const isWhitePly = (plyIndex % 2 === 0) === whiteStarted;
-    return isWhitePly ? this.whitePiecesPlayerType : this.blackPiecesPlayerType;
-  }
-
-  private isCurrentPlayerUser(): boolean {
-    return this.getCurrentPlayerType() === PlayerType.User;
-  }
-
-  private getCurrentPlayerType() {
-    return this.chessBoard.getIsWhiteTurn()
-      ? this.whitePiecesPlayerType
-      : this.blackPiecesPlayerType;
   }
 
   ngOnDestroy(): void {
-    clearTimeout(this.botTimeout);
-    this.subscriptions.forEach(subscription => subscription.unsubscribe());
+    this.subscription?.unsubscribe();
+  }
+
+  /** Squares keep their element across renders: only their content changes. */
+  trackByIndex(index: number): number {
+    return index;
+  }
+
+  isSelected(square: SquareView): boolean {
+    return (
+      this.selectedSquare?.x === square.x && this.selectedSquare?.y === square.y
+    );
+  }
+
+  isTarget(square: SquareView): boolean {
+    return this.targetKeys.has(square.x + ',' + square.y);
+  }
+
+  canDrag(square: SquareView): boolean {
+    return (
+      this.canMove &&
+      !this.promotionPosition &&
+      this.chessUtilsService.getColor(square.piece) ===
+        this.chessBoard.getCurrentPlayerColor()
+    );
+  }
+
+  /** Select a piece of the side to move and show its legal moves. */
+  select(square: SquareView): void {
+    if (!this.canDrag(square)) {
+      return;
+    }
+    const pos = new Position(square.x, square.y);
+    this.selectedSquare = pos;
+    this.targetKeys = new Set(
+      this.rulesService
+        .getValidMovesByPiecePos(pos, this.chessBoard)
+        .map(target => target.x + ',' + target.y)
+    );
+  }
+
+  onSquareClick(square: SquareView): void {
+    if (this.selectedSquare && this.isTarget(square)) {
+      this.move(this.selectedSquare, new Position(square.x, square.y));
+    } else if (!this.canDrag(square)) {
+      this.clearSelection();
+    }
+  }
+
+  onDrop(event: CdkDragDrop<SquareView, SquareView, SquareView>): void {
+    const from = event.item.data;
+    const to = event.container.data;
+    if (from.x === to.x && from.y === to.y) {
+      return; // dropped back on its square: keep the selection (click to move)
+    }
+    this.move(new Position(from.x, from.y), new Position(to.x, to.y));
+  }
+
+  showPromotion(square: SquareView): boolean {
+    return (
+      this.canMove &&
+      this.promotionPosition?.x === square.x &&
+      this.promotionPosition?.y === square.y
+    );
+  }
+
+  /** Color of the pawn being promoted: white promotes on the top row. */
+  promotionColor(square: SquareView): Color {
+    return square.y === 7 ? 'white' : 'black';
+  }
+
+  private move(from: Position, to: Position): void {
+    if (this.canMove) {
+      this.rulesService.playMove(from, to, this.chessBoard);
+    }
+    this.clearSelection();
+  }
+
+  private computeRenderKey(): string {
+    return (
+      Chessboard.getPositionKey(this.chessBoard.saveState()) +
+      this.chessBoard.getHistory().length
+    );
+  }
+
+  private clearSelection(): void {
+    this.selectedSquare = null;
+    this.targetKeys = new Set();
+  }
+
+  private buildSquares(): SquareView[] {
+    const history = this.chessBoard.getHistory();
+    const lastMove = history[history.length - 1]?.move;
+    const checkedKing = this.rulesService.isInCheck(this.chessBoard)
+      ? this.chessBoard.findPiecePosition(
+          `${this.chessBoard.getCurrentPlayerColor()}-king`
+        )
+      : null;
+
+    const squares: SquareView[] = [];
+    for (let y = Chessboard.BOARD_SIZE - 1; y >= 0; y--) {
+      for (let x = 0; x < Chessboard.BOARD_SIZE; x++) {
+        const pos = new Position(x, y);
+        squares.push({
+          x,
+          y,
+          piece: this.chessBoard.getPiece(x, y),
+          isLight: (x + y) % 2 === 1,
+          isLastMove:
+            !!lastMove &&
+            (lastMove.oldPos.equals(pos) || lastMove.newPos.equals(pos)),
+          isCheck: !!checkedKing && checkedKing.equals(pos),
+          rankLabel: x === 0 ? String(y + 1) : null,
+          fileLabel: y === 0 ? FILES[x] : null,
+        });
+      }
+    }
+    return squares;
   }
 }

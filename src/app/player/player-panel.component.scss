@@ -1,30 +1,78 @@
-.player-panel {
-  background-color: rgb(219, 231, 226);
+.player {
   display: flex;
-  flex-direction: column;
   align-items: center;
-  text-align: center;
-  font-size: 16px;
+  gap: 12px;
+  padding: 10px 14px;
 }
 
-.player-panel h2 {
-  margin: 0; /* Supprimer la marge par défaut du titre */
+.avatar {
+  flex: none;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  object-fit: cover;
+  background: var(--surface-raised);
 }
 
-.profile-picture {
-  max-width: 100px; /* Limiter la largeur de la photo de profil */
-  height: auto; /* Ajuster la hauteur en conséquence */
+.identity {
+  min-width: 0;
 }
 
-.player-panel p {
-  margin: 0; /* Supprimer la marge par défaut des paragraphes */
+.name-line {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  white-space: nowrap;
 }
 
-.player-panel ul {
-  list-style: none; /* Supprimer les puces de la liste */
-  padding: 0; /* Supprimer le padding par défaut de la liste */
+.turn-dot {
+  align-self: center;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--border);
+  transition: background 0.2s;
 }
 
-.player-panel ul li {
-  margin: 0; /* Supprimer la marge par défaut des éléments de liste */
+.active .turn-dot {
+  background: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
+.name {
+  color: var(--text-strong);
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.elo,
+.status {
+  color: var(--text-muted);
+  font-size: 0.85em;
+}
+
+.status {
+  font-style: italic;
+}
+
+.material {
+  display: flex;
+  align-items: center;
+  min-height: 18px;
+  margin-top: 2px;
+}
+
+.captured {
+  width: 18px;
+  height: 18px;
+  margin-right: -5px; // overlap like a stack
+  opacity: 0.85;
+}
+
+.advantage {
+  margin-left: 10px;
+  color: var(--text-muted);
+  font-size: 0.8em;
+  font-weight: 600;
 }

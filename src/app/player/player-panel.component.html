@@ -1,13 +1,24 @@
-<div class="player-panel" *ngIf="player">
-  <!-- Displaying the player's name -->
-  <h2>{{ player.name }}</h2>
-
-  <!-- Displaying the player's profile picture -->
+<div class="player" *ngIf="player" [class.active]="active">
   <img
-    [src]="player.profilePicture"
-    alt="Profile Picture"
-    class="profile-picture" />
-
-  <!-- Displaying the player's Elo ranking -->
-  <p>Elo Ranking: {{ player.elo }}</p>
+    class="avatar"
+    [src]="
+      player.profilePicture || 'assets/pictures/default-profile-picture.jpg'
+    "
+    alt="" />
+  <div class="identity">
+    <div class="name-line">
+      <span class="turn-dot" aria-hidden="true"></span>
+      <span class="name">{{ player.name }}</span>
+      <span class="elo" *ngIf="player.elo">{{ player.elo }}</span>
+      <span class="status" *ngIf="active && status">{{ status }}</span>
+    </div>
+    <div class="material">
+      <img
+        *ngFor="let piece of captured"
+        class="captured"
+        [src]="pieceImage(piece)"
+        [alt]="piece" />
+      <span class="advantage" *ngIf="advantage > 0">+{{ advantage }}</span>
+    </div>
+  </div>
 </div>

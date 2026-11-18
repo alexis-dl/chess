@@ -1,10 +1,21 @@
-<div class="promotion-component" appClickOutside (clickOutside)="onCancel()">
-  <div class="border" *ngFor="let piece of pieces">
-    <img
-      class="piece-image"
-      [src]="getPieceImagePath(piece)"
-      [alt]="piece"
-      (click)="onSelect(piece)" />
-  </div>
-  <mat-icon class="cross-icon" (click)="onCancel()">clear</mat-icon>
+<div
+  class="picker"
+  [class.upward]="pieceColor === 'black'"
+  appClickOutside
+  (clickOutside)="onCancel()">
+  <button
+    *ngFor="let piece of pieces"
+    type="button"
+    class="option"
+    [attr.aria-label]="'Promote to ' + piece"
+    (click)="onSelect(piece)">
+    <img [src]="getPieceImagePath(piece)" [alt]="piece" />
+  </button>
+  <button
+    type="button"
+    class="cancel"
+    aria-label="Cancel promotion"
+    (click)="onCancel()">
+    <mat-icon>close</mat-icon>
+  </button>
 </div>

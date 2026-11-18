@@ -1,6 +1,28 @@
-p {
+.explorer {
+  --board-size: clamp(
+    300px,
+    min(calc(100vh - 190px), calc(100vw - 32px)),
+    720px
+  );
   display: flex;
-  justify-content: center;
-  margin: 0.5em;
-  font-size: 2em; // Adjust the font size as needed
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 24px 16px;
+}
+
+header {
+  width: var(--board-size);
+}
+
+h1 {
+  margin: 0;
+  color: var(--text-strong);
+  font-size: 1.5em;
+  font-weight: 400;
+}
+
+p {
+  margin: 4px 0 0;
+  color: var(--text-muted);
 }

@@ -1,5 +1,83 @@
-<app-player-panel [player]="bot"></app-player-panel>
-<app-chess-board
-  [whitePiecesPlayerType]="player1.playerType"
-  [blackPiecesPlayerType]="bot.playerType"></app-chess-board>
-<app-player-panel [player]="player1"></app-player-panel>
+<div class="game">
+  <aside class="panel game-info">
+    <header class="info-header">
+      <mat-icon class="info-icon">smart_toy</mat-icon>
+      <div>
+        <div class="info-title">Casual · vs computer</div>
+        <div class="info-subtitle">You play the white pieces</div>
+      </div>
+    </header>
+
+    <div class="section-title">Opponent</div>
+    <button
+      *ngFor="let candidate of bots"
+      type="button"
+      class="bot-choice"
+      [class.selected]="candidate === bot"
+      (click)="selectBot(candidate)">
+      <img [src]="candidate.profilePicture" alt="" />
+      <span class="bot-text">
+        <span class="bot-name">{{ candidate.name }}</span>
+        <span class="bot-description">{{ botDescription(candidate) }}</span>
+      </span>
+    </button>
+  </aside>
+
+  <main class="board-area">
+    <app-chess-board
+      [chessBoard]="chessBoard"
+      [canMove]="canMove"></app-chess-board>
+  </main>
+
+  <section class="panel game-panel">
+    <app-player-panel
+      [player]="bot"
+      [active]="!isUserTurn && !result"
+      status="thinking…"
+      [captured]="material.captured.black"
+      [advantage]="-material.balance"></app-player-panel>
+
+    <div class="moves" #moveList>
+      <div class="move-row" *ngFor="let pair of movePairs; let i = index">
+        <span class="move-number">{{ i + 1 }}</span>
+        <span class="move" [class.current]="i * 2 === lastPly">{{
+          pair[0]
+        }}</span>
+        <span class="move" [class.current]="i * 2 + 1 === lastPly">{{
+          pair[1]
+        }}</span>
+      </div>
+      <p class="moves-empty" *ngIf="!movePairs.length">
+        Your turn — make the first move.
+      </p>
+    </div>
+
+    <div class="result" *ngIf="result">
+      <span class="result-title">{{ result.title }}</span>
+      <span class="result-detail">{{ result.detail }}</span>
+    </div>
+
+    <div class="controls">
+      <button
+        type="button"
+        class="btn btn-icon"
+        title="Take back"
+        aria-label="Take back"
+        [disabled]="!canUndo"
+        (click)="undo()">
+        <mat-icon>undo</mat-icon>
+      </button>
+      <button type="button" class="btn" (click)="newGame()">
+        <mat-icon>refresh</mat-icon>
+        New game
+      </button>
+    </div>
+
+    <app-player-panel
+      [player]="user"
+      [active]="isUserTurn && !result"
+      status="your turn"
+      [captured]="material.captured.white"
+      [advantage]="material.balance"></app-player-panel>
+  </section>
+</div>

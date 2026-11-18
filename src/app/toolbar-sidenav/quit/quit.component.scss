@@ -1,0 +1,32 @@
+.quit {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  min-height: 100vh;
+  padding: 48px 16px;
+  box-sizing: border-box;
+  text-align: center;
+}
+
+h1 {
+  margin: 0;
+  color: var(--text-strong);
+  font-size: 2em;
+  font-weight: 300;
+}
+
+img {
+  max-width: min(100%, 420px);
+  max-height: 55vh;
+  border-radius: 6px;
+}
+
+p {
+  margin: 0;
+  color: var(--text-muted);
+}
+
+.btn {
+  text-decoration: none;
+}

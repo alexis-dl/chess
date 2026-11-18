@@ -1,45 +1,17 @@
-<mat-sidenav-container>
-  <mat-sidenav #sidenav mode="over">
-    <!-- Side panel content -->
-    <mat-nav-list>
-      <a mat-list-item (click)="sidenav.toggle()" routerLink="/home">Home</a>
-      <a mat-list-item (click)="sidenav.toggle()" routerLink="/play"
-        >New Game vs Bot</a
-      >
-      <a mat-list-item (click)="sidenav.toggle()" routerLink="/explorer"
-        >Explorer</a
-      >
-      <a mat-list-item (click)="sidenav.toggle()" routerLink="/openings"
-        >Openings (Not Available)</a
-      >
-      <a mat-list-item (click)="sidenav.toggle()" routerLink="/settings"
-        >Settings</a
-      >
-      <!-- Add other options settings here -->
-    </mat-nav-list>
-  </mat-sidenav>
+<header class="topbar">
+  <a class="brand" routerLink="/play">
+    <span class="brand-icon" aria-hidden="true">♞</span>
+    <span class="brand-name">chess</span>
+  </a>
 
-  <mat-sidenav-content>
-    <mat-toolbar color="primary">
-      <button mat-icon-button (click)="sidenav.toggle()">
-        <mat-icon>menu</mat-icon>
-      </button>
-      <span routerLink="/play" style="cursor: pointer">Chess</span>
-      <span class="example-spacer"></span>
-      <span class="example-spacer"></span>
-      <button
-        mat-icon-button
-        class="example-icon"
-        style="margin-left: auto"
-        aria-label="Openings"
-        routerLink="/openings">
-        <mat-icon>book</mat-icon>
-      </button>
+  <nav class="nav">
+    <a routerLink="/play" routerLinkActive="active">Play</a>
+    <a routerLink="/explorer" routerLinkActive="active">Explorer</a>
+    <a routerLink="/openings" routerLinkActive="active">Openings</a>
+    <a routerLink="/settings" routerLinkActive="active">Settings</a>
+  </nav>
 
-      <app-settings-slidemenu></app-settings-slidemenu>
-    </mat-toolbar>
+  <app-settings-slidemenu class="menu"></app-settings-slidemenu>
+</header>
 
-    <!-- Main Content of the application -->
-    <router-outlet></router-outlet>
-  </mat-sidenav-content>
-</mat-sidenav-container>
+<router-outlet></router-outlet>
