@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { MenuItem } from 'primeng/api';
 
 @Component({
@@ -6,7 +6,7 @@ import { MenuItem } from 'primeng/api';
   templateUrl: './settings-slidemenu.component.html',
   styleUrls: ['./settings-slidemenu.component.scss'],
 })
-export class SettingsSlidemenuComponent {
+export class SettingsSlidemenuComponent implements OnInit {
   items: MenuItem[] = [];
 
   ngOnInit() {

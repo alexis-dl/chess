@@ -80,11 +80,15 @@ export class Chessboard {
   private updateCastlingRights(oldPos: Position, newPos: Position): void {
     for (const pos of [oldPos, newPos]) {
       if (pos.y === 0) {
-        if (pos.x === 0 || pos.x === 4) this.castlingRights.whiteQueenSide = false;
-        if (pos.x === 7 || pos.x === 4) this.castlingRights.whiteKingSide = false;
+        if (pos.x === 0 || pos.x === 4)
+          this.castlingRights.whiteQueenSide = false;
+        if (pos.x === 7 || pos.x === 4)
+          this.castlingRights.whiteKingSide = false;
       } else if (pos.y === 7) {
-        if (pos.x === 0 || pos.x === 4) this.castlingRights.blackQueenSide = false;
-        if (pos.x === 7 || pos.x === 4) this.castlingRights.blackKingSide = false;
+        if (pos.x === 0 || pos.x === 4)
+          this.castlingRights.blackQueenSide = false;
+        if (pos.x === 7 || pos.x === 4)
+          this.castlingRights.blackKingSide = false;
       }
     }
   }
@@ -106,6 +110,19 @@ export class Chessboard {
 
   public setCastlingRights(value: CastlingRights) {
     this.castlingRights = value;
+  }
+
+  /**
+   * Independent copy of the board state (pieces, turn, en passant, castling rights).
+   * The stateless ChessUtilsService is shared, not copied.
+   */
+  clone(): Chessboard {
+    const copy = new Chessboard(this.chessUtilsService);
+    copy.pieces = this.pieces.map(row => [...row]);
+    copy.isWhiteTurn = this.isWhiteTurn;
+    copy.enPassantColIndex = this.enPassantColIndex;
+    copy.castlingRights = { ...this.castlingRights };
+    return copy;
   }
 
   getPlayerPiecesByColor(pieceColor: string): string[][] {

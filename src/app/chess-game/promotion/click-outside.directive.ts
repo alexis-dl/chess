@@ -7,7 +7,7 @@ import {
 } from '@angular/core';
 
 @Directive({
-  selector: '[clickOutside]',
+  selector: '[appClickOutside]',
 })
 export class ClickOutsideDirective {
   @Output() clickOutside = new EventEmitter<void>();
@@ -15,7 +15,7 @@ export class ClickOutsideDirective {
   constructor(private el: ElementRef) {}
 
   @HostListener('document:mousedown', ['$event.target'])
-  public onClick(targetElement: any): void {
+  public onClick(targetElement: EventTarget | null): void {
     const clickedInside = this.el.nativeElement.contains(targetElement);
     if (!clickedInside) {
       this.clickOutside.emit();

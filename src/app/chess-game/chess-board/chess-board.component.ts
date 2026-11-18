@@ -9,6 +9,12 @@ import { Position } from '../position.model';
 import { PromotionService } from '../promotion/promotion.service';
 import { RulesService } from '../rules.service';
 
+/** Square coordinates attached as data to cdkDrag / cdkDropList in the template. */
+interface SquareCoordinates {
+  x: number;
+  y: number;
+}
+
 @Component({
   selector: 'app-chess-board',
   templateUrl: './chess-board.component.html',
@@ -39,7 +45,9 @@ export class ChessBoardComponent implements OnInit, OnDestroy {
 
     this.subscriptions.push(
       this.rulesService.currentPlayerStalemated.subscribe(() => {
-        alert(this.chessBoard.getCurrentPlayerColor() + ' king is in stalemate');
+        alert(
+          this.chessBoard.getCurrentPlayerColor() + ' king is in stalemate'
+        );
       })
     );
 
@@ -91,9 +99,11 @@ export class ChessBoardComponent implements OnInit, OnDestroy {
     this.highlightedSquares = [];
   }
 
-  onDrop(event: CdkDragDrop<any>): void {
-    const oldPos: Position = event.item.data;
-    const newPos: Position = event.container.data;
+  onDrop(
+    event: CdkDragDrop<SquareCoordinates, SquareCoordinates, SquareCoordinates>
+  ): void {
+    const oldPos = new Position(event.item.data.x, event.item.data.y);
+    const newPos = new Position(event.container.data.x, event.container.data.y);
     this.refreshHighlightedSquares();
     // prevent user to play when it's bot's turn
     if (this.isCurrentPlayerUser()) {

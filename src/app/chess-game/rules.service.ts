@@ -1,5 +1,4 @@
 import { Injectable } from '@angular/core';
-import { cloneDeep } from 'lodash';
 import { Subject, take } from 'rxjs';
 import { ChessUtilsService } from './chess-utils.service';
 import { Chessboard } from './chessboard.model';
@@ -110,7 +109,7 @@ export class RulesService {
       return false;
     }
 
-    const cloneChessboard: Chessboard = cloneDeep(chessBoard);
+    const cloneChessboard: Chessboard = chessBoard.clone();
     cloneChessboard.movePiece(oldPos, newPos);
 
     return (
@@ -199,7 +198,7 @@ export class RulesService {
     const moves: Position[] = [];
 
     switch (pieceType) {
-      case 'king':
+      case 'king': {
         const deltasKing = [-1, 0, 1];
 
         for (const deltaX of deltasKing) {
@@ -218,7 +217,8 @@ export class RulesService {
           }
         }
         break;
-      case 'queen':
+      }
+      case 'queen': {
         const deltasQueen = [-1, 0, 1];
 
         for (const deltaX of deltasQueen) {
@@ -258,7 +258,8 @@ export class RulesService {
           }
         }
         break;
-      case 'bishop':
+      }
+      case 'bishop': {
         const deltasBishop = [-1, 1];
         for (const deltaX of deltasBishop) {
           for (const deltaY of deltasBishop) {
@@ -294,7 +295,8 @@ export class RulesService {
           }
         }
         break;
-      case 'rook':
+      }
+      case 'rook': {
         const deltas = [-1, 1];
         for (const delta of deltas) {
           for (const axis of ['X', 'Y']) {
@@ -335,7 +337,8 @@ export class RulesService {
           }
         }
         break;
-      case 'knight':
+      }
+      case 'knight': {
         const knightDeltas = [
           { deltaX: 2, deltaY: 1 },
           { deltaX: 1, deltaY: 2 },
@@ -363,7 +366,8 @@ export class RulesService {
           }
         }
         break;
-      case 'pawn':
+      }
+      case 'pawn': {
         // Déterminer la direction du mouvement en fonction de la couleur du pion
         const direction = pieceColor === 'white' ? 1 : -1;
 
@@ -431,6 +435,7 @@ export class RulesService {
           }
         }
         break;
+      }
     }
     return moves;
   }
@@ -458,16 +463,16 @@ export class RulesService {
       for (let y = 0; y < Chessboard.BOARD_SIZE; y++) {
         const attackingPiecePos = new Position(x, y);
         const piece = chessBoard.getPieceByPos(attackingPiecePos);
-        if (!piece || this.chessUtilsService.getColor(piece) !== attackerColor) {
+        if (
+          !piece ||
+          this.chessUtilsService.getColor(piece) !== attackerColor
+        ) {
           continue;
         }
         if (this.chessUtilsService.isPawn(piece)) {
           // pawns only attack diagonally (forward moves and en passant are not attacks)
           const direction = attackerColor === 'white' ? 1 : -1;
-          if (
-            square.y === y + direction &&
-            Math.abs(square.x - x) === 1
-          ) {
+          if (square.y === y + direction && Math.abs(square.x - x) === 1) {
             return true;
           }
         } else if (

@@ -357,9 +357,13 @@ describe('RulesService', () => {
 
     it('only counts diagonal pawn attacks', () => {
       // a black pawn on g2 attacks f1 (and h1), not g1
-      expect(canMove(board({ ...base, g2: 'black-pawn' }), 'e1', 'g1')).toBeFalse();
+      expect(
+        canMove(board({ ...base, g2: 'black-pawn' }), 'e1', 'g1')
+      ).toBeFalse();
       // a black pawn on g3 attacks f2/h2: castling is fine
-      expect(canMove(board({ ...base, g3: 'black-pawn' }), 'e1', 'g1')).toBeTrue();
+      expect(
+        canMove(board({ ...base, g3: 'black-pawn' }), 'e1', 'g1')
+      ).toBeTrue();
     });
 
     it('is lost after the king has moved, even if it came back', () => {
