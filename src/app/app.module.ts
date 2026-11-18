@@ -14,7 +14,7 @@ import { ChessPieceComponent } from './chess-game/chess-piece/chess-piece.compon
 import { ClickOutsideDirective } from './chess-game/promotion/click-outside.directive';
 import { PromotionComponent } from './chess-game/promotion/promotion.component';
 import { HomeComponent } from './home/home.component';
-import { OpeningsComponent } from './openings/openings.component';
+import { LearnComponent } from './learn/learn.component';
 import { ExplorerComponent } from './play/explorer/explorer.component';
 import { PlayVsBotComponent } from './play/play-vs-bot/play-vs-bot.component';
 import { PlayerPanelComponent } from './player/player-panel.component';
@@ -52,7 +52,7 @@ import { ToastModule } from 'primeng/toast';
     SettingsComponent,
     SettingsSlidemenuComponent,
     QuitComponent,
-    OpeningsComponent,
+    LearnComponent,
     HomeComponent,
     ExplorerComponent,
     PlayVsBotComponent,

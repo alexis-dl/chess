@@ -1,7 +1,7 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { HomeComponent } from './home/home.component';
-import { OpeningsComponent } from './openings/openings.component';
+import { LearnComponent } from './learn/learn.component';
 import { ExplorerComponent } from './play/explorer/explorer.component';
 import { PlayVsBotComponent } from './play/play-vs-bot/play-vs-bot.component';
 import { PuzzlesComponent } from './puzzles/puzzles.component';
@@ -18,7 +18,24 @@ const routes: Routes = [
   { path: 'play', component: PlayVsBotComponent },
   { path: 'puzzles', component: PuzzlesComponent },
   { path: 'explorer', component: ExplorerComponent },
-  { path: 'openings', component: OpeningsComponent },
+  { path: 'learn', redirectTo: 'learn/opening', pathMatch: 'full' },
+  {
+    path: 'learn/opening',
+    component: LearnComponent,
+    data: { section: 'opening' },
+  },
+  {
+    path: 'learn/middlegame',
+    component: LearnComponent,
+    data: { section: 'middlegame' },
+  },
+  {
+    path: 'learn/endgame',
+    component: LearnComponent,
+    data: { section: 'endgame' },
+  },
+  // former page
+  { path: 'openings', redirectTo: 'learn/opening' },
   {
     path: 'settings',
     component: SettingsComponent,

@@ -32,10 +32,12 @@
 
 .nav {
   display: flex;
+  align-items: center;
   gap: 4px;
-  overflow-x: auto;
 
-  a {
+  > a,
+  .nav-menu > a {
+    display: block;
     padding: 6px 12px;
     border-radius: 4px;
     color: var(--text-muted);
@@ -60,6 +62,51 @@
   }
 }
 
+// ----- Learn dropdown -----
+
+.nav-menu {
+  position: relative;
+}
+
+.dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  z-index: 10;
+  padding-top: 10px; // keeps the hover alive between the link and the panel
+}
+
+.dropdown-panel {
+  min-width: 190px;
+  padding: 6px 0;
+  border-left: 2px solid var(--accent);
+  border-radius: 0 4px 4px 0;
+  background: var(--surface-raised);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+
+  a {
+    display: block;
+    padding: 10px 18px;
+    color: var(--text);
+    text-decoration: none;
+    white-space: nowrap;
+    transition:
+      color 0.15s,
+      background 0.15s;
+
+    &:hover,
+    &:focus-visible {
+      background: var(--border);
+      color: var(--text-strong);
+      outline: none;
+    }
+
+    &.current {
+      color: var(--accent);
+    }
+  }
+}
+
 .menu {
   margin-left: auto;
 }
@@ -71,6 +118,21 @@
   }
 
   .brand-name {
+    display: none;
+  }
+
+  .nav {
+    gap: 0;
+
+    > a,
+    .nav-menu > a {
+      padding: 6px 8px;
+      font-size: 0.8em;
+    }
+  }
+
+  // the settings are also in the gear menu
+  .nav > .settings-link {
     display: none;
   }
 }

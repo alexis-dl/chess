@@ -1,0 +1,19 @@
+<div class="learn" *ngIf="section$ | async as section">
+  <nav class="tabs" aria-label="Learn sections">
+    <a
+      *ngFor="let item of sections"
+      [routerLink]="['/learn', item.id]"
+      routerLinkActive="active">
+      {{ item.title }}
+    </a>
+  </nav>
+
+  <section class="panel">
+    <h1>{{ section.title }}</h1>
+    <p class="description">{{ section.description }}</p>
+    <p class="soon">
+      <mat-icon>schedule</mat-icon>
+      Lessons coming soon.
+    </p>
+  </section>
+</div>
