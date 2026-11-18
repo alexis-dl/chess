@@ -100,9 +100,9 @@ a {
   cursor: grabbing;
 }
 
-.cdk-drag-animating {
-  transition: transform 150ms cubic-bezier(0, 0, 0.2, 1);
-}
+// No transition on .cdk-drag-animating: on drop the library animates the
+// preview towards the placeholder, which is hidden (display: none, see the
+// board) and therefore sits at the top-left corner of the screen.
 
 .cdk-drop-list-dragging {
   cursor: grabbing;
