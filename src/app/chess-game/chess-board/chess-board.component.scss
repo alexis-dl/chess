@@ -1,4 +1,5 @@
 :host {
+  position: relative;
   display: block;
   width: var(--board-size, 560px);
   height: var(--board-size, 560px);
@@ -154,5 +155,39 @@ app-promotion {
   }
   to {
     box-shadow: inset 0 0 0 calc(var(--board-size, 560px) * 0.012) var(--accent);
+  }
+}
+
+// ----- annotations layer (right click) -----
+
+.annotations {
+  position: absolute;
+  inset: 0;
+  z-index: 3; // above the pieces, below a grabbed piece and the promotion picker
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+
+  circle {
+    fill: none;
+    stroke-width: 0.07;
+    opacity: 0.85;
+  }
+
+  .arrow {
+    opacity: 0.75;
+
+    line {
+      stroke-width: 0.16;
+      stroke-linecap: round;
+    }
+
+    polygon {
+      stroke: none;
+    }
+  }
+
+  .preview {
+    opacity: 0.45;
   }
 }

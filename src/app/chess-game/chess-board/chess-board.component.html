@@ -1,4 +1,8 @@
-<div class="board" #board cdkDropListGroup>
+<div
+  class="board"
+  #board
+  cdkDropListGroup
+  (mousedown)="onBoardMouseDown($event)">
   <div
     *ngFor="let square of squares; trackBy: trackByIndex"
     class="square"
@@ -53,3 +57,31 @@
       [upward]="promotionUpward(square)"></app-promotion>
   </div>
 </div>
+
+<!-- circles and arrows drawn with the right mouse button -->
+<svg
+  class="annotations"
+  viewBox="0 0 8 8"
+  *ngIf="circleViews.length || arrowViews.length"
+  aria-hidden="true">
+  <circle
+    *ngFor="let circle of circleViews"
+    [attr.cx]="circle.cx"
+    [attr.cy]="circle.cy"
+    r="0.455"
+    [attr.stroke]="circle.color"
+    [class.preview]="circle.preview" />
+  <g
+    *ngFor="let arrow of arrowViews"
+    class="arrow"
+    [attr.fill]="arrow.color"
+    [attr.stroke]="arrow.color"
+    [class.preview]="arrow.preview">
+    <line
+      [attr.x1]="arrow.shape.x1"
+      [attr.y1]="arrow.shape.y1"
+      [attr.x2]="arrow.shape.x2"
+      [attr.y2]="arrow.shape.y2" />
+    <polygon [attr.points]="arrow.shape.head" />
+  </g>
+</svg>

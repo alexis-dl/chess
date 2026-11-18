@@ -16,6 +16,17 @@ import { Color, Square } from '../piece.model';
 import { Position } from '../position.model';
 import { PromotionService } from '../promotion/promotion.service';
 import { RulesService } from '../rules.service';
+import {
+  ArrowAnnotation,
+  arrowShape,
+  ArrowShape,
+  BoardSquare,
+  BRUSH_COLORS,
+  brushFromModifiers,
+  CircleAnnotation,
+  toggleArrow,
+  toggleCircle,
+} from './annotations';
 
 const FILES = 'abcdefgh';
 
@@ -65,6 +76,16 @@ export class ChessBoardComponent implements OnInit, DoCheck, OnDestroy {
     offsetX: number;
     offsetY: number;
   } | null = null;
+  /** Annotations, in display units for the SVG layer (1 = one square). */
+  circleViews: { cx: number; cy: number; color: string; preview: boolean }[] =
+    [];
+  arrowViews: { shape: ArrowShape; color: string; preview: boolean }[] = [];
+  private circles: CircleAnnotation[] = [];
+  private arrows: ArrowAnnotation[] = [];
+  /** Annotation being drawn with the right button. */
+  private drawing: ArrowAnnotation | null = null;
+  /** A right click started on the board: block the menu it will open. */
+  private rightPressOnBoard = false;
   private targetKeys = new Set<string>();
   private renderedKey = '';
   private subscription?: Subscription;
@@ -79,6 +100,7 @@ export class ChessBoardComponent implements OnInit, DoCheck, OnDestroy {
     this.subscription = this.promotionService.promotionPosition$.subscribe(
       pos => (this.promotionPosition = pos)
     );
+    document.addEventListener('contextmenu', this.preventContextMenu, true);
   }
 
   /** Rebuild the squares only when the position actually changed. */
@@ -87,12 +109,14 @@ export class ChessBoardComponent implements OnInit, DoCheck, OnDestroy {
     if (key !== this.renderedKey) {
       this.renderedKey = key;
       this.clearSelection();
+      this.setAnnotations([], []); // annotations belong to a position
       this.squares = this.buildSquares();
     }
   }
 
   ngOnDestroy(): void {
     this.subscription?.unsubscribe();
+    document.removeEventListener('contextmenu', this.preventContextMenu, true);
   }
 
   /** Squares keep their element across renders: only their content changes. */
@@ -128,8 +152,9 @@ export class ChessBoardComponent implements OnInit, DoCheck, OnDestroy {
    * center it under the pointer right away (the drag only starts on move).
    */
   grab(square: SquareView, event: MouseEvent | TouchEvent): void {
-    if (!this.canDrag(square)) {
-      return;
+    const isLeftButton = !('button' in event) || event.button === 0;
+    if (!isLeftButton || !this.canDrag(square)) {
+      return; // the right button draws annotations
     }
     const pointer = 'touches' in event ? event.touches[0] : event;
     const rect = (event.currentTarget as HTMLElement).getBoundingClientRect();
@@ -143,12 +168,84 @@ export class ChessBoardComponent implements OnInit, DoCheck, OnDestroy {
   }
 
   /** Releasing the pointer puts a grabbed but not dragged piece back. */
-  @HostListener('document:mouseup')
   @HostListener('document:touchend')
   @HostListener('document:touchcancel')
   release(): void {
     this.grabbed = null;
   }
+
+  // ----- annotations: right click draws circles, right drag draws arrows -----
+
+  /** Left click clears the annotations, right click starts drawing one. */
+  onBoardMouseDown(event: MouseEvent): void {
+    if (event.button === 0) {
+      // also drops a drawing left unfinished (a browser menu can swallow the release)
+      this.drawing = null;
+      this.setAnnotations([], []);
+    } else if (event.button === 2) {
+      this.rightPressOnBoard = true;
+      const square = this.squareAt(event);
+      if (square) {
+        this.drawing = {
+          from: square,
+          to: square,
+          color: brushFromModifiers(event),
+        };
+        this.refreshAnnotationViews();
+      }
+    }
+  }
+
+  @HostListener('document:mousemove', ['$event'])
+  onDocumentMouseMove(event: MouseEvent): void {
+    if (!this.drawing) {
+      return;
+    }
+    const square = this.squareAt(event);
+    if (
+      square &&
+      (square.x !== this.drawing.to.x || square.y !== this.drawing.to.y)
+    ) {
+      this.drawing = { ...this.drawing, to: square };
+      this.refreshAnnotationViews();
+    }
+  }
+
+  @HostListener('document:mouseup', ['$event'])
+  onDocumentMouseUp(event: MouseEvent): void {
+    if (event.button === 0) {
+      this.release();
+    } else if (event.button === 2 && this.drawing) {
+      const { from, color } = this.drawing;
+      const to = this.squareAt(event);
+      this.drawing = null;
+      if (!to) {
+        this.refreshAnnotationViews(); // released outside the board: cancel
+      } else if (to.x === from.x && to.y === from.y) {
+        this.setAnnotations(
+          toggleCircle(this.circles, { square: from, color }),
+          this.arrows
+        );
+      } else {
+        this.setAnnotations(
+          this.circles,
+          toggleArrow(this.arrows, { from, to, color })
+        );
+      }
+    }
+  }
+
+  /**
+   * The browser menu would hide the board while drawing. Listened on the whole
+   * document (capture phase): on Windows the menu comes after the release,
+   * which can happen outside the board at the end of an arrow.
+   */
+  private readonly preventContextMenu = (event: MouseEvent): void => {
+    if (this.rightPressOnBoard || this.squareAt(event)) {
+      event.preventDefault();
+    }
+    this.rightPressOnBoard = false;
+  };
 
   isGrabbed(square: SquareView): boolean {
     return this.grabbed?.x === square.x && this.grabbed?.y === square.y;
@@ -231,6 +328,63 @@ export class ChessBoardComponent implements OnInit, DoCheck, OnDestroy {
       this.chessBoard.getHistory().length +
       this.orientation
     );
+  }
+
+  /** Board square under the pointer, or null outside the board. */
+  private squareAt(event: MouseEvent): BoardSquare | null {
+    const rect = this.boardElement.nativeElement.getBoundingClientRect();
+    const col = Math.floor(((event.clientX - rect.left) / rect.width) * 8);
+    const row = Math.floor(((event.clientY - rect.top) / rect.height) * 8);
+    if (col < 0 || col > 7 || row < 0 || row > 7) {
+      return null;
+    }
+    const flipped = this.orientation === 'black';
+    return { x: flipped ? 7 - col : col, y: flipped ? row : 7 - row };
+  }
+
+  /** Board square -> top-left corner in display units. */
+  private toDisplay(square: BoardSquare): { x: number; y: number } {
+    const flipped = this.orientation === 'black';
+    return {
+      x: flipped ? 7 - square.x : square.x,
+      y: flipped ? square.y : 7 - square.y,
+    };
+  }
+
+  private setAnnotations(
+    circles: CircleAnnotation[],
+    arrows: ArrowAnnotation[]
+  ): void {
+    this.circles = circles;
+    this.arrows = arrows;
+    this.refreshAnnotationViews();
+  }
+
+  private refreshAnnotationViews(): void {
+    const drawing = this.drawing;
+    const isCircle =
+      !!drawing &&
+      drawing.from.x === drawing.to.x &&
+      drawing.from.y === drawing.to.y;
+    const circles = [
+      ...this.circles.map(circle => ({ ...circle, preview: false })),
+      ...(drawing && isCircle
+        ? [{ square: drawing.from, color: drawing.color, preview: true }]
+        : []),
+    ];
+    const arrows = [
+      ...this.arrows.map(arrow => ({ ...arrow, preview: false })),
+      ...(drawing && !isCircle ? [{ ...drawing, preview: true }] : []),
+    ];
+    this.circleViews = circles.map(({ square, color, preview }) => {
+      const { x, y } = this.toDisplay(square);
+      return { cx: x + 0.5, cy: y + 0.5, color: BRUSH_COLORS[color], preview };
+    });
+    this.arrowViews = arrows.map(({ from, to, color, preview }) => ({
+      shape: arrowShape(this.toDisplay(from), this.toDisplay(to)),
+      color: BRUSH_COLORS[color],
+      preview,
+    }));
   }
 
   private clearSelection(): void {
