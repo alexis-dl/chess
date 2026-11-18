@@ -32,13 +32,14 @@ export class ChessBoardComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.subscriptions.push(
       this.rulesService.currentPlayerCheckmated.subscribe(() => {
-        alert(this.chessBoard.getNextPlayerColor() + ' king is checkmated');
+        // the turn has already been toggled: the current player is the one who is mated
+        alert(this.chessBoard.getCurrentPlayerColor() + ' king is checkmated');
       })
     );
 
     this.subscriptions.push(
       this.rulesService.currentPlayerStalemated.subscribe(() => {
-        alert(this.chessBoard.getNextPlayerColor() + ' king is in stalemate');
+        alert(this.chessBoard.getCurrentPlayerColor() + ' king is in stalemate');
       })
     );
 
