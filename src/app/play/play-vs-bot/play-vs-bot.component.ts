@@ -68,7 +68,7 @@ export class PlayVsBotComponent
 
   readonly user: Player = {
     name: 'Chacalito53',
-    elo: 1548,
+    elo: 1549,
     profilePicture: 'assets/pictures/chacalito-profile-pic.png',
     playerType: PlayerType.User,
   };
