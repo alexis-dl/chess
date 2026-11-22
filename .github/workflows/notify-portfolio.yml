@@ -13,5 +13,5 @@ jobs:
           curl -fsS -X POST \
             -H "Authorization: Bearer ${{ secrets.PORTFOLIO_TOKEN }}" \
             -H "Accept: application/vnd.github+json" \
-            https://api.github.com/repos/alexis-dl/portfolio/dispatches \
+            https://api.github.com/repos/alexis-dl/alexis-dl.github.io/dispatches \
             -d '{"event_type":"submodule-updated"}'
