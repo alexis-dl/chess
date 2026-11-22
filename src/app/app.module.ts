@@ -22,6 +22,7 @@ import { ExplorerComponent } from './play/explorer/explorer.component';
 import { PlayVsBotComponent } from './play/play-vs-bot/play-vs-bot.component';
 import { PlayerPanelComponent } from './player/player-panel.component';
 import { PuzzlesComponent } from './puzzles/puzzles.component';
+import { AndroidSettingsComponent } from './settings/android-settings/android-settings.component';
 import { BoardSettingsComponent } from './settings/board-settings/board-settings.component';
 import { LanguageSettingsComponent } from './settings/language-settings/language-settings.component';
 import { SettingsComponent } from './settings/settings.component';
@@ -71,6 +72,7 @@ import { ToastModule } from 'primeng/toast';
     SoundSettingsComponent,
     LanguageSettingsComponent,
     ThemeSettingsComponent,
+    AndroidSettingsComponent,
   ],
   providers: [MessageService],
   bootstrap: [AppComponent],

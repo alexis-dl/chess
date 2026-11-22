@@ -1,0 +1,16 @@
+<p class="coming-soon" *ngIf="nativeApp.isNative; else download">
+  {{ 'settings.android.alreadyInstalled' | t }}
+</p>
+
+<ng-template #download>
+  <section class="android">
+    <h2>{{ 'settings.android.title' | t }}</h2>
+    <p>{{ 'settings.android.description' | t }}</p>
+    <a class="btn btn-primary" [href]="downloadUrl" download>
+      <mat-icon>download</mat-icon>
+      {{ 'settings.android.download' | t }}
+    </a>
+    <p class="note">{{ 'settings.android.install' | t }}</p>
+    <p class="note">{{ 'settings.android.update' | t }}</p>
+  </section>
+</ng-template>

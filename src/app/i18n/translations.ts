@@ -21,7 +21,17 @@ const en = {
   'settings.tabs.themes': 'Themes',
   'settings.tabs.languages': 'Languages',
   'settings.tabs.sounds': 'Sounds',
+  'settings.tabs.android': 'Android app',
   'settings.comingSoon': 'Coming soon.',
+  'settings.android.title': 'Play on your Android phone',
+  'settings.android.description':
+    'Install the app to play without a browser, even offline. It is always built from the latest version of the site.',
+  'settings.android.download': 'Download the APK',
+  'settings.android.install':
+    'Open the downloaded file on your phone. Android may ask you to allow installing apps from this source.',
+  'settings.android.update':
+    'To update, uninstall the previous version first.',
+  'settings.android.alreadyInstalled': 'You are already using the Android app.',
   'settings.language.label': 'Language',
   'settings.language.placeholder': 'Select a language',
   'settings.language.submit': 'Save',
@@ -138,7 +148,18 @@ const fr: Record<TranslationKey, string> = {
   'settings.tabs.themes': 'Thèmes',
   'settings.tabs.languages': 'Langues',
   'settings.tabs.sounds': 'Sons',
+  'settings.tabs.android': 'Application Android',
   'settings.comingSoon': 'Bientôt disponible.',
+  'settings.android.title': 'Jouez sur votre téléphone Android',
+  'settings.android.description':
+    'Installez l’application pour jouer sans navigateur, même hors ligne. Elle est toujours construite à partir de la dernière version du site.',
+  'settings.android.download': 'Télécharger l’APK',
+  'settings.android.install':
+    'Ouvrez le fichier téléchargé sur votre téléphone. Android peut vous demander d’autoriser l’installation d’applications depuis cette source.',
+  'settings.android.update':
+    'Pour mettre à jour, désinstallez d’abord la version précédente.',
+  'settings.android.alreadyInstalled':
+    'Vous utilisez déjà l’application Android.',
   'settings.language.label': 'Langue',
   'settings.language.placeholder': 'Choisir une langue',
   'settings.language.submit': 'Enregistrer',

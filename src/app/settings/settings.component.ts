@@ -2,6 +2,7 @@ import { Component, OnDestroy, OnInit } from '@angular/core';
 import { MenuItem, PrimeIcons } from 'primeng/api';
 import { Subscription } from 'rxjs';
 import { I18nService } from '../i18n/i18n.service';
+import { NativeAppService } from '../native/native-app.service';
 
 @Component({
   selector: 'app-settings',
@@ -12,7 +13,10 @@ export class SettingsComponent implements OnInit, OnDestroy {
   items: MenuItem[] = [];
   private subscription?: Subscription;
 
-  constructor(private i18n: I18nService) {}
+  constructor(
+    private i18n: I18nService,
+    private nativeApp: NativeAppService
+  ) {}
 
   /** PrimeNG menus take plain labels: rebuild them when the language changes. */
   ngOnInit(): void {
@@ -42,6 +46,13 @@ export class SettingsComponent implements OnInit, OnDestroy {
           label: this.i18n.t('settings.tabs.sounds'),
           icon: PrimeIcons.MEGAPHONE,
           routerLink: 'sounds',
+        },
+        // download of the app: pointless once in the app
+        {
+          label: this.i18n.t('settings.tabs.android'),
+          icon: PrimeIcons.ANDROID,
+          routerLink: 'android',
+          visible: !this.nativeApp.isNative,
         },
       ];
     });
