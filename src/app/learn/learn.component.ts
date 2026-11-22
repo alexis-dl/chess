@@ -2,6 +2,7 @@ import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { map } from 'rxjs';
 import { Localized } from '../i18n/localized';
+import { EndgameTheme, ENDGAME_THEMES } from './endgame-themes';
 import { Lesson, LESSONS } from './lessons/lesson.model';
 
 export type LearnSectionId =
@@ -66,9 +67,24 @@ export class LearnComponent {
     )
   );
 
+  readonly endgameThemes = ENDGAME_THEMES;
+  /** Endgame theme opened from the menu (?theme=...), null for the menu. */
+  readonly endgameTheme$ = this.route.queryParamMap.pipe(
+    map(
+      params =>
+        ENDGAME_THEMES.find(theme => theme.id === params.get('theme')) ?? null
+    )
+  );
+
   constructor(private route: ActivatedRoute) {}
 
   lessonsFor(sectionId: LearnSectionId): Lesson[] {
     return LESSONS.filter(lesson => lesson.section === sectionId);
+  }
+
+  lessonsForTheme(theme: EndgameTheme): Lesson[] {
+    return LESSONS.filter(
+      lesson => lesson.section === 'endgame' && lesson.endgameTheme === theme.id
+    );
   }
 }

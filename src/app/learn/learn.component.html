@@ -10,33 +10,80 @@
       }
     </nav>
     <section class="panel">
-      <h1>{{ section.title | localize }}</h1>
-      <p class="description">{{ section.description | localize }}</p>
-      @if (lessonsFor(section.id); as lessons) {
-        @if (lessons.length) {
-          <div class="lessons">
-            @for (lesson of lessons; track lesson) {
+      @if (section.id === 'endgame') {
+        @if (endgameTheme$ | async; as theme) {
+          <!-- one endgame theme: its lessons -->
+          <a class="back" [routerLink]="['/learn', 'endgame']">
+            <mat-icon>arrow_back</mat-icon>
+            {{ 'learn.endgame.allThemes' | t }}
+          </a>
+          <h1>{{ theme.title | localize }}</h1>
+          <p class="description">{{ theme.description | localize }}</p>
+          <ng-container
+            *ngTemplateOutlet="
+              lessonList;
+              context: { $implicit: lessonsForTheme(theme), section: section }
+            "></ng-container>
+        } @else {
+          <!-- endgame menu: one card per theme -->
+          <h1>{{ section.title | localize }}</h1>
+          <p class="description">{{ section.description | localize }}</p>
+          <div class="themes">
+            @for (theme of endgameThemes; track theme.id) {
               <a
-                class="lesson-card"
-                [routerLink]="['/learn', section.id, lesson.id]">
-                <span class="lesson-text">
-                  <span class="lesson-title">{{ lesson.title | localize }}</span>
-                  <span class="lesson-summary">{{ lesson.summary | localize }}</span>
+                class="theme-card"
+                [routerLink]="['/learn', 'endgame']"
+                [queryParams]="{ theme: theme.id }">
+                <span class="theme-icon">
+                  @if (theme.piece) {
+                    <img
+                      [src]="'assets/chess-pieces/' + theme.piece + '.svg'"
+                      alt="" />
+                  } @else {
+                    <mat-icon>{{ theme.icon }}</mat-icon>
+                  }
                 </span>
-                <span class="lesson-steps">{{
-                  'learn.steps' | t: { count: lesson.steps.length }
-                }}</span>
-                <mat-icon>chevron_right</mat-icon>
+                <span class="theme-title">{{ theme.title | localize }}</span>
+                <mat-icon class="chevron">chevron_right</mat-icon>
               </a>
             }
           </div>
-        } @else {
-          <p class="soon">
-            <mat-icon>schedule</mat-icon>
-            {{ 'learn.comingSoon' | t }}
-          </p>
         }
+      } @else {
+        <h1>{{ section.title | localize }}</h1>
+        <p class="description">{{ section.description | localize }}</p>
+        <ng-container
+          *ngTemplateOutlet="
+            lessonList;
+            context: { $implicit: lessonsFor(section.id), section: section }
+          "></ng-container>
       }
     </section>
   </div>
 }
+
+<ng-template #lessonList let-lessons let-section="section">
+  @if (lessons.length) {
+    <div class="lessons">
+      @for (lesson of lessons; track lesson) {
+        <a
+          class="lesson-card"
+          [routerLink]="['/learn', section.id, lesson.id]">
+          <span class="lesson-text">
+            <span class="lesson-title">{{ lesson.title | localize }}</span>
+            <span class="lesson-summary">{{ lesson.summary | localize }}</span>
+          </span>
+          <span class="lesson-steps">{{
+            'learn.steps' | t: { count: lesson.steps.length }
+          }}</span>
+          <mat-icon>chevron_right</mat-icon>
+        </a>
+      }
+    </div>
+  } @else {
+    <p class="soon">
+      <mat-icon>schedule</mat-icon>
+      {{ 'learn.comingSoon' | t }}
+    </p>
+  }
+</ng-template>

@@ -5,6 +5,7 @@ import { parseFen } from '../../chess-game/fen';
 import { Color } from '../../chess-game/piece.model';
 import { RulesService } from '../../chess-game/rules.service';
 import { parseUci } from '../../puzzles/puzzle-moves';
+import { ENDGAME_THEMES } from '../endgame-themes';
 import { LESSONS, PANOV_IQP_FEN } from './lesson.model';
 
 /** Validates the lesson contents with the rules engine. */
@@ -38,6 +39,21 @@ describe('LESSONS', () => {
     pawnsOnFile(board, color, file) === 1 &&
     pawnsOnFile(board, color, file - 1) === 0 &&
     pawnsOnFile(board, color, file + 1) === 0;
+
+  it('gives a theme to every endgame lesson, and to them only', () => {
+    const themes = ENDGAME_THEMES.map(theme => theme.id);
+    for (const lesson of LESSONS) {
+      if (lesson.section === 'endgame') {
+        expect(themes)
+          .withContext(`${lesson.id} has an endgame theme`)
+          .toContain(lesson.endgameTheme!);
+      } else {
+        expect(lesson.endgameTheme)
+          .withContext(`${lesson.id} is not an endgame`)
+          .toBeUndefined();
+      }
+    }
+  });
 
   for (const lesson of LESSONS) {
     describe(lesson.id, () => {

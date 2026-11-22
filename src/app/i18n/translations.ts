@@ -126,6 +126,7 @@ const en = {
   // learn
   'learn.sections': 'Learn sections',
   'learn.comingSoon': 'Lessons coming soon.',
+  'learn.endgame.allThemes': 'All endgames',
   'learn.steps': '{count} steps',
   'lesson.step': 'Step {current} / {total}',
   'lesson.lineStart': 'Start of the line',
@@ -264,6 +265,7 @@ const fr: Record<TranslationKey, string> = {
   // learn
   'learn.sections': 'Sections',
   'learn.comingSoon': 'Leçons bientôt disponibles.',
+  'learn.endgame.allThemes': 'Toutes les finales',
   'learn.steps': '{count} étapes',
   'lesson.step': 'Étape {current} / {total}',
   'lesson.lineStart': 'Début de la ligne',

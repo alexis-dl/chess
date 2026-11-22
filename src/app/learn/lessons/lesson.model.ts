@@ -1,5 +1,6 @@
 import { BrushColor } from '../../chess-game/chess-board/annotations';
 import { Localized } from '../../i18n/localized';
+import type { EndgameThemeId } from '../endgame-themes';
 import type { LearnSectionId } from '../learn.component';
 
 /** Arrow or circle drawn by the lesson; squares in algebraic notation. */
@@ -22,6 +23,8 @@ export interface LessonStep {
 export interface Lesson {
   id: string;
   section: LearnSectionId;
+  /** Required for the endgame section, whose lessons are grouped by theme. */
+  endgameTheme?: EndgameThemeId;
   title: Localized;
   summary: Localized;
   steps: LessonStep[];
