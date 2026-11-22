@@ -5,7 +5,7 @@ import { LearnComponent } from './learn/learn.component';
 import { LessonComponent } from './learn/lesson/lesson.component';
 import { CourseComponent } from './learn/course/course.component';
 import { OpeningQuizComponent } from './learn/opening-quiz/opening-quiz.component';
-import { ExplorerComponent } from './play/explorer/explorer.component';
+import { AnalysisComponent } from './analysis/analysis.component';
 import { PlayVsBotComponent } from './play/play-vs-bot/play-vs-bot.component';
 import { PuzzlesComponent } from './puzzles/puzzles.component';
 import { AndroidSettingsComponent } from './settings/android-settings/android-settings.component';
@@ -19,7 +19,9 @@ const routes: Routes = [
   { path: 'home', component: HomeComponent },
   { path: 'play', component: PlayVsBotComponent },
   { path: 'puzzles', component: PuzzlesComponent },
-  { path: 'explorer', component: ExplorerComponent },
+  { path: 'analysis', component: AnalysisComponent },
+  // former page
+  { path: 'explorer', redirectTo: 'analysis' },
   { path: 'learn', redirectTo: 'learn/opening', pathMatch: 'full' },
   {
     path: 'learn/opening',

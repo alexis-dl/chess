@@ -1,0 +1,305 @@
+@if (view === 'editor') {
+  <div class="page editor-page">
+    <app-position-editor
+      [fen]="fen"
+      [orientation]="orientation"
+      (applied)="onEditorApplied($event)"
+      (cancelled)="view = line.length ? 'moves' : 'menu'"></app-position-editor>
+  </div>
+} @else {
+  <div class="page">
+    <!-- evaluation bar: White's share, from White's side of the board -->
+    <div
+      class="eval-bar"
+      [class.flipped]="orientation === 'black'"
+      [attr.title]="'analysis.evaluation' | t">
+      <div class="eval-white" [style.height.%]="whiteShare"></div>
+      <span
+        class="eval-label"
+        [class.on-white]="whiteShare >= 50"
+        >{{ engine.available ? evaluationLabel : '–' }}</span
+      >
+    </div>
+
+    <!-- players: the side at the top of the board, then the one at the bottom -->
+    @for (slot of ['top', 'bottom']; track slot) {
+      @let color = slot === 'top' ? topColor : bottomColor;
+      @let player = playerOf(color);
+      <div
+        class="player"
+        [class.player-top]="slot === 'top'"
+        [class.player-bottom]="slot === 'bottom'">
+        <span class="player-avatar" [class.white]="color === 'white'">
+          @if (player.avatar) {
+            <img [src]="player.avatar" alt="" />
+          } @else {
+            <mat-icon>person</mat-icon>
+          }
+        </span>
+        <span class="player-name">{{ player.name }}</span>
+        @if (player.elo) {
+          <span class="player-elo">({{ player.elo }})</span>
+        }
+        @if (clockOf(color); as clock) {
+          <span class="clock" [class.running]="activeColor === color">
+            @if (activeColor === color) {
+              <mat-icon>timelapse</mat-icon>
+            }
+            {{ clock }}
+          </span>
+        }
+      </div>
+    }
+
+    <main class="board-area">
+      <app-chess-board
+        [chessBoard]="chessBoard"
+        [orientation]="orientation"
+        [shapes]="bestMoveArrow"></app-chess-board>
+    </main>
+
+    <section class="panel side-panel">
+      <header class="panel-header">
+        @if (view !== 'menu') {
+          <button
+            type="button"
+            class="btn btn-icon header-back"
+            [title]="'analysis.menu' | t"
+            [attr.aria-label]="'analysis.menu' | t"
+            (click)="view = 'menu'">
+            <mat-icon>arrow_back</mat-icon>
+          </button>
+        }
+        <mat-icon class="header-icon">troubleshoot</mat-icon>
+        <h1>{{ 'analysis.title' | t }}</h1>
+      </header>
+
+      @switch (view) {
+        @case ('menu') {
+          <div class="menu">
+            <form class="import" (submit)="loadText(); $event.preventDefault()">
+              <textarea
+                name="import"
+                rows="3"
+                [(ngModel)]="importText"
+                [placeholder]="'analysis.import.placeholder' | t"
+                [attr.aria-label]="'analysis.import.placeholder' | t"></textarea>
+              @if (importError) {
+                <p class="error" role="alert">{{ importError }}</p>
+              }
+              <button
+                type="submit"
+                class="btn btn-primary"
+                [disabled]="!importText.trim()">
+                {{ 'analysis.import.load' | t }}
+              </button>
+            </form>
+
+            @if (line.length) {
+              <button type="button" class="menu-card" (click)="view = 'moves'">
+                <mat-icon>play_arrow</mat-icon>
+                <span class="card-text">
+                  <span class="card-title">{{ 'analysis.continue' | t }}</span>
+                  <span class="card-detail">{{
+                    'analysis.continueDetail' | t: { count: line.length }
+                  }}</span>
+                </span>
+              </button>
+            }
+            <button type="button" class="menu-card" (click)="openEditor()">
+              <mat-icon>edit_square</mat-icon>
+              <span class="card-text">
+                <span class="card-title">{{ 'analysis.setup' | t }}</span>
+                <span class="card-detail">{{ 'analysis.setupDetail' | t }}</span>
+              </span>
+            </button>
+            <button type="button" class="menu-card" (click)="newAnalysis()">
+              <mat-icon>add_circle</mat-icon>
+              <span class="card-text">
+                <span class="card-title">{{ 'analysis.new' | t }}</span>
+                <span class="card-detail">{{ 'analysis.newDetail' | t }}</span>
+              </span>
+            </button>
+            <button type="button" class="menu-card" (click)="view = 'saved'">
+              <mat-icon>bookmarks</mat-icon>
+              <span class="card-text">
+                <span class="card-title">{{ 'analysis.savedList' | t }}</span>
+                <span class="card-detail">{{
+                  'analysis.savedDetail' | t: { count: saved.all.length }
+                }}</span>
+              </span>
+            </button>
+
+            @if (hasPrevious) {
+              <button type="button" class="link-button" (click)="loadPrevious()">
+                <mat-icon>history</mat-icon>
+                {{ 'analysis.previous' | t }}
+              </button>
+            }
+          </div>
+        }
+
+        @case ('saved') {
+          <div class="saved">
+            @for (analysis of saved.all; track analysis.id) {
+              <div class="saved-item">
+                <button
+                  type="button"
+                  class="saved-open"
+                  (click)="openSaved(analysis)">
+                  <span class="card-title">{{ analysis.name }}</span>
+                  <span class="card-detail">
+                    {{ savedDate(analysis) }}
+                    · {{ 'analysis.moveCount' | t: { count: analysis.moves.length } }}
+                  </span>
+                </button>
+                <button
+                  type="button"
+                  class="btn btn-icon"
+                  [title]="'analysis.delete' | t"
+                  [attr.aria-label]="'analysis.delete' | t"
+                  (click)="deleteSaved(analysis)">
+                  <mat-icon>delete</mat-icon>
+                </button>
+              </div>
+            } @empty {
+              <p class="empty">{{ 'analysis.savedEmpty' | t }}</p>
+            }
+          </div>
+        }
+
+        @case ('moves') {
+          @if (tagRows.length) {
+            <!-- headers of the loaded PGN: summary, unfolded on demand -->
+            <details class="game-info">
+              <summary>
+                <mat-icon class="chevron">chevron_right</mat-icon>
+                <span class="game-title">{{
+                  players || ('analysis.gameInfo' | t)
+                }}</span>
+                @if (gameResult) {
+                  <span class="game-result">{{ gameResult }}</span>
+                }
+              </summary>
+              <dl>
+                @for (row of tagRows; track $index) {
+                  <dt>{{ row.label }}</dt>
+                  <dd>
+                    @if (row.link) {
+                      <a [href]="row.value" target="_blank" rel="noopener">{{
+                        row.value
+                      }}</a>
+                    } @else {
+                      {{ row.value }}
+                    }
+                  </dd>
+                }
+              </dl>
+            </details>
+          }
+
+          <div class="engine-line">
+            @if (engine.available) {
+              <span class="engine-name">Stockfish 18</span>
+              @if (evaluation) {
+                <span class="engine-depth">{{
+                  'analysis.depth' | t: { depth: evaluation.depth }
+                }}</span>
+              } @else if (!result) {
+                <span class="engine-depth">{{ 'analysis.thinking' | t }}</span>
+              }
+            } @else {
+              <span class="engine-depth">{{ 'analysis.noEngine' | t }}</span>
+            }
+          </div>
+
+          <div class="opening">
+            @if (opening) {
+              <app-opening-label [opening]="opening"></app-opening-label>
+            }
+          </div>
+
+          <app-move-list
+            [moves]="moves"
+            [currentPly]="ply"
+            [selectable]="true"
+            [firstMoveNumber]="start.fullmoveNumber"
+            [blackStarts]="!start.state.isWhiteTurn"
+            (plySelected)="goToPly($event)">
+            {{ 'analysis.empty' | t }}
+          </app-move-list>
+
+          @if (result) {
+            <div class="result">
+              <span class="result-title">{{ result.title | t }}</span>
+              <span class="result-detail">{{ result.detail | t }}</span>
+            </div>
+          }
+
+          <div class="navigation">
+            <button
+              type="button"
+              class="btn btn-icon"
+              [title]="'moves.first' | t"
+              [attr.aria-label]="'moves.first' | t"
+              [disabled]="ply === 0"
+              (click)="goToPly(0)">
+              <mat-icon>first_page</mat-icon>
+            </button>
+            <button
+              type="button"
+              class="btn btn-icon"
+              [title]="'moves.previous' | t"
+              [attr.aria-label]="'moves.previous' | t"
+              [disabled]="ply === 0"
+              (click)="goToPly(ply - 1)">
+              <mat-icon>chevron_left</mat-icon>
+            </button>
+            <button
+              type="button"
+              class="btn btn-icon"
+              [title]="'moves.next' | t"
+              [attr.aria-label]="'moves.next' | t"
+              [disabled]="ply === line.length"
+              (click)="goToPly(ply + 1)">
+              <mat-icon>chevron_right</mat-icon>
+            </button>
+            <button
+              type="button"
+              class="btn btn-icon"
+              [title]="'moves.last' | t"
+              [attr.aria-label]="'moves.last' | t"
+              [disabled]="ply === line.length"
+              (click)="goToPly(line.length)">
+              <mat-icon>last_page</mat-icon>
+            </button>
+            <button
+              type="button"
+              class="btn btn-icon"
+              [title]="'analysis.flip' | t"
+              [attr.aria-label]="'analysis.flip' | t"
+              (click)="flip()">
+              <mat-icon>swap_vert</mat-icon>
+            </button>
+          </div>
+
+          <form class="save" (submit)="save(); $event.preventDefault()">
+            <input
+              name="saveName"
+              [(ngModel)]="saveName"
+              maxlength="60"
+              [placeholder]="'analysis.namePlaceholder' | t"
+              [attr.aria-label]="'analysis.namePlaceholder' | t" />
+            <button type="submit" class="btn">
+              <mat-icon>bookmark_add</mat-icon>
+              {{ (savedId ? 'analysis.update' : 'analysis.save') | t }}
+            </button>
+          </form>
+          @if (saveMessage) {
+            <p class="save-message" role="status">{{ saveMessage | t }}</p>
+          }
+        }
+      }
+    </section>
+  </div>
+}

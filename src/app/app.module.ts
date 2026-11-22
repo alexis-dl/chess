@@ -21,7 +21,8 @@ import { CourseComponent } from './learn/course/course.component';
 import { OpeningQuizComponent } from './learn/opening-quiz/opening-quiz.component';
 import { MoveListComponent } from './chess-game/move-list/move-list.component';
 import { OpeningLabelComponent } from './openings/opening-label/opening-label.component';
-import { ExplorerComponent } from './play/explorer/explorer.component';
+import { AnalysisComponent } from './analysis/analysis.component';
+import { PositionEditorComponent } from './analysis/position-editor/position-editor.component';
 import { PlayVsBotComponent } from './play/play-vs-bot/play-vs-bot.component';
 import { PlayerPanelComponent } from './player/player-panel.component';
 import { PuzzlesComponent } from './puzzles/puzzles.component';
@@ -60,7 +61,8 @@ import { MatTabsModule } from '@angular/material/tabs';
     OpeningQuizComponent,
     CourseComponent,
     HomeComponent,
-    ExplorerComponent,
+    AnalysisComponent,
+    PositionEditorComponent,
     MoveListComponent,
     OpeningLabelComponent,
     PlayVsBotComponent,

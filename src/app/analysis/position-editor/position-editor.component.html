@@ -1,0 +1,100 @@
+<div class="editor">
+  <div class="board" [attr.aria-label]="'analysis.editor.title' | t">
+    @for (y of rows; track y) {
+      @for (x of columns; track x) {
+        <button
+          type="button"
+          class="square"
+          [class.light]="isLight(x, y)"
+          [class.dark]="!isLight(x, y)"
+          (click)="place(x, y)">
+          @if (imageOf(pieces[y][x]); as image) {
+            <img [src]="image" alt="" />
+          }
+        </button>
+      }
+    }
+  </div>
+
+  <div class="tools">
+    @for (color of colors; track color) {
+      <div class="palette">
+        @for (piece of palette[color]; track piece) {
+          <button
+            type="button"
+            class="palette-piece"
+            [class.selected]="selected === piece"
+            [attr.aria-pressed]="selected === piece"
+            (click)="selected = piece">
+            <img [src]="imageOf(piece)" alt="" />
+          </button>
+        }
+      </div>
+    }
+    <button
+      type="button"
+      class="btn eraser"
+      [class.btn-primary]="selected === null"
+      (click)="selected = null">
+      <mat-icon>ink_eraser</mat-icon>
+      {{ 'analysis.editor.erase' | t }}
+    </button>
+
+    <fieldset>
+      <legend>{{ 'analysis.editor.toMove' | t }}</legend>
+      <label>
+        <input
+          type="radio"
+          name="toMove"
+          [checked]="whiteToMove"
+          (change)="whiteToMove = true" />
+        {{ 'analysis.editor.white' | t }}
+      </label>
+      <label>
+        <input
+          type="radio"
+          name="toMove"
+          [checked]="!whiteToMove"
+          (change)="whiteToMove = false" />
+        {{ 'analysis.editor.black' | t }}
+      </label>
+    </fieldset>
+
+    <fieldset>
+      <legend>{{ 'analysis.editor.castling' | t }}</legend>
+      @for (item of castlingRights; track item.right) {
+        <label [class.disabled]="!canCastle(item.right)">
+          <input
+            type="checkbox"
+            [disabled]="!canCastle(item.right)"
+            [checked]="castling[item.right] && canCastle(item.right)"
+            (change)="castling[item.right] = !castling[item.right]" />
+          {{ item.label | t }}
+        </label>
+      }
+    </fieldset>
+
+    <div class="row">
+      <button type="button" class="btn" (click)="startPosition()">
+        {{ 'analysis.editor.start' | t }}
+      </button>
+      <button type="button" class="btn" (click)="clear()">
+        {{ 'analysis.editor.clear' | t }}
+      </button>
+    </div>
+
+    @if (error) {
+      <p class="error" role="alert">{{ error | t }}</p>
+    }
+
+    <div class="row">
+      <button type="button" class="btn" (click)="cancelled.emit()">
+        {{ 'analysis.cancel' | t }}
+      </button>
+      <button type="button" class="btn btn-primary" (click)="apply()">
+        <mat-icon>search</mat-icon>
+        {{ 'analysis.editor.analyse' | t }}
+      </button>
+    </div>
+  </div>
+</div>
