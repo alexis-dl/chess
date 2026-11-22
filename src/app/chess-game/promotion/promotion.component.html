@@ -3,16 +3,17 @@
   [class.upward]="upward"
   appClickOutside
   (clickOutside)="onCancel()">
-  <button
-    *ngFor="let piece of pieces"
-    type="button"
-    class="option"
+  @for (piece of pieces; track piece) {
+    <button
+      type="button"
+      class="option"
     [attr.aria-label]="
       'board.promoteTo' | t: { piece: (pieceNameKey(piece) | t) }
     "
-    (click)="onSelect(piece)">
-    <img [src]="getPieceImagePath(piece)" alt="" />
-  </button>
+      (click)="onSelect(piece)">
+      <img [src]="getPieceImagePath(piece)" alt="" />
+    </button>
+  }
   <button
     type="button"
     class="cancel"

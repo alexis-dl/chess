@@ -2,7 +2,7 @@
   <main class="board-area">
     <app-chess-board
       [chessBoard]="chessBoard"
-      [orientation]="orientation"></app-chess-board>
+    [orientation]="orientation"></app-chess-board>
   </main>
 
   <section class="panel side-panel">
@@ -22,10 +22,12 @@
       {{ 'explorer.empty' | t }}
     </app-move-list>
 
-    <div class="result" *ngIf="result">
-      <span class="result-title">{{ result.title | t }}</span>
-      <span class="result-detail">{{ result.detail | t }}</span>
-    </div>
+    @if (result) {
+      <div class="result">
+        <span class="result-title">{{ result.title | t }}</span>
+        <span class="result-detail">{{ result.detail | t }}</span>
+      </div>
+    }
 
     <div class="navigation">
       <button

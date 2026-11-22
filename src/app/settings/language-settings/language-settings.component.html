@@ -7,24 +7,28 @@
         [(ngModel)]="selectedLanguage"
         [placeholder]="'settings.language.placeholder' | t">
         <mat-select-trigger>
-          <span class="language-option" *ngIf="selectedLanguage">
-            <img
+          @if (selectedLanguage) {
+            <span class="language-option">
+              <img
               [src]="
                 'assets/flags/4x3/' + selectedLanguage.flag.toLowerCase() + '.svg'
               "
-              alt="" />
-            {{ selectedLanguage.name }}
-          </span>
+                alt="" />
+              {{ selectedLanguage.name }}
+            </span>
+          }
         </mat-select-trigger>
         <mat-option [value]="undefined">—</mat-option>
-        <mat-option *ngFor="let language of languages" [value]="language">
-          <span class="language-option">
-            <img
-              [src]="'assets/flags/4x3/' + language.flag.toLowerCase() + '.svg'"
-              alt="" />
-            {{ language.name }}
-          </span>
-        </mat-option>
+        @for (language of languages; track language) {
+          <mat-option [value]="language">
+            <span class="language-option">
+              <img
+                [src]="'assets/flags/4x3/' + language.flag.toLowerCase() + '.svg'"
+                alt="" />
+              {{ language.name }}
+            </span>
+          </mat-option>
+        }
       </mat-select>
     </mat-form-field>
 

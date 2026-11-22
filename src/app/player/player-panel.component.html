@@ -1,24 +1,33 @@
-<div class="player" *ngIf="player" [class.active]="active">
-  <img
-    class="avatar"
+@if (player) {
+  <div class="player" [class.active]="active">
+    <img
+      class="avatar"
     [src]="
       player.profilePicture || 'assets/pictures/default-profile-picture.jpg'
     "
-    alt="" />
-  <div class="identity">
-    <div class="name-line">
-      <span class="turn-dot" aria-hidden="true"></span>
-      <span class="name">{{ player.name }}</span>
-      <span class="elo" *ngIf="player.elo">{{ player.elo }}</span>
-      <span class="status" *ngIf="active && status">{{ status }}</span>
-    </div>
-    <div class="material">
-      <img
-        *ngFor="let piece of captured"
-        class="captured"
-        [src]="pieceImage(piece)"
-        [alt]="piece" />
-      <span class="advantage" *ngIf="advantage > 0">+{{ advantage }}</span>
+      alt="" />
+    <div class="identity">
+      <div class="name-line">
+        <span class="turn-dot" aria-hidden="true"></span>
+        <span class="name">{{ player.name }}</span>
+        @if (player.elo) {
+          <span class="elo">{{ player.elo }}</span>
+        }
+        @if (active && status) {
+          <span class="status">{{ status }}</span>
+        }
+      </div>
+      <div class="material">
+        @for (piece of captured; track $index) {
+          <img
+            class="captured"
+            [src]="pieceImage(piece)"
+            [alt]="piece" />
+        }
+        @if (advantage > 0) {
+          <span class="advantage">+{{ advantage }}</span>
+        }
+      </div>
     </div>
   </div>
-</div>
+}

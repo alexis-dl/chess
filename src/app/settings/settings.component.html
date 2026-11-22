@@ -1,15 +1,16 @@
 <div class="card">
   <nav mat-tab-nav-bar class="header" [tabPanel]="tabPanel">
-    <a
-      mat-tab-link
-      *ngFor="let tab of tabs"
-      [routerLink]="tab.path"
-      routerLinkActive
-      #rla="routerLinkActive"
-      [active]="rla.isActive">
-      <mat-icon class="tab-icon">{{ tab.icon }}</mat-icon>
-      {{ tab.label | t }}
-    </a>
+    @for (tab of tabs; track tab) {
+      <a
+        mat-tab-link
+        [routerLink]="tab.path"
+        routerLinkActive
+        #rla="routerLinkActive"
+        [active]="rla.isActive">
+        <mat-icon class="tab-icon">{{ tab.icon }}</mat-icon>
+        {{ tab.label | t }}
+      </a>
+    }
   </nav>
   <mat-tab-nav-panel #tabPanel>
     <router-outlet></router-outlet>

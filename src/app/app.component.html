@@ -1,6 +1,5 @@
-<ng-container *ngIf="!isQuitRoute; else quitComponent">
+@if (!isQuitRoute) {
   <app-tool-bar></app-tool-bar>
-</ng-container>
-<ng-template #quitComponent>
+} @else {
   <app-quit></app-quit>
-</ng-template>
+}

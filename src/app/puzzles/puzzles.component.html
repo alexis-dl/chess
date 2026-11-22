@@ -6,113 +6,119 @@
         <div class="list-title">{{ 'puzzles.title' | t }}</div>
         <div class="list-subtitle">
           {{
-            'puzzles.solvedCount'
-              | t: { solved: solved.size, total: puzzles.length }
+          'puzzles.solvedCount'
+          | t: { solved: solved.size, total: puzzles.length }
           }}
         </div>
       </div>
     </header>
 
-    <button
-      *ngFor="let item of puzzles; let i = index"
-      type="button"
-      class="puzzle-item"
-      [class.selected]="i === index"
-      (click)="load(i)">
-      <span class="puzzle-number">{{ i + 1 }}</span>
-      <span class="puzzle-text">
-        <span class="puzzle-theme">{{ themeKey(item) | t }}</span>
-        <span class="puzzle-goal">{{
-          'puzzles.mateIn' | t: { moves: mateIn(item) }
-        }}</span>
-      </span>
-      <mat-icon class="solved-icon" *ngIf="solved.has(item.id)"
-        >check_circle</mat-icon
-      >
-    </button>
-  </aside>
-
-  <main class="board-area">
-    <app-chess-board
-      [chessBoard]="chessBoard"
-      [canMove]="canMove"
-      [orientation]="solverColor"
-      [hintSquare]="hintSquare"></app-chess-board>
-  </main>
-
-  <section class="panel puzzle-panel">
-    <div class="status" [ngClass]="[status, feedback]">
-      <img
-        class="status-piece"
-        [src]="'assets/chess-pieces/' + solverColor + '-king.svg'"
-        alt="" />
-      <div>
-        <ng-container [ngSwitch]="status">
-          <ng-container *ngSwitchCase="'solved'">
-            <div class="status-title">{{ 'puzzles.solved' | t }}</div>
-            <div class="status-detail">
-              {{ 'puzzles.mateIn' | t: { moves: mateIn(puzzle) } }} ·
-              {{ themeKey(puzzle) | t }}
-            </div>
-          </ng-container>
-          <ng-container *ngSwitchCase="'revealed'">
-            <div class="status-title">{{ 'puzzles.solution' | t }}</div>
-            <div class="status-detail">{{ 'puzzles.nextTry' | t }}</div>
-          </ng-container>
-          <ng-container *ngSwitchDefault>
-            <ng-container [ngSwitch]="feedback">
-              <ng-container *ngSwitchCase="'good'">
-                <div class="status-title">{{ 'puzzles.bestMove' | t }}</div>
-                <div class="status-detail">{{ 'puzzles.keepGoing' | t }}</div>
-              </ng-container>
-              <ng-container *ngSwitchCase="'wrong'">
-                <div class="status-title">{{ 'puzzles.wrong' | t }}</div>
-                <div class="status-detail">{{ 'puzzles.tryElse' | t }}</div>
-              </ng-container>
-              <ng-container *ngSwitchDefault>
-                <div class="status-title">{{ 'puzzles.yourTurn' | t }}</div>
-                <div class="status-detail">
-                  {{ findMoveKey | t }}
-                </div>
-              </ng-container>
-            </ng-container>
-          </ng-container>
-        </ng-container>
-      </div>
-    </div>
-
-    <div class="goal">
-      <span class="goal-label">{{ 'puzzles.goal' | t }}</span>
-      <span>{{ 'puzzles.mateIn' | t: { moves: mateIn(puzzle) } }}</span>
-    </div>
-
-    <p class="moves" *ngIf="movesText">{{ movesText }}</p>
-
-    <div class="controls" *ngIf="status === 'playing'; else doneControls">
+    @for (item of puzzles; track item; let i = $index) {
       <button
         type="button"
-        class="btn"
-        [disabled]="!canMove"
-        (click)="showHint()">
-        <mat-icon>lightbulb</mat-icon>
-        {{ 'puzzles.hint' | t }}
-      </button>
-      <button type="button" class="btn" (click)="revealSolution()">
-        <mat-icon>visibility</mat-icon>
-        {{ 'puzzles.solution' | t }}
-      </button>
-    </div>
-    <ng-template #doneControls>
-      <div class="controls">
-        <button type="button" class="btn" (click)="retry()">
-          <mat-icon>replay</mat-icon>
-          {{ 'puzzles.retry' | t }}
+        class="puzzle-item"
+        [class.selected]="i === index"
+        (click)="load(i)">
+        <span class="puzzle-number">{{ i + 1 }}</span>
+        <span class="puzzle-text">
+          <span class="puzzle-theme">{{ themeKey(item) | t }}</span>
+          <span class="puzzle-goal">{{
+            'puzzles.mateIn' | t: { moves: mateIn(item) }
+          }}</span>
+        </span>
+        @if (solved.has(item.id)) {
+          <mat-icon class="solved-icon"
+            >check_circle</mat-icon
+            >
+          }
         </button>
-        <button type="button" class="btn btn-primary" (click)="next()">
-          {{ 'puzzles.next' | t }}
-          <mat-icon>arrow_forward</mat-icon>
-        </button>
+      }
+    </aside>
+
+    <main class="board-area">
+      <app-chess-board
+        [chessBoard]="chessBoard"
+        [canMove]="canMove"
+        [orientation]="solverColor"
+      [hintSquare]="hintSquare"></app-chess-board>
+    </main>
+
+    <section class="panel puzzle-panel">
+      <div class="status" [ngClass]="[status, feedback]">
+        <img
+          class="status-piece"
+          [src]="'assets/chess-pieces/' + solverColor + '-king.svg'"
+          alt="" />
+        <div>
+          @switch (status) {
+            @case ('solved') {
+              <div class="status-title">{{ 'puzzles.solved' | t }}</div>
+              <div class="status-detail">
+                {{ 'puzzles.mateIn' | t: { moves: mateIn(puzzle) } }} ·
+                {{ themeKey(puzzle) | t }}
+              </div>
+            }
+            @case ('revealed') {
+              <div class="status-title">{{ 'puzzles.solution' | t }}</div>
+              <div class="status-detail">{{ 'puzzles.nextTry' | t }}</div>
+            }
+            @default {
+              @switch (feedback) {
+                @case ('good') {
+                  <div class="status-title">{{ 'puzzles.bestMove' | t }}</div>
+                  <div class="status-detail">{{ 'puzzles.keepGoing' | t }}</div>
+                }
+                @case ('wrong') {
+                  <div class="status-title">{{ 'puzzles.wrong' | t }}</div>
+                  <div class="status-detail">{{ 'puzzles.tryElse' | t }}</div>
+                }
+                @default {
+                  <div class="status-title">{{ 'puzzles.yourTurn' | t }}</div>
+                  <div class="status-detail">
+                    {{ findMoveKey | t }}
+                  </div>
+                }
+              }
+            }
+          }
+        </div>
       </div>
-    </ng-template>
-  </section>
-</div>
+
+      <div class="goal">
+        <span class="goal-label">{{ 'puzzles.goal' | t }}</span>
+        <span>{{ 'puzzles.mateIn' | t: { moves: mateIn(puzzle) } }}</span>
+      </div>
+
+      @if (movesText) {
+        <p class="moves">{{ movesText }}</p>
+      }
+
+      @if (status === 'playing') {
+        <div class="controls">
+          <button
+            type="button"
+            class="btn"
+            [disabled]="!canMove"
+            (click)="showHint()">
+            <mat-icon>lightbulb</mat-icon>
+            {{ 'puzzles.hint' | t }}
+          </button>
+          <button type="button" class="btn" (click)="revealSolution()">
+            <mat-icon>visibility</mat-icon>
+            {{ 'puzzles.solution' | t }}
+          </button>
+        </div>
+      } @else {
+        <div class="controls">
+          <button type="button" class="btn" (click)="retry()">
+            <mat-icon>replay</mat-icon>
+            {{ 'puzzles.retry' | t }}
+          </button>
+          <button type="button" class="btn btn-primary" (click)="next()">
+            {{ 'puzzles.next' | t }}
+            <mat-icon>arrow_forward</mat-icon>
+          </button>
+        </div>
+      }
+    </section>
+  </div>

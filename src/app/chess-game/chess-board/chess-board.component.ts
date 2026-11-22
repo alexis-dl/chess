@@ -134,11 +134,6 @@ export class ChessBoardComponent implements OnInit, DoCheck, OnDestroy {
     document.removeEventListener('contextmenu', this.preventContextMenu, true);
   }
 
-  /** Squares keep their element across renders: only their content changes. */
-  trackByIndex(index: number): number {
-    return index;
-  }
-
   isSelected(square: SquareView): boolean {
     return (
       this.selectedSquare?.x === square.x && this.selectedSquare?.y === square.y

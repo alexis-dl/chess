@@ -9,68 +9,72 @@
     </header>
 
     <div class="section-title">{{ 'play.opponent' | t }}</div>
-    <button
-      *ngFor="let candidate of bots"
-      type="button"
-      class="bot-choice"
-      [class.selected]="candidate === bot"
-      (click)="selectBot(candidate)">
-      <img [src]="candidate.profilePicture" alt="" />
-      <span class="bot-text">
-        <span class="bot-name">{{ candidate.name }}</span>
-        <span
-          class="bot-description"
-          *ngIf="botDescription(candidate) as key"
-          >{{ key | t }}</span
-        >
-      </span>
-    </button>
-  </aside>
-
-  <main class="board-area">
-    <app-chess-board
-      [chessBoard]="chessBoard"
-      [canMove]="canMove"></app-chess-board>
-  </main>
-
-  <section class="panel game-panel">
-    <app-player-panel
-      [player]="bot"
-      [active]="!isUserTurn && !result"
-      [status]="'play.thinking' | t"
-      [captured]="material.captured.black"
-      [advantage]="-material.balance"></app-player-panel>
-
-    <app-move-list [moves]="moves" [currentPly]="moves.length">
-      {{ 'play.firstMove' | t }}
-    </app-move-list>
-
-    <div class="result" *ngIf="result">
-      <span class="result-title">{{ result.title | t }}</span>
-      <span class="result-detail">{{ result.detail | t }}</span>
-    </div>
-
-    <div class="controls">
+    @for (candidate of bots; track candidate) {
       <button
         type="button"
-        class="btn btn-icon"
-        [title]="'play.takeBack' | t"
-        [attr.aria-label]="'play.takeBack' | t"
-        [disabled]="!canUndo"
-        (click)="undo()">
-        <mat-icon>undo</mat-icon>
-      </button>
-      <button type="button" class="btn" (click)="newGame()">
-        <mat-icon>refresh</mat-icon>
-        {{ 'play.newGame' | t }}
-      </button>
-    </div>
+        class="bot-choice"
+        [class.selected]="candidate === bot"
+        (click)="selectBot(candidate)">
+        <img [src]="candidate.profilePicture" alt="" />
+        <span class="bot-text">
+          <span class="bot-name">{{ candidate.name }}</span>
+          @if (botDescription(candidate); as key) {
+            <span
+              class="bot-description"
+              >{{ key | t }}</span
+              >
+            }
+          </span>
+        </button>
+      }
+    </aside>
 
-    <app-player-panel
-      [player]="user"
-      [active]="isUserTurn && !result"
-      [status]="'play.yourTurn' | t"
-      [captured]="material.captured.white"
+    <main class="board-area">
+      <app-chess-board
+        [chessBoard]="chessBoard"
+      [canMove]="canMove"></app-chess-board>
+    </main>
+
+    <section class="panel game-panel">
+      <app-player-panel
+        [player]="bot"
+        [active]="!isUserTurn && !result"
+        [status]="'play.thinking' | t"
+        [captured]="material.captured.black"
+      [advantage]="-material.balance"></app-player-panel>
+
+      <app-move-list [moves]="moves" [currentPly]="moves.length">
+        {{ 'play.firstMove' | t }}
+      </app-move-list>
+
+      @if (result) {
+        <div class="result">
+          <span class="result-title">{{ result.title | t }}</span>
+          <span class="result-detail">{{ result.detail | t }}</span>
+        </div>
+      }
+
+      <div class="controls">
+        <button
+          type="button"
+          class="btn btn-icon"
+          [title]="'play.takeBack' | t"
+          [attr.aria-label]="'play.takeBack' | t"
+          [disabled]="!canUndo"
+          (click)="undo()">
+          <mat-icon>undo</mat-icon>
+        </button>
+        <button type="button" class="btn" (click)="newGame()">
+          <mat-icon>refresh</mat-icon>
+          {{ 'play.newGame' | t }}
+        </button>
+      </div>
+
+      <app-player-panel
+        [player]="user"
+        [active]="isUserTurn && !result"
+        [status]="'play.yourTurn' | t"
+        [captured]="material.captured.white"
       [advantage]="material.balance"></app-player-panel>
-  </section>
-</div>
+    </section>
+  </div>

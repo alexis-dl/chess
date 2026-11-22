@@ -1,18 +1,23 @@
 <div class="moves" #list>
-  <div class="move-row" *ngFor="let row of rows">
-    <span class="move-number">{{ row.number }}</span>
-    <button
-      *ngFor="let ply of row.plies"
-      type="button"
-      class="move"
-      [class.current]="ply === currentPly"
-      [class.selectable]="selectable"
-      [disabled]="!selectable"
-      (click)="select(ply)">
-      {{ moves[ply - 1] }}
-    </button>
-  </div>
-  <div class="moves-empty" *ngIf="!moves.length">
-    <ng-content></ng-content>
-  </div>
+  @for (row of rows; track row) {
+    <div class="move-row">
+      <span class="move-number">{{ row.number }}</span>
+      @for (ply of row.plies; track ply) {
+        <button
+          type="button"
+          class="move"
+          [class.current]="ply === currentPly"
+          [class.selectable]="selectable"
+          [disabled]="!selectable"
+          (click)="select(ply)">
+          {{ moves[ply - 1] }}
+        </button>
+      }
+    </div>
+  }
+  @if (!moves.length) {
+    <div class="moves-empty">
+      <ng-content></ng-content>
+    </div>
+  }
 </div>

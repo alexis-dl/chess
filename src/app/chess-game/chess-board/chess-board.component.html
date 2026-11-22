@@ -3,85 +3,94 @@
   #board
   cdkDropListGroup
   (mousedown)="onBoardMouseDown($event)">
-  <div
-    *ngFor="let square of squares; trackBy: trackByIndex"
-    class="square"
-    [class.light]="square.isLight"
-    [class.dark]="!square.isLight"
-    [class.last-move]="square.isLastMove"
-    [class.check]="square.isCheck"
-    [class.hint]="isHint(square)"
-    [class.selected]="isSelected(square)"
-    [class.target]="isTarget(square)"
-    [class.occupied]="square.piece"
-    cdkDropList
-    cdkDropListSortingDisabled
-    [cdkDropListData]="square"
-    (cdkDropListDropped)="onDrop($event)"
-    (click)="onSquareClick(square)">
-    <span class="coord rank" *ngIf="square.rankLabel">{{
-      square.rankLabel
-    }}</span>
-    <span class="coord file" *ngIf="square.fileLabel">{{
-      square.fileLabel
-    }}</span>
-
-    <app-chess-piece
-      *ngIf="square.piece"
-      [pieceType]="square.piece"
-      [class.draggable]="canDrag(square)"
-      [class.grabbed]="isGrabbed(square)"
-      [style.transform]="grabTransform(square)"
-      cdkDrag
-      cdkDragBoundary=".board"
-      [cdkDragData]="square"
-      [cdkDragDisabled]="!canDrag(square)"
-      (mousedown)="grab(square, $event)"
-      (touchstart)="grab(square, $event)">
-      <!-- dragged piece: a zero-size anchor under the pointer, the image
-           centered on it (the library puts the preview's corner on the pointer) -->
-      <div *cdkDragPreview class="drag-anchor">
-        <img
-          [src]="pieceImage(square)"
-          alt=""
-          [style.width.px]="squareSize"
-          [style.height.px]="squareSize"
-          [style.left.px]="-squareSize / 2"
-          [style.top.px]="-squareSize / 2" />
-      </div>
-    </app-chess-piece>
-
-    <app-promotion
-      *ngIf="showPromotion(square)"
-      [pieceColor]="promotionColor(square)"
-      [upward]="promotionUpward(square)"></app-promotion>
-  </div>
+  <!-- track by index: squares keep their element, only their content changes -->
+  @for (square of squares; track $index) {
+    <div
+      class="square"
+      [class.light]="square.isLight"
+      [class.dark]="!square.isLight"
+      [class.last-move]="square.isLastMove"
+      [class.check]="square.isCheck"
+      [class.hint]="isHint(square)"
+      [class.selected]="isSelected(square)"
+      [class.target]="isTarget(square)"
+      [class.occupied]="square.piece"
+      cdkDropList
+      cdkDropListSortingDisabled
+      [cdkDropListData]="square"
+      (cdkDropListDropped)="onDrop($event)"
+      (click)="onSquareClick(square)">
+      @if (square.rankLabel) {
+        <span class="coord rank">{{
+          square.rankLabel
+        }}</span>
+      }
+      @if (square.fileLabel) {
+        <span class="coord file">{{
+          square.fileLabel
+        }}</span>
+      }
+      @if (square.piece) {
+        <app-chess-piece
+          [pieceType]="square.piece"
+          [class.draggable]="canDrag(square)"
+          [class.grabbed]="isGrabbed(square)"
+          [style.transform]="grabTransform(square)"
+          cdkDrag
+          cdkDragBoundary=".board"
+          [cdkDragData]="square"
+          [cdkDragDisabled]="!canDrag(square)"
+          (mousedown)="grab(square, $event)"
+          (touchstart)="grab(square, $event)">
+          <!-- dragged piece: a zero-size anchor under the pointer, the image
+          centered on it (the library puts the preview's corner on the pointer) -->
+          <div *cdkDragPreview class="drag-anchor">
+            <img
+              [src]="pieceImage(square)"
+              alt=""
+              [style.width.px]="squareSize"
+              [style.height.px]="squareSize"
+              [style.left.px]="-squareSize / 2"
+              [style.top.px]="-squareSize / 2" />
+          </div>
+        </app-chess-piece>
+      }
+      @if (showPromotion(square)) {
+        <app-promotion
+          [pieceColor]="promotionColor(square)"
+        [upward]="promotionUpward(square)"></app-promotion>
+      }
+    </div>
+  }
 </div>
 
 <!-- circles and arrows drawn with the right mouse button -->
-<svg
-  class="annotations"
-  viewBox="0 0 8 8"
-  *ngIf="circleViews.length || arrowViews.length"
-  aria-hidden="true">
-  <circle
-    *ngFor="let circle of circleViews"
-    [attr.cx]="circle.cx"
-    [attr.cy]="circle.cy"
-    r="0.455"
-    [attr.stroke]="circle.color"
-    [class.preview]="circle.preview" />
-  <g
-    *ngFor="let arrow of arrowViews"
-    class="arrow"
-    [attr.fill]="arrow.color"
-    [attr.stroke]="arrow.color"
-    [class.preview]="arrow.preview">
-    <line
-      [attr.x1]="arrow.shape.x1"
-      [attr.y1]="arrow.shape.y1"
-      [attr.x2]="arrow.shape.x2"
-      [attr.y2]="arrow.shape.y2" />
-    <polygon [attr.points]="arrow.shape.head" />
-  </g>
-</svg>
+@if (circleViews.length || arrowViews.length) {
+  <svg
+    class="annotations"
+    viewBox="0 0 8 8"
+    aria-hidden="true">
+    @for (circle of circleViews; track circle) {
+      <circle
+        [attr.cx]="circle.cx"
+        [attr.cy]="circle.cy"
+        r="0.455"
+        [attr.stroke]="circle.color"
+        [class.preview]="circle.preview" />
+    }
+    @for (arrow of arrowViews; track arrow) {
+      <g
+        class="arrow"
+        [attr.fill]="arrow.color"
+        [attr.stroke]="arrow.color"
+        [class.preview]="arrow.preview">
+        <line
+          [attr.x1]="arrow.shape.x1"
+          [attr.y1]="arrow.shape.y1"
+          [attr.x2]="arrow.shape.x2"
+          [attr.y2]="arrow.shape.y2" />
+        <polygon [attr.points]="arrow.shape.head" />
+      </g>
+    }
+  </svg>
+}

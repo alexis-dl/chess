@@ -25,17 +25,20 @@
         (click)="closeLearn()">
         {{ 'nav.learn' | t }}
       </a>
-      <div class="dropdown" *ngIf="learnOpen">
-        <div class="dropdown-panel">
-          <a
-            *ngFor="let section of learnSections"
-            [routerLink]="['/learn', section.id]"
-            routerLinkActive="current"
-            (click)="closeLearn()">
-            {{ section.title | localize }}
-          </a>
+      @if (learnOpen) {
+        <div class="dropdown">
+          <div class="dropdown-panel">
+            @for (section of learnSections; track section) {
+              <a
+                [routerLink]="['/learn', section.id]"
+                routerLinkActive="current"
+                (click)="closeLearn()">
+                {{ section.title | localize }}
+              </a>
+            }
+          </div>
         </div>
-      </div>
+      }
     </div>
 
     <a routerLink="/explorer" routerLinkActive="active">{{

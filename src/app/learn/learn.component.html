@@ -1,39 +1,42 @@
-<div class="learn" *ngIf="section$ | async as section">
-  <nav class="tabs" [attr.aria-label]="'learn.sections' | t">
-    <a
-      *ngFor="let item of sections"
-      [routerLink]="['/learn', item.id]"
-      routerLinkActive="active">
-      {{ item.title | localize }}
-    </a>
-  </nav>
-
-  <section class="panel">
-    <h1>{{ section.title | localize }}</h1>
-    <p class="description">{{ section.description | localize }}</p>
-
-    <ng-container *ngIf="lessonsFor(section.id) as lessons">
-      <div class="lessons" *ngIf="lessons.length; else soon">
+@if (section$ | async; as section) {
+  <div class="learn">
+    <nav class="tabs" [attr.aria-label]="'learn.sections' | t">
+      @for (item of sections; track item) {
         <a
-          *ngFor="let lesson of lessons"
-          class="lesson-card"
-          [routerLink]="['/learn', section.id, lesson.id]">
-          <span class="lesson-text">
-            <span class="lesson-title">{{ lesson.title | localize }}</span>
-            <span class="lesson-summary">{{ lesson.summary | localize }}</span>
-          </span>
-          <span class="lesson-steps">{{
-            'learn.steps' | t: { count: lesson.steps.length }
-          }}</span>
-          <mat-icon>chevron_right</mat-icon>
+          [routerLink]="['/learn', item.id]"
+          routerLinkActive="active">
+          {{ item.title | localize }}
         </a>
-      </div>
-    </ng-container>
-    <ng-template #soon>
-      <p class="soon">
-        <mat-icon>schedule</mat-icon>
-        {{ 'learn.comingSoon' | t }}
-      </p>
-    </ng-template>
-  </section>
-</div>
+      }
+    </nav>
+    <section class="panel">
+      <h1>{{ section.title | localize }}</h1>
+      <p class="description">{{ section.description | localize }}</p>
+      @if (lessonsFor(section.id); as lessons) {
+        @if (lessons.length) {
+          <div class="lessons">
+            @for (lesson of lessons; track lesson) {
+              <a
+                class="lesson-card"
+                [routerLink]="['/learn', section.id, lesson.id]">
+                <span class="lesson-text">
+                  <span class="lesson-title">{{ lesson.title | localize }}</span>
+                  <span class="lesson-summary">{{ lesson.summary | localize }}</span>
+                </span>
+                <span class="lesson-steps">{{
+                  'learn.steps' | t: { count: lesson.steps.length }
+                }}</span>
+                <mat-icon>chevron_right</mat-icon>
+              </a>
+            }
+          </div>
+        } @else {
+          <p class="soon">
+            <mat-icon>schedule</mat-icon>
+            {{ 'learn.comingSoon' | t }}
+          </p>
+        }
+      }
+    </section>
+  </div>
+}

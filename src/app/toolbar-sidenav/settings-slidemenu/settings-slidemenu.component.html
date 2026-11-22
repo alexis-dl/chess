@@ -6,8 +6,10 @@
   <mat-icon>settings</mat-icon>
 </button>
 <mat-menu #menu="matMenu">
-  <a mat-menu-item *ngFor="let item of items" [routerLink]="item.path">
-    <mat-icon>{{ item.icon }}</mat-icon>
-    <span>{{ item.label | t }}</span>
-  </a>
+  @for (item of items; track item) {
+    <a mat-menu-item [routerLink]="item.path">
+      <mat-icon>{{ item.icon }}</mat-icon>
+      <span>{{ item.label | t }}</span>
+    </a>
+  }
 </mat-menu>
