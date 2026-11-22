@@ -2,16 +2,20 @@
   @for (row of rows; track $index) {
     <div class="move-row">
       <span class="move-number">{{ row.number }}</span>
-      @for (ply of row.plies; track ply) {
-        <button
-          type="button"
-          class="move"
-          [class.current]="ply === currentPly"
-          [class.selectable]="selectable"
-          [disabled]="!selectable"
-          (click)="select(ply)">
-          {{ moves[ply - 1] }}
-        </button>
+      @for (ply of row.plies; track $index) {
+        @if (ply === null) {
+          <span class="move">…</span>
+        } @else {
+          <button
+            type="button"
+            class="move"
+            [class.current]="ply === currentPly"
+            [class.selectable]="selectable"
+            [disabled]="!selectable"
+            (click)="select(ply)">
+            {{ moves[ply - 1] }}
+          </button>
+        }
       }
     </div>
   }

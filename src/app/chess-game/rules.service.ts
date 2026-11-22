@@ -93,6 +93,28 @@ export class RulesService {
   }
 
   /**
+   * Like playMove, but a promotion uses the given piece instead of asking the
+   * user (to replay a recorded game).
+   * @returns false when the move is illegal, or is a promotion without piece.
+   */
+  playMoveWithPromotion(
+    oldPos: Position,
+    newPos: Position,
+    chessBoard: Chessboard,
+    promotionPiece?: PieceName
+  ): boolean {
+    if (!this.isMoveValid(oldPos, newPos, chessBoard)) {
+      return false;
+    }
+    const isPromotion = this.isPawnPromotion(oldPos, newPos, chessBoard);
+    if (isPromotion !== !!promotionPiece) {
+      return false;
+    }
+    this.commitMove(oldPos, newPos, chessBoard, promotionPiece);
+    return true;
+  }
+
+  /**
    * Undo the last played move. A pending promotion is cancelled.
    * @returns false when there is no move to undo.
    */
@@ -218,7 +240,7 @@ export class RulesService {
    * Standard algebraic notation of a legal move, computed before playing it
    * (check/mate suffix excluded).
    */
-  private getSanWithoutCheck(
+  getSanWithoutCheck(
     oldPos: Position,
     newPos: Position,
     chessBoard: Chessboard,

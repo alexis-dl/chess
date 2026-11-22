@@ -1,6 +1,6 @@
 import { ChessUtilsService } from './chess-utils.service';
 import { Chessboard } from './chessboard.model';
-import { parseFen } from './fen';
+import { parseFen, toFen } from './fen';
 
 describe('parseFen', () => {
   it('reads the initial position', () => {
@@ -41,4 +41,20 @@ describe('parseFen', () => {
     expect(() => parseFen('8/8/8/8/8/8/8/7x w - - 0 1')).toThrowError();
     expect(() => parseFen('8/8/8/8/8/8/8/8 x - - 0 1')).toThrowError();
   });
+});
+
+describe('toFen', () => {
+  const FENS = [
+    'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1',
+    'rnbqkbnr/pp1ppppp/8/2p5/4P3/5N2/PPPP1PPP/RNBQKB1R b Kq - 3 12',
+    'rnbqkbnr/pppp1ppp/8/4p3/4P3/8/PPPP1PPP/RNBQKBNR w KQkq e6 0 2',
+    '8/8/4k3/8/8/4K3/8/8 b - - 40 61',
+  ];
+
+  for (const fen of FENS) {
+    it(`writes back ${fen}`, () => {
+      const { state, fullmoveNumber } = parseFen(fen);
+      expect(toFen(state, fullmoveNumber)).toBe(fen);
+    });
+  }
 });

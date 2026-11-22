@@ -69,3 +69,62 @@ export function parseFen(fen: string): FenPosition {
     fullmoveNumber: Number(fullmove) || 1,
   };
 }
+
+const FEN_LETTERS: Record<PieceType, string> = {
+  pawn: 'p',
+  knight: 'n',
+  bishop: 'b',
+  rook: 'r',
+  queen: 'q',
+  king: 'k',
+};
+
+/** Inverse of parseFen. */
+export function toFen(state: BoardState, fullmoveNumber = 1): string {
+  const placement = [...state.pieces]
+    .reverse() // FEN lists rank 8 first
+    .map(row => {
+      let rank = '';
+      let empty = 0;
+      for (const square of row) {
+        if (!square) {
+          empty++;
+          continue;
+        }
+        if (empty) {
+          rank += empty;
+          empty = 0;
+        }
+        const [color, type] = square.split('-') as [Color, PieceType];
+        const letter = FEN_LETTERS[type];
+        rank += color === 'white' ? letter.toUpperCase() : letter;
+      }
+      return empty ? rank + empty : rank;
+    })
+    .join('/');
+
+  const rights = state.castlingRights;
+  const castling =
+    [
+      rights.whiteKingSide ? 'K' : '',
+      rights.whiteQueenSide ? 'Q' : '',
+      rights.blackKingSide ? 'k' : '',
+      rights.blackQueenSide ? 'q' : '',
+    ].join('') || '-';
+
+  // the en passant target is behind the pawn that just moved two squares
+  const enPassant =
+    state.enPassantColIndex < 0
+      ? '-'
+      : String.fromCharCode('a'.charCodeAt(0) + state.enPassantColIndex) +
+        (state.isWhiteTurn ? '6' : '3');
+
+  return [
+    placement,
+    state.isWhiteTurn ? 'w' : 'b',
+    castling,
+    enPassant,
+    state.halfmoveClock,
+    fullmoveNumber,
+  ].join(' ');
+}

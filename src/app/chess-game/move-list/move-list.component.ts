@@ -12,8 +12,11 @@ import {
 
 interface MoveRow {
   number: number;
-  /** Plies of the white and black moves (1 for the first move). */
-  plies: number[];
+  /**
+   * Plies of the white and black moves (1 for the first move); null for the
+   * empty white cell when Black moves first.
+   */
+  plies: (number | null)[];
 }
 
 /**
@@ -36,6 +39,10 @@ export class MoveListComponent implements OnChanges, AfterViewChecked {
   /** Number of moves played in the displayed position. */
   @Input() currentPly = 0;
   @Input() selectable = false;
+  /** Number of the first move (games set up from a position). */
+  @Input() firstMoveNumber = 1;
+  /** True when the first move is a black one. */
+  @Input() blackStarts = false;
   @Output() plySelected = new EventEmitter<number>();
 
   rows: MoveRow[] = [];
@@ -43,10 +50,18 @@ export class MoveListComponent implements OnChanges, AfterViewChecked {
 
   ngOnChanges(): void {
     this.rows = [];
-    for (let ply = 1; ply <= this.moves.length; ply += 2) {
+    // a black first move fills the second cell of the first row
+    // (no row at all before the first move)
+    const offset = this.blackStarts && this.moves.length ? 1 : 0;
+    for (let slot = 1; slot <= this.moves.length + offset; slot += 2) {
+      const white = slot - offset;
+      const black = white + 1;
       this.rows.push({
-        number: (ply + 1) / 2,
-        plies: ply < this.moves.length ? [ply, ply + 1] : [ply],
+        number: this.firstMoveNumber + (slot - 1) / 2,
+        plies: [
+          white >= 1 ? white : null,
+          ...(black <= this.moves.length ? [black] : []),
+        ],
       });
     }
     this.scrollPending = true;
