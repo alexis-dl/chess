@@ -2,6 +2,7 @@ import { BrushColor } from '../../chess-game/chess-board/annotations';
 import { Localized } from '../../i18n/localized';
 import type { EndgameThemeId } from '../endgame-themes';
 import type { LearnSectionId } from '../learn.component';
+import { CARO_KANN_LESSONS } from './caro-kann';
 
 /** Arrow or circle drawn by the lesson; squares in algebraic notation. */
 export type LessonShape =
@@ -12,8 +13,13 @@ export interface LessonStep {
   title: Localized;
   /** Paragraphs of explanation, in every language. */
   text: Localized<string[]>;
-  /** Position at the start of the step. */
-  fen: string;
+  /**
+   * Position at the start of the step: a FEN, or `start`, the moves leading
+   * to it from the initial position (UCI, separated by spaces). Exactly one
+   * of the two is given (checked by lessons.spec.ts).
+   */
+  fen?: string;
+  start?: string;
   /** Optional line to play through, in UCI notation (e.g. 'e2e4'). */
   moves?: string[];
   /** Shapes shown on the position reached at the end of the line. */
@@ -25,6 +31,8 @@ export interface Lesson {
   section: LearnSectionId;
   /** Required for the endgame section, whose lessons are grouped by theme. */
   endgameTheme?: EndgameThemeId;
+  /** Id of the course listing this lesson (see courses.ts), if any. */
+  course?: string;
   title: Localized;
   summary: Localized;
   steps: LessonStep[];
@@ -239,4 +247,5 @@ export const LESSONS: Lesson[] = [
       },
     ],
   },
+  ...CARO_KANN_LESSONS,
 ];

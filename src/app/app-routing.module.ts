@@ -3,6 +3,8 @@ import { RouterModule, Routes } from '@angular/router';
 import { HomeComponent } from './home/home.component';
 import { LearnComponent } from './learn/learn.component';
 import { LessonComponent } from './learn/lesson/lesson.component';
+import { CourseComponent } from './learn/course/course.component';
+import { OpeningQuizComponent } from './learn/opening-quiz/opening-quiz.component';
 import { ExplorerComponent } from './play/explorer/explorer.component';
 import { PlayVsBotComponent } from './play/play-vs-bot/play-vs-bot.component';
 import { PuzzlesComponent } from './puzzles/puzzles.component';
@@ -39,6 +41,9 @@ const routes: Routes = [
     component: LearnComponent,
     data: { section: 'pawn-structures' },
   },
+  // before the lesson route, which would take 'quiz' for a lesson id
+  { path: 'learn/opening/quiz', component: OpeningQuizComponent },
+  { path: 'learn/:section/course/:course', component: CourseComponent },
   { path: 'learn/:section/:lesson', component: LessonComponent },
   // former page
   { path: 'openings', redirectTo: 'learn/opening' },

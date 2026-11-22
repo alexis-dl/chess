@@ -52,11 +52,57 @@
       } @else {
         <h1>{{ section.title | localize }}</h1>
         <p class="description">{{ section.description | localize }}</p>
-        <ng-container
-          *ngTemplateOutlet="
-            lessonList;
-            context: { $implicit: lessonsFor(section.id), section: section }
-          "></ng-container>
+        <div class="entries">
+          @for (course of coursesFor(section.id); track course.id) {
+            @if (lessonCount(course)) {
+              <a
+                class="lesson-card course-card"
+                [routerLink]="['/learn', section.id, 'course', course.id]">
+                <mat-icon class="course-icon">menu_book</mat-icon>
+                <span class="lesson-text">
+                  <span class="lesson-title">{{ course.title | localize }}</span>
+                  <span class="lesson-summary">{{
+                    course.summary | localize
+                  }}</span>
+                </span>
+                <span class="lesson-steps">{{
+                  'learn.lessons' | t: { count: lessonCount(course) }
+                }}</span>
+                <mat-icon>chevron_right</mat-icon>
+              </a>
+            } @else {
+              <!-- announced course, without lessons yet: not a link -->
+              <div class="lesson-card course-card soon-card">
+                <mat-icon class="course-icon">menu_book</mat-icon>
+                <span class="lesson-text">
+                  <span class="lesson-title">{{ course.title | localize }}</span>
+                  <span class="lesson-summary">{{
+                    course.summary | localize
+                  }}</span>
+                </span>
+                <span class="soon-badge">{{ 'learn.soon' | t }}</span>
+              </div>
+            }
+          }
+          @if (section.id === 'opening') {
+            <a class="lesson-card quiz-card" routerLink="/learn/opening/quiz">
+              <mat-icon class="quiz-icon">quiz</mat-icon>
+              <span class="lesson-text">
+                <span class="lesson-title">{{ 'quiz.title' | t }}</span>
+                <span class="lesson-summary">{{ 'quiz.summary' | t }}</span>
+              </span>
+              <mat-icon>chevron_right</mat-icon>
+            </a>
+          }
+        </div>
+        <!-- "coming soon" only when the section has no course either -->
+        @if (lessonsFor(section.id).length || !coursesFor(section.id).length) {
+          <ng-container
+            *ngTemplateOutlet="
+              lessonList;
+              context: { $implicit: lessonsFor(section.id), section: section }
+            "></ng-container>
+        }
       }
     </section>
   </div>

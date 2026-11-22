@@ -1,12 +1,10 @@
 @if (lesson) {
   <div class="lesson-page">
     <aside class="panel toc">
-      <a class="back" [routerLink]="['/learn', lesson.section]">
+      <a class="back" [routerLink]="backLink">
         <mat-icon>arrow_back</mat-icon>
-        @if (section) {
-          {{
-          section.title | localize
-          }}
+        @if (backTitle) {
+          {{ backTitle | localize }}
         }
       </a>
       <h1>{{ lesson.title | localize }}</h1>
@@ -28,7 +26,8 @@
       <app-chess-board
         [chessBoard]="chessBoard"
         [canMove]="false"
-      [shapes]="shapes"></app-chess-board>
+        [orientation]="orientation"
+        [shapes]="shapes"></app-chess-board>
     </main>
     <section class="panel content">
       <header class="content-header">
@@ -112,10 +111,10 @@
         } @else {
           <a
             class="btn btn-primary"
-            [routerLink]="['/learn', lesson.section]"
+            [routerLink]="backLink"
           [attr.title]="
-            section
-              ? ('lesson.backTo' | t: { section: section.title | localize })
+            backTitle
+              ? ('lesson.backTo' | t: { section: backTitle | localize })
               : null
           ">
             {{ 'lesson.finish' | t }}

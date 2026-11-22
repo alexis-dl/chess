@@ -8,10 +8,13 @@ import {
 } from '../../chess-game/chess-board/annotations';
 import { ChessUtilsService } from '../../chess-game/chess-utils.service';
 import { Chessboard } from '../../chess-game/chessboard.model';
-import { parseFen } from '../../chess-game/fen';
+import { stepStartPosition } from '../lessons/lesson-position';
 import { formatMoveList, MoveListItem } from '../../chess-game/move-list';
 import { RulesService } from '../../chess-game/rules.service';
 import { parseUci } from '../../puzzles/puzzle-moves';
+import { Color } from '../../chess-game/piece.model';
+import { Localized } from '../../i18n/localized';
+import { Course, COURSES } from '../courses';
 import { LEARN_SECTIONS, LearnSection } from '../learn.component';
 import {
   Lesson,
@@ -59,6 +62,28 @@ export class LessonComponent implements OnInit, OnDestroy {
     return this.step.moves?.length ?? 0;
   }
 
+  /** The lesson's course if it has one, else its section. */
+  private get course(): Course | undefined {
+    return COURSES.find(course => course.id === this.lesson?.course);
+  }
+
+  get backLink(): string[] {
+    const section = this.lesson?.section ?? '';
+    const course = this.course;
+    return course
+      ? ['/learn', section, 'course', course.id]
+      : ['/learn', section];
+  }
+
+  /** Lessons of a course follow its orientation; the others are seen by White. */
+  get orientation(): Color {
+    return this.course?.orientation ?? 'white';
+  }
+
+  get backTitle(): Localized | null {
+    return this.course?.title ?? this.section?.title ?? null;
+  }
+
   ngOnInit(): void {
     this.subscription = this.route.paramMap.subscribe(params => {
       this.section =
@@ -87,7 +112,7 @@ export class LessonComponent implements OnInit, OnDestroy {
     const fullLine = this.buildBoard(this.lineLength);
     this.moveItems = formatMoveList(
       fullLine.getHistory(),
-      parseFen(this.step.fen).fullmoveNumber
+      stepStartPosition(this.step).fullmoveNumber
     );
     this.goToPly(0);
   }
@@ -120,7 +145,7 @@ export class LessonComponent implements OnInit, OnDestroy {
   private buildBoard(plies: number): Chessboard {
     const board = new Chessboard(
       this.chessUtilsService,
-      parseFen(this.step.fen).state
+      stepStartPosition(this.step).state
     );
     for (const uci of (this.step.moves ?? []).slice(0, plies)) {
       const { from, to } = parseUci(uci);

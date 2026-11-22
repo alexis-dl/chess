@@ -2,6 +2,7 @@ import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { map } from 'rxjs';
 import { Localized } from '../i18n/localized';
+import { Course, COURSES } from './courses';
 import { EndgameTheme, ENDGAME_THEMES } from './endgame-themes';
 import { Lesson, LESSONS } from './lessons/lesson.model';
 
@@ -78,8 +79,20 @@ export class LearnComponent {
 
   constructor(private route: ActivatedRoute) {}
 
+  coursesFor(sectionId: LearnSectionId): Course[] {
+    return COURSES.filter(course => course.section === sectionId);
+  }
+
+  /** Lessons of the section that are not part of a course. */
   lessonsFor(sectionId: LearnSectionId): Lesson[] {
-    return LESSONS.filter(lesson => lesson.section === sectionId);
+    return LESSONS.filter(
+      lesson => lesson.section === sectionId && !lesson.course
+    );
+  }
+
+  /** Number of lessons of a course, shown on its card. */
+  lessonCount(course: Course): number {
+    return course.groups.reduce((n, group) => n + group.lessons.length, 0);
   }
 
   lessonsForTheme(theme: EndgameTheme): Lesson[] {

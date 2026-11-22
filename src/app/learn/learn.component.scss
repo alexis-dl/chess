@@ -217,3 +217,56 @@ h1 {
     font-size: 20px;
   }
 }
+
+// ----- opening entries: courses, then the quiz -----
+
+.entries {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 24px;
+
+  &:empty {
+    display: none;
+  }
+}
+
+.course-icon,
+.quiz-icon {
+  width: 32px;
+  height: 32px;
+  font-size: 32px;
+}
+
+.course-icon {
+  color: var(--text-strong);
+}
+
+.quiz-card {
+  border-color: var(--accent);
+
+  .quiz-icon {
+    color: var(--accent);
+  }
+}
+
+// announced course: not clickable
+.soon-card {
+  cursor: default;
+  opacity: 0.6;
+
+  &:hover {
+    border-color: var(--border);
+    background: var(--surface-raised);
+  }
+}
+
+.soon-badge {
+  flex: none;
+  padding: 2px 8px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  color: var(--text-muted);
+  font-size: 0.8em;
+  font-style: italic;
+}

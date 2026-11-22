@@ -17,6 +17,8 @@ import { PromotionComponent } from './chess-game/promotion/promotion.component';
 import { HomeComponent } from './home/home.component';
 import { LearnComponent } from './learn/learn.component';
 import { LessonComponent } from './learn/lesson/lesson.component';
+import { CourseComponent } from './learn/course/course.component';
+import { OpeningQuizComponent } from './learn/opening-quiz/opening-quiz.component';
 import { MoveListComponent } from './chess-game/move-list/move-list.component';
 import { OpeningLabelComponent } from './openings/opening-label/opening-label.component';
 import { ExplorerComponent } from './play/explorer/explorer.component';
@@ -55,6 +57,8 @@ import { MatTabsModule } from '@angular/material/tabs';
     QuitComponent,
     LearnComponent,
     LessonComponent,
+    OpeningQuizComponent,
+    CourseComponent,
     HomeComponent,
     ExplorerComponent,
     MoveListComponent,

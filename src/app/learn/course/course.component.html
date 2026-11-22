@@ -1,0 +1,42 @@
+<div class="learn">
+  @if (course$ | async; as course) {
+    <section class="panel">
+      <a class="back" [routerLink]="['/learn', course.section]">
+        <mat-icon>arrow_back</mat-icon>
+        {{ sectionTitle(course) | localize }}
+      </a>
+      <h1>{{ course.title | localize }}</h1>
+      <p class="description">{{ course.summary | localize }}</p>
+
+      @for (group of course.groups; track $index) {
+        <h2 class="group-title">{{ group.title | localize }}</h2>
+        <div class="lessons">
+          @for (lesson of lessons(group.lessons); track lesson.id) {
+            <a
+              class="lesson-card"
+              [routerLink]="['/learn', course.section, lesson.id]">
+              <span class="lesson-text">
+                <span class="lesson-title">{{ lesson.title | localize }}</span>
+                <span class="lesson-summary">{{
+                  lesson.summary | localize
+                }}</span>
+              </span>
+              <span class="lesson-steps">{{
+                'learn.steps' | t: { count: lesson.steps.length }
+              }}</span>
+              <mat-icon>chevron_right</mat-icon>
+            </a>
+          }
+        </div>
+      }
+    </section>
+  } @else {
+    <section class="panel">
+      <p class="description">{{ 'lesson.notFound' | t }}</p>
+      <a class="back" routerLink="/learn">
+        <mat-icon>arrow_back</mat-icon>
+        {{ 'lesson.backToLearn' | t }}
+      </a>
+    </section>
+  }
+</div>

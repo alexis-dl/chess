@@ -1,0 +1,63 @@
+<div class="quiz-page">
+  <main class="board-area">
+    <app-chess-board
+      [chessBoard]="chessBoard"
+      [canMove]="false"></app-chess-board>
+  </main>
+
+  <section class="panel">
+    <a class="back" [routerLink]="['/learn', 'opening']">
+      <mat-icon>arrow_back</mat-icon>
+      {{ section.title | localize }}
+    </a>
+    <h1>{{ 'quiz.title' | t }}</h1>
+
+    @if (!finished) {
+      <div class="progress">
+        <span>{{
+          'quiz.question' | t: { current: index + 1, total: questions.length }
+        }}</span>
+        <span>{{ 'quiz.score' | t: { score: score, total: questions.length } }}</span>
+      </div>
+
+      <p class="prompt">{{ 'quiz.prompt' | t }}</p>
+
+      <div class="choices">
+        @for (choice of question.choices; track choice) {
+          <button
+            type="button"
+            class="choice"
+            [disabled]="picked !== null"
+            [class.right]="picked && choice === question.answer"
+            [class.wrong]="picked === choice && choice !== question.answer"
+            (click)="pick(choice)">
+            {{ choice.name | localize }}
+          </button>
+        }
+      </div>
+
+      @if (picked) {
+        <div class="feedback" [class.success]="picked === question.answer">
+          <strong>{{
+            (picked === question.answer ? 'quiz.correct' : 'quiz.wrong') | t
+          }}</strong>
+          <span class="answer">{{ question.answer.name | localize }}</span>
+          <span class="line">{{ line }}</span>
+        </div>
+        <button type="button" class="btn btn-primary next" (click)="next()">
+          {{ (isLast ? 'quiz.seeScore' : 'quiz.next') | t }}
+          <mat-icon>arrow_forward</mat-icon>
+        </button>
+      }
+    } @else {
+      <div class="result">
+        <span class="result-score">{{ score }} / {{ questions.length }}</span>
+        <span class="result-text">{{ 'quiz.finished' | t }}</span>
+      </div>
+      <button type="button" class="btn btn-primary" (click)="restart()">
+        <mat-icon>refresh</mat-icon>
+        {{ 'quiz.restart' | t }}
+      </button>
+    }
+  </section>
+</div>
