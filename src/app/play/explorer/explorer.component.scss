@@ -1,7 +1,7 @@
 .explorer {
   --board-size: clamp(
     300px,
-    min(calc(100vh - 190px), calc(100vw - 32px)),
+    min(calc(100vh - 222px), calc(100vw - 32px)),
     720px
   );
   display: flex;
@@ -25,4 +25,10 @@ h1 {
 p {
   margin: 4px 0 0;
   color: var(--text-muted);
+}
+
+/* Height kept when empty, so the board doesn't move when a name appears. */
+.opening {
+  min-height: 24px;
+  margin-top: 8px;
 }

@@ -17,6 +17,7 @@ import { PromotionComponent } from './chess-game/promotion/promotion.component';
 import { HomeComponent } from './home/home.component';
 import { LearnComponent } from './learn/learn.component';
 import { LessonComponent } from './learn/lesson/lesson.component';
+import { OpeningLabelComponent } from './openings/opening-label/opening-label.component';
 import { ExplorerComponent } from './play/explorer/explorer.component';
 import { PlayVsBotComponent } from './play/play-vs-bot/play-vs-bot.component';
 import { PlayerPanelComponent } from './player/player-panel.component';
@@ -60,6 +61,7 @@ import { ToastModule } from 'primeng/toast';
     LessonComponent,
     HomeComponent,
     ExplorerComponent,
+    OpeningLabelComponent,
     PlayVsBotComponent,
     PromotionComponent,
     PuzzlesComponent,

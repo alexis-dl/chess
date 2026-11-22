@@ -24,6 +24,8 @@ import { DrawReason, RulesService } from 'src/app/chess-game/rules.service';
 import { PlayerType } from 'src/app/player/player-type.enum';
 import { Player } from 'src/app/player/player.model';
 import { TranslationKey } from 'src/app/i18n/translations';
+import { Opening } from 'src/app/openings/openings';
+import { OpeningService } from 'src/app/openings/opening.service';
 
 /** Pause before the bot answers, so that the user's move is displayed first. */
 const BOT_MOVE_DELAY_MS = 300;
@@ -82,6 +84,8 @@ export class PlayVsBotComponent
     captured: { white: [], black: [] },
     balance: 0,
   };
+  /** Last known opening reached by the game. */
+  opening: Opening | null = null;
 
   private renderedKey = '';
   private scrolledPlies = 0;
@@ -92,7 +96,8 @@ export class PlayVsBotComponent
     private rulesService: RulesService,
     private botService: BotService,
     private promotionService: PromotionService,
-    private chessUtilsService: ChessUtilsService
+    private chessUtilsService: ChessUtilsService,
+    private openingService: OpeningService
   ) {}
 
   get isUserTurn(): boolean {
@@ -147,6 +152,7 @@ export class PlayVsBotComponent
       this.renderedKey = key;
       this.movePairs = this.computeMovePairs();
       this.material = this.computeMaterial();
+      this.opening = this.openingService.identify(this.chessBoard);
     }
   }
 

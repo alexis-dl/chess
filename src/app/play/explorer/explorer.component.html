@@ -2,6 +2,11 @@
   <header>
     <h1>{{ 'explorer.title' | t }}</h1>
     <p>{{ 'explorer.description' | t }}</p>
+    <div class="opening">
+      <app-opening-label
+        *ngIf="opening"
+        [opening]="opening"></app-opening-label>
+    </div>
   </header>
-  <app-chess-board></app-chess-board>
+  <app-chess-board [chessBoard]="chessBoard"></app-chess-board>
 </div>
