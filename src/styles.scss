@@ -1,10 +1,11 @@
 :root {
-  // surfaces, from the page background up to raised elements
-  --bg: #161512;
-  --surface-sunken: #1e1d1a;
+  // surfaces: a warm mid-dark gray page, with panels a shade darker and
+  // raised elements (buttons, cards) a shade lighter
+  --bg: #302e2b;
+  --surface-sunken: #1f1e1b;
   --surface: #262421;
-  --surface-raised: #302e2b;
-  --border: #3a3835;
+  --surface-raised: #3a3835;
+  --border: #45423e;
 
   --text-faint: #6f6c68;
   --text-muted: #9a9792;
@@ -22,6 +23,22 @@
   --square-selected: rgba(110, 140, 60, 0.55);
   --move-hint: rgba(40, 60, 30, 0.42);
   --move-hint-hover: rgba(110, 140, 60, 0.45);
+}
+
+// light theme (settings > themes): neutral light grays (no tint), not too
+// bright; only the interface colors change, the board has its own setting
+:root[data-theme='light'] {
+  color-scheme: light;
+  --bg: #d2d2d2;
+  --surface-sunken: #c7c7c7;
+  --surface: #e2e2e2;
+  --surface-raised: #d9d9d9;
+  --border: #b5b5b5;
+
+  --text-faint: #888888;
+  --text-muted: #545454;
+  --text: #252525;
+  --text-strong: #111111;
 }
 
 html,
@@ -136,6 +153,18 @@ html {
   --mat-menu-container-color: var(--surface);
   --mat-snackbar-container-color: var(--surface-raised);
   --mat-snackbar-supporting-text-color: var(--text-strong);
+  // the prebuilt theme is dark: take its text and outline colors from our
+  // palette so that form fields follow the light theme too
+  --mat-form-field-outlined-outline-color: var(--border);
+  --mat-form-field-outlined-hover-outline-color: var(--text-muted);
+  --mat-form-field-outlined-label-text-color: var(--text-muted);
+  --mat-form-field-outlined-hover-label-text-color: var(--text);
+  --mat-form-field-outlined-input-text-color: var(--text-strong);
+  --mat-form-field-outlined-caret-color: var(--accent);
+  --mat-select-enabled-trigger-text-color: var(--text-strong);
+  --mat-select-enabled-arrow-color: var(--text-muted);
+  --mat-option-label-text-color: var(--text-strong);
+  --mat-menu-item-label-text-color: var(--text-strong);
 }
 
 .mat-mdc-tab-nav-bar {

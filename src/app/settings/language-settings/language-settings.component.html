@@ -1,41 +1,18 @@
-<div class="container">
-  <div class="settings-form-group">
-    <mat-form-field appearance="outline">
-      <mat-label>{{ 'settings.language.label' | t }}</mat-label>
-      <mat-select
-        id="languages"
-        [(ngModel)]="selectedLanguage"
-        [placeholder]="'settings.language.placeholder' | t">
-        <mat-select-trigger>
-          @if (selectedLanguage) {
-            <span class="language-option">
-              <img
-              [src]="
-                'assets/flags/4x3/' + selectedLanguage.flag.toLowerCase() + '.svg'
-              "
-                alt="" />
-              {{ selectedLanguage.name }}
-            </span>
-          }
-        </mat-select-trigger>
-        <mat-option [value]="undefined">—</mat-option>
-        @for (language of languages; track language) {
-          <mat-option [value]="language">
-            <span class="language-option">
-              <img
-                [src]="'assets/flags/4x3/' + language.flag.toLowerCase() + '.svg'"
-                alt="" />
-              {{ language.name }}
-            </span>
-          </mat-option>
-        }
-      </mat-select>
-    </mat-form-field>
-
-    <div>
-      <button mat-flat-button (click)="onSubmitLanguage()">
-        {{ 'settings.language.submit' | t }}
-      </button>
-    </div>
-  </div>
+<div
+  class="container"
+  role="radiogroup"
+  [attr.aria-label]="'settings.tabs.languages' | t">
+  @for (option of languages; track option.language) {
+    <button
+      type="button"
+      class="btn"
+      role="radio"
+      [attr.lang]="option.language"
+      [class.btn-primary]="i18n.language === option.language"
+      [attr.aria-checked]="i18n.language === option.language"
+      (click)="i18n.setLanguage(option.language)">
+      <img [src]="'assets/flags/4x3/' + option.flag + '.svg'" alt="" />
+      {{ option.name }}
+    </button>
+  }
 </div>

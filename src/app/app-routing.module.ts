@@ -7,10 +7,8 @@ import { ExplorerComponent } from './play/explorer/explorer.component';
 import { PlayVsBotComponent } from './play/play-vs-bot/play-vs-bot.component';
 import { PuzzlesComponent } from './puzzles/puzzles.component';
 import { AndroidSettingsComponent } from './settings/android-settings/android-settings.component';
-import { BoardSettingsComponent } from './settings/board-settings/board-settings.component';
 import { LanguageSettingsComponent } from './settings/language-settings/language-settings.component';
 import { SettingsComponent } from './settings/settings.component';
-import { SoundSettingsComponent } from './settings/sound-settings/sound-settings.component';
 import { ThemeSettingsComponent } from './settings/theme-settings/theme-settings.component';
 import { UserSettingsComponent } from './settings/user-settings/user-settings.component';
 import { QuitComponent } from './toolbar-sidenav/quit/quit.component';
@@ -48,11 +46,10 @@ const routes: Routes = [
     path: 'settings',
     component: SettingsComponent,
     children: [
+      { path: '', redirectTo: 'user', pathMatch: 'full' },
       { path: 'user', component: UserSettingsComponent },
-      { path: 'board', component: BoardSettingsComponent },
       { path: 'themes', component: ThemeSettingsComponent },
       { path: 'languages', component: LanguageSettingsComponent },
-      { path: 'sounds', component: SoundSettingsComponent },
       { path: 'android', component: AndroidSettingsComponent },
     ],
   },

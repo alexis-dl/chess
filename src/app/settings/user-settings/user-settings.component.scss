@@ -1,0 +1,49 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2.4rem;
+  padding: 3.2rem;
+}
+
+h2 {
+  margin: 0 0 12px;
+  color: var(--text-muted);
+  font-size: 0.9em;
+  font-weight: 600;
+}
+
+.avatar-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.avatar {
+  width: 64px;
+  height: 64px;
+  border-radius: 6px;
+  object-fit: cover;
+}
+
+// the file input is hidden: the label is the button
+label.btn {
+  position: relative;
+
+  &:focus-within {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+
+  input {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    opacity: 0;
+  }
+}
+
+mat-form-field {
+  width: 100%;
+  max-width: 32rem;
+}

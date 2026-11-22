@@ -18,6 +18,7 @@ import { Player } from 'src/app/player/player.model';
 import { TranslationKey } from 'src/app/i18n/translations';
 import { Opening } from 'src/app/openings/openings';
 import { OpeningService } from 'src/app/openings/opening.service';
+import { UserService } from 'src/app/settings/user-settings/user.service';
 
 /** Pause before the bot answers, so that the user's move is displayed first. */
 const BOT_MOVE_DELAY_MS = 300;
@@ -59,9 +60,9 @@ interface MaterialSummary {
 })
 export class PlayVsBotComponent implements OnInit, DoCheck, OnDestroy {
   readonly user: Player = {
-    name: 'Chacalito53',
-    elo: 1549,
-    profilePicture: 'assets/pictures/chacalito-profile-pic.png',
+    name: this.userService.name,
+    elo: this.userService.elo,
+    profilePicture: this.userService.avatar,
     playerType: PlayerType.User,
   };
   readonly bots: Player[] = [new BabyBot(), new NormalBot()];
@@ -86,7 +87,8 @@ export class PlayVsBotComponent implements OnInit, DoCheck, OnDestroy {
     private botService: BotService,
     private promotionService: PromotionService,
     private chessUtilsService: ChessUtilsService,
-    private openingService: OpeningService
+    private openingService: OpeningService,
+    private userService: UserService
   ) {}
 
   get isUserTurn(): boolean {

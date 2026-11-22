@@ -1,1 +1,32 @@
-<p class="coming-soon">{{ 'settings.comingSoon' | t }}</p>
+<form class="container" (submit)="save(); $event.preventDefault()">
+  <section>
+    <h2>{{ 'settings.user.avatar' | t }}</h2>
+    <div class="avatar-row">
+      <img class="avatar" [src]="avatar" alt="" />
+      <label class="btn">
+        <mat-icon>add_photo_alternate</mat-icon>
+        {{ 'settings.user.upload' | t }}
+        <input
+          type="file"
+          accept="image/*"
+          (change)="onImageSelected($event)" />
+      </label>
+    </div>
+  </section>
+
+  <mat-form-field appearance="outline">
+    <mat-label>{{ 'settings.user.name' | t }}</mat-label>
+    <input
+      matInput
+      name="name"
+      autocomplete="nickname"
+      [maxlength]="maxLength"
+      [(ngModel)]="name" />
+  </mat-form-field>
+
+  <div>
+    <button mat-flat-button type="submit" [disabled]="!canSave">
+      {{ 'settings.user.submit' | t }}
+    </button>
+  </div>
+</form>

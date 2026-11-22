@@ -1,1 +1,94 @@
-<p class="coming-soon">{{ 'settings.comingSoon' | t }}</p>
+<div class="container">
+  <section>
+    <h2>{{ 'settings.theme.interface' | t }}</h2>
+    <div
+      class="theme-choices"
+      role="radiogroup"
+      [attr.aria-label]="'settings.theme.interface' | t">
+      @for (option of themes; track option.theme) {
+        <button
+          type="button"
+          class="btn"
+          role="radio"
+          [class.btn-primary]="themeService.theme === option.theme"
+          [attr.aria-checked]="themeService.theme === option.theme"
+          (click)="themeService.setTheme(option.theme)">
+          <mat-icon>{{ option.icon }}</mat-icon>
+          {{ option.label | t }}
+        </button>
+      }
+    </div>
+  </section>
+
+  <section>
+    <h2>{{ 'settings.board.title' | t }}</h2>
+    <div class="board-settings">
+      <div
+        class="boards"
+        role="radiogroup"
+        [attr.aria-label]="'settings.board.title' | t">
+        @for (theme of boardThemes; track theme.id) {
+          <button
+            type="button"
+            class="board-choice"
+            role="radio"
+            [title]="theme.name | localize"
+            [attr.aria-label]="theme.name | localize"
+            [class.selected]="boardTheme === theme"
+            [attr.aria-checked]="boardTheme === theme"
+            (click)="boardTheme = theme">
+            <span [style.background]="theme.light"></span>
+            <span [style.background]="theme.dark"></span>
+            <span [style.background]="theme.dark"></span>
+            <span [style.background]="theme.light"></span>
+            @if (boardTheme === theme) {
+              <mat-icon class="check">check_circle</mat-icon>
+            }
+          </button>
+        }
+      </div>
+
+      <div class="preview" aria-hidden="true">
+        @for (row of preview; track $index) {
+          @for (square of row; track $index) {
+            <div
+              class="square"
+              [style.background]="squareColor(square, boardTheme)">
+              @if (square.rank) {
+                <span
+                  class="coord"
+                  [style.color]="
+                    squareColor({ light: !square.light }, boardTheme)
+                  "
+                  >{{ square.rank }}</span
+                >
+              }
+              @if (square.piece) {
+                <img [src]="'assets/chess-pieces/' + square.piece + '.svg'" alt="" />
+              }
+            </div>
+          }
+        }
+      </div>
+    </div>
+
+    <p class="board-name">{{ boardTheme.name | localize }}</p>
+
+    <div class="board-actions">
+      <button
+        type="button"
+        class="btn"
+        [disabled]="!boardChanged"
+        (click)="cancelBoard()">
+        {{ 'settings.board.cancel' | t }}
+      </button>
+      <button
+        type="button"
+        class="btn btn-primary"
+        [disabled]="!boardChanged"
+        (click)="saveBoard()">
+        {{ 'settings.board.save' | t }}
+      </button>
+    </div>
+  </section>
+</div>

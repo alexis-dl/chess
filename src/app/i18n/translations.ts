@@ -17,12 +17,22 @@ const en = {
 
   // settings
   'settings.tabs.user': 'User',
-  'settings.tabs.board': 'Board & pieces',
   'settings.tabs.themes': 'Themes',
   'settings.tabs.languages': 'Languages',
-  'settings.tabs.sounds': 'Sounds',
   'settings.tabs.android': 'Android app',
-  'settings.comingSoon': 'Coming soon.',
+  'settings.user.name': 'Username',
+  'settings.user.submit': 'Save',
+  'settings.user.saved': 'Profile saved',
+  'settings.user.avatar': 'Icon',
+  'settings.user.upload': 'Import an image',
+  'settings.user.invalidImage': 'This file is not a readable image',
+  'settings.theme.dark': 'Dark',
+  'settings.theme.light': 'Light',
+  'settings.theme.interface': 'Interface',
+  'settings.board.title': 'Board',
+  'settings.board.cancel': 'Cancel',
+  'settings.board.save': 'Save',
+  'settings.board.saved': 'Board saved',
   'settings.android.title': 'Play on your Android phone',
   'settings.android.description':
     'Install the app to play without a browser, even offline. It is always built from the latest version of the site.',
@@ -32,13 +42,6 @@ const en = {
   'settings.android.update':
     'To update, uninstall the previous version first.',
   'settings.android.alreadyInstalled': 'You are already using the Android app.',
-  'settings.language.label': 'Language',
-  'settings.language.placeholder': 'Select a language',
-  'settings.language.submit': 'Save',
-  'settings.language.success': 'Done',
-  'settings.language.saved': 'Language set to {language}',
-  'settings.language.error': 'Error',
-  'settings.language.none': 'No language selected',
 
   // simple pages
   'home.soon': 'Available soon!',
@@ -151,12 +154,22 @@ const fr: Record<TranslationKey, string> = {
 
   // settings
   'settings.tabs.user': 'Utilisateur',
-  'settings.tabs.board': 'Plateau et pièces',
   'settings.tabs.themes': 'Thèmes',
   'settings.tabs.languages': 'Langues',
-  'settings.tabs.sounds': 'Sons',
   'settings.tabs.android': 'Application Android',
-  'settings.comingSoon': 'Bientôt disponible.',
+  'settings.user.name': 'Pseudo',
+  'settings.user.submit': 'Enregistrer',
+  'settings.user.saved': 'Profil enregistré',
+  'settings.user.avatar': 'Icône',
+  'settings.user.upload': 'Importer une image',
+  'settings.user.invalidImage': 'Ce fichier n’est pas une image lisible',
+  'settings.theme.dark': 'Sombre',
+  'settings.theme.light': 'Clair',
+  'settings.theme.interface': 'Interface',
+  'settings.board.title': 'Échiquier',
+  'settings.board.cancel': 'Annuler',
+  'settings.board.save': 'Enregistrer',
+  'settings.board.saved': 'Échiquier enregistré',
   'settings.android.title': 'Jouez sur votre téléphone Android',
   'settings.android.description':
     'Installez l’application pour jouer sans navigateur, même hors ligne. Elle est toujours construite à partir de la dernière version du site.',
@@ -167,13 +180,6 @@ const fr: Record<TranslationKey, string> = {
     'Pour mettre à jour, désinstallez d’abord la version précédente.',
   'settings.android.alreadyInstalled':
     'Vous utilisez déjà l’application Android.',
-  'settings.language.label': 'Langue',
-  'settings.language.placeholder': 'Choisir une langue',
-  'settings.language.submit': 'Enregistrer',
-  'settings.language.success': 'C’est fait',
-  'settings.language.saved': 'Langue choisie : {language}',
-  'settings.language.error': 'Erreur',
-  'settings.language.none': 'Aucune langue sélectionnée',
 
   // simple pages
   'home.soon': 'Bientôt disponible !',

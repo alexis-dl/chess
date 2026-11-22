@@ -1,5 +1,5 @@
 import { DragDropModule } from '@angular/cdk/drag-drop';
-import { NgModule } from '@angular/core';
+import { inject, NgModule, provideAppInitializer } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatListModule } from '@angular/material/list';
@@ -24,11 +24,11 @@ import { PlayVsBotComponent } from './play/play-vs-bot/play-vs-bot.component';
 import { PlayerPanelComponent } from './player/player-panel.component';
 import { PuzzlesComponent } from './puzzles/puzzles.component';
 import { AndroidSettingsComponent } from './settings/android-settings/android-settings.component';
-import { BoardSettingsComponent } from './settings/board-settings/board-settings.component';
 import { LanguageSettingsComponent } from './settings/language-settings/language-settings.component';
 import { SettingsComponent } from './settings/settings.component';
-import { SoundSettingsComponent } from './settings/sound-settings/sound-settings.component';
 import { ThemeSettingsComponent } from './settings/theme-settings/theme-settings.component';
+import { BoardThemeService } from './settings/theme-settings/board-theme.service';
+import { ThemeService } from './settings/theme-settings/theme.service';
 import { UserSettingsComponent } from './settings/user-settings/user-settings.component';
 import { QuitComponent } from './toolbar-sidenav/quit/quit.component';
 import { SettingsSlidemenuComponent } from './toolbar-sidenav/settings-slidemenu/settings-slidemenu.component';
@@ -36,8 +36,8 @@ import { ToolbarSidenavComponent } from './toolbar-sidenav/toolbar-sidenav.compo
 
 import { FormsModule } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
 import { MatMenuModule } from '@angular/material/menu';
-import { MatSelectModule } from '@angular/material/select';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatTabsModule } from '@angular/material/tabs';
 
@@ -64,8 +64,6 @@ import { MatTabsModule } from '@angular/material/tabs';
     PuzzlesComponent,
     ClickOutsideDirective,
     UserSettingsComponent,
-    BoardSettingsComponent,
-    SoundSettingsComponent,
     LanguageSettingsComponent,
     ThemeSettingsComponent,
     AndroidSettingsComponent,
@@ -84,9 +82,16 @@ import { MatTabsModule } from '@angular/material/tabs';
     MatMenuModule,
     MatTabsModule,
     MatFormFieldModule,
-    MatSelectModule,
+    MatInputModule,
     MatSnackBarModule,
     FormsModule,
+  ],
+  providers: [
+    // apply the saved themes (interface, board) before the first render
+    provideAppInitializer(() => {
+      inject(ThemeService);
+      inject(BoardThemeService);
+    }),
   ],
 })
 export class AppModule {}
