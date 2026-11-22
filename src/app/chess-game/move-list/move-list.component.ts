@@ -21,9 +21,10 @@ interface MoveRow {
  * move asks to display the position it leads to.
  */
 @Component({
-  selector: 'app-move-list',
-  templateUrl: './move-list.component.html',
-  styleUrls: ['./move-list.component.scss'],
+    selector: 'app-move-list',
+    templateUrl: './move-list.component.html',
+    styleUrls: ['./move-list.component.scss'],
+    standalone: false
 })
 export class MoveListComponent implements OnChanges, AfterViewChecked {
   @ViewChild('list') list?: ElementRef<HTMLElement>;

@@ -49,9 +49,10 @@ export interface SquareView {
  * The game flow (turns, bot, end of game) is handled by the parent.
  */
 @Component({
-  selector: 'app-chess-board',
-  templateUrl: './chess-board.component.html',
-  styleUrls: ['./chess-board.component.scss'],
+    selector: 'app-chess-board',
+    templateUrl: './chess-board.component.html',
+    styleUrls: ['./chess-board.component.scss'],
+    standalone: false
 })
 export class ChessBoardComponent implements OnInit, DoCheck, OnDestroy {
   @Input() chessBoard: Chessboard = new Chessboard(this.chessUtilsService);

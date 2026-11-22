@@ -4,9 +4,10 @@ import { ChessUtilsService } from '../chess-utils.service';
 import { Square } from '../piece.model';
 
 @Component({
-  selector: 'app-chess-piece',
-  templateUrl: './chess-piece.component.html',
-  styleUrls: ['./chess-piece.component.scss'],
+    selector: 'app-chess-piece',
+    templateUrl: './chess-piece.component.html',
+    styleUrls: ['./chess-piece.component.scss'],
+    standalone: false
 })
 export class ChessPieceComponent {
   @Input() pieceType!: Square;

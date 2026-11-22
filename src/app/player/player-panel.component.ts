@@ -4,9 +4,10 @@ import { Player } from './player.model';
 
 /** One line of the game panel: avatar, name, rating, captured pieces. */
 @Component({
-  selector: 'app-player-panel',
-  templateUrl: './player-panel.component.html',
-  styleUrls: ['./player-panel.component.scss'],
+    selector: 'app-player-panel',
+    templateUrl: './player-panel.component.html',
+    styleUrls: ['./player-panel.component.scss'],
+    standalone: false
 })
 export class PlayerPanelComponent {
   @Input() player?: Player;

@@ -9,9 +9,10 @@ interface MenuEntry {
 }
 
 @Component({
-  selector: 'app-settings-slidemenu',
-  templateUrl: './settings-slidemenu.component.html',
-  styleUrls: ['./settings-slidemenu.component.scss'],
+    selector: 'app-settings-slidemenu',
+    templateUrl: './settings-slidemenu.component.html',
+    styleUrls: ['./settings-slidemenu.component.scss'],
+    standalone: false
 })
 export class SettingsSlidemenuComponent {
   readonly items: MenuEntry[] = [

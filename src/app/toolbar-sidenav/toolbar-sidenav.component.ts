@@ -3,9 +3,10 @@ import { Router } from '@angular/router';
 import { LEARN_SECTIONS } from '../learn/learn.component';
 
 @Component({
-  selector: 'app-tool-bar',
-  templateUrl: './toolbar-sidenav.component.html',
-  styleUrls: ['./toolbar-sidenav.component.scss'],
+    selector: 'app-tool-bar',
+    templateUrl: './toolbar-sidenav.component.html',
+    styleUrls: ['./toolbar-sidenav.component.scss'],
+    standalone: false
 })
 export class ToolbarSidenavComponent {
   @ViewChild('learnMenu') learnMenu?: ElementRef<HTMLElement>;

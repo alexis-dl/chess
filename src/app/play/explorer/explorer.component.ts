@@ -21,9 +21,10 @@ interface PositionResult {
  * the line; replaying the next move of the line keeps it.
  */
 @Component({
-  selector: 'app-explorer',
-  templateUrl: './explorer.component.html',
-  styleUrls: ['./explorer.component.scss'],
+    selector: 'app-explorer',
+    templateUrl: './explorer.component.html',
+    styleUrls: ['./explorer.component.scss'],
+    standalone: false
 })
 export class ExplorerComponent implements DoCheck, OnDestroy {
   /** Every move of the line, including those after the displayed position. */

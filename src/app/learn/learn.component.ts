@@ -50,9 +50,10 @@ export const LEARN_SECTIONS: LearnSection[] = [
 
 /** One of the Learn sections, chosen by the route data. */
 @Component({
-  selector: 'app-learn',
-  templateUrl: './learn.component.html',
-  styleUrls: ['./learn.component.scss'],
+    selector: 'app-learn',
+    templateUrl: './learn.component.html',
+    styleUrls: ['./learn.component.scss'],
+    standalone: false
 })
 export class LearnComponent {
   readonly sections = LEARN_SECTIONS;

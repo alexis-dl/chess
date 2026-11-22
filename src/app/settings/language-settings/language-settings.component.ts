@@ -3,9 +3,10 @@ import { Language } from './language';
 import { LanguageService } from './language.service';
 
 @Component({
-  selector: 'app-language-settings',
-  templateUrl: './language-settings.component.html',
-  styleUrls: ['./language-settings.component.scss'],
+    selector: 'app-language-settings',
+    templateUrl: './language-settings.component.html',
+    styleUrls: ['./language-settings.component.scss'],
+    standalone: false
 })
 export class LanguageSettingsComponent implements OnInit {
   languages: Language[] = [];

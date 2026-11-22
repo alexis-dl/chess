@@ -5,9 +5,10 @@ import { PromotionService } from './promotion.service';
 import { TranslationKey } from 'src/app/i18n/translations';
 
 @Component({
-  selector: 'app-promotion',
-  templateUrl: './promotion.component.html',
-  styleUrls: ['./promotion.component.scss'],
+    selector: 'app-promotion',
+    templateUrl: './promotion.component.html',
+    styleUrls: ['./promotion.component.scss'],
+    standalone: false
 })
 export class PromotionComponent {
   @Input() pieceColor: Color = 'white';

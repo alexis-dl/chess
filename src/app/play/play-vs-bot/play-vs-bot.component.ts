@@ -49,9 +49,10 @@ interface MaterialSummary {
 
 /** A game between the user (white) and a bot (black). */
 @Component({
-  selector: 'app-play-vs-bot',
-  templateUrl: './play-vs-bot.component.html',
-  styleUrls: ['./play-vs-bot.component.scss'],
+    selector: 'app-play-vs-bot',
+    templateUrl: './play-vs-bot.component.html',
+    styleUrls: ['./play-vs-bot.component.scss'],
+    standalone: false
 })
 export class PlayVsBotComponent implements OnInit, DoCheck, OnDestroy {
   readonly user: Player = {

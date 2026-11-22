@@ -27,9 +27,10 @@ const toBoardSquare = (square: string): BoardSquare => ({
 
 /** A lesson: explanations step by step, with lines to play through on the board. */
 @Component({
-  selector: 'app-lesson',
-  templateUrl: './lesson.component.html',
-  styleUrls: ['./lesson.component.scss'],
+    selector: 'app-lesson',
+    templateUrl: './lesson.component.html',
+    styleUrls: ['./lesson.component.scss'],
+    standalone: false
 })
 export class LessonComponent implements OnInit, OnDestroy {
   lesson: Lesson | null = null;

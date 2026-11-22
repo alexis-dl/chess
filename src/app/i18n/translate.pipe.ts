@@ -7,7 +7,10 @@ import { TranslationKey } from './translations';
  * {{ 'nav.play' | t }} or {{ 'puzzles.mateIn' | t: { moves: 2 } }}.
  * Impure so that the texts change as soon as the language does.
  */
-@Pipe({ name: 't', pure: false })
+@Pipe({
+    name: 't', pure: false,
+    standalone: false
+})
 export class TranslatePipe implements PipeTransform {
   constructor(private i18n: I18nService) {}
 
@@ -17,7 +20,10 @@ export class TranslatePipe implements PipeTransform {
 }
 
 /** {{ lesson.title | localize }} for content given in every language. */
-@Pipe({ name: 'localize', pure: false })
+@Pipe({
+    name: 'localize', pure: false,
+    standalone: false
+})
 export class LocalizePipe implements PipeTransform {
   constructor(private i18n: I18nService) {}
 

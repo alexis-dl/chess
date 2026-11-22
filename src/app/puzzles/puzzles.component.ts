@@ -24,9 +24,10 @@ type PuzzleStatus = 'playing' | 'solved' | 'revealed';
 type Feedback = 'none' | 'good' | 'wrong';
 
 @Component({
-  selector: 'app-puzzles',
-  templateUrl: './puzzles.component.html',
-  styleUrls: ['./puzzles.component.scss'],
+    selector: 'app-puzzles',
+    templateUrl: './puzzles.component.html',
+    styleUrls: ['./puzzles.component.scss'],
+    standalone: false
 })
 export class PuzzlesComponent implements OnInit, DoCheck, OnDestroy {
   readonly puzzles = PUZZLES;
