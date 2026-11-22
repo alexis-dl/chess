@@ -121,6 +121,34 @@ a {
   scrollbar-width: thin;
 }
 
+// ----- Angular Material: align its prebuilt theme with our palette -----
+
+html {
+  --mdc-filled-button-container-color: var(--accent);
+  --mdc-filled-button-label-text-color: #fff;
+  --mdc-outlined-text-field-focus-outline-color: var(--accent);
+  --mdc-outlined-text-field-focus-label-text-color: var(--accent);
+  --mat-form-field-focus-select-arrow-color: var(--accent);
+  --mat-select-focused-arrow-color: var(--accent);
+  --mat-select-panel-background-color: var(--surface);
+  --mat-option-selected-state-layer-color: var(--accent-soft);
+  --mat-option-selected-state-label-text-color: var(--text-strong);
+  --mat-menu-container-color: var(--surface);
+  --mdc-snackbar-container-color: var(--surface-raised);
+  --mdc-snackbar-supporting-text-color: var(--text-strong);
+}
+
+.mat-mdc-tab-nav-bar {
+  --mdc-tab-indicator-active-indicator-color: var(--accent);
+  --mat-tab-header-active-label-text-color: var(--text-strong);
+  --mat-tab-header-active-hover-label-text-color: var(--text-strong);
+  --mat-tab-header-active-focus-label-text-color: var(--text-strong);
+  --mat-tab-header-active-hover-indicator-color: var(--accent);
+  --mat-tab-header-active-focus-indicator-color: var(--accent);
+  --mat-tab-header-inactive-label-text-color: var(--text-muted);
+  --mat-tab-header-divider-color: var(--border);
+}
+
 // ----- placeholder pages -----
 
 .coming-soon {
