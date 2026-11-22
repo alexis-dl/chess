@@ -1,4 +1,4 @@
-import { Component, DoCheck, OnDestroy, OnInit } from '@angular/core';
+import { Component, DoCheck, OnDestroy, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { ChessUtilsService } from '../chess-game/chess-utils.service';
 import { Chessboard } from '../chess-game/chessboard.model';
 import { parseFen } from '../chess-game/fen';
@@ -27,6 +27,7 @@ type Feedback = 'none' | 'good' | 'wrong';
     selector: 'app-puzzles',
     templateUrl: './puzzles.component.html',
     styleUrls: ['./puzzles.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
     standalone: false
 })
 export class PuzzlesComponent implements OnInit, DoCheck, OnDestroy {

@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { map } from 'rxjs';
 import { Localized } from '../i18n/localized';
@@ -53,6 +53,7 @@ export const LEARN_SECTIONS: LearnSection[] = [
     selector: 'app-learn',
     templateUrl: './learn.component.html',
     styleUrls: ['./learn.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
     standalone: false
 })
 export class LearnComponent {

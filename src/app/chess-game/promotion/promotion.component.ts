@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, ChangeDetectionStrategy } from '@angular/core';
 import { ChessUtilsService } from '../chess-utils.service';
 import { Color, PromotionPieceType, toPieceName } from '../piece.model';
 import { PromotionService } from './promotion.service';
@@ -8,6 +8,7 @@ import { TranslationKey } from 'src/app/i18n/translations';
     selector: 'app-promotion',
     templateUrl: './promotion.component.html',
     styleUrls: ['./promotion.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
     standalone: false
 })
 export class PromotionComponent {

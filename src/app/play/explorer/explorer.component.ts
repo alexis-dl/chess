@@ -1,4 +1,4 @@
-import { Component, DoCheck, HostListener, OnDestroy } from '@angular/core';
+import { Component, DoCheck, HostListener, OnDestroy, ChangeDetectionStrategy } from '@angular/core';
 import { ChessUtilsService } from 'src/app/chess-game/chess-utils.service';
 import {
   BoardState,
@@ -24,6 +24,7 @@ interface PositionResult {
     selector: 'app-explorer',
     templateUrl: './explorer.component.html',
     styleUrls: ['./explorer.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
     standalone: false
 })
 export class ExplorerComponent implements DoCheck, OnDestroy {

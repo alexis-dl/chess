@@ -8,6 +8,7 @@ import {
   OnDestroy,
   OnInit,
   ViewChild,
+  ChangeDetectionStrategy
 } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { ChessUtilsService } from '../chess-utils.service';
@@ -52,6 +53,7 @@ export interface SquareView {
     selector: 'app-chess-board',
     templateUrl: './chess-board.component.html',
     styleUrls: ['./chess-board.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
     standalone: false
 })
 export class ChessBoardComponent implements OnInit, DoCheck, OnDestroy {

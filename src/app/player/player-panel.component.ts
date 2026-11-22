@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, ChangeDetectionStrategy } from '@angular/core';
 import { PieceName } from '../chess-game/piece.model';
 import { Player } from './player.model';
 
@@ -7,6 +7,7 @@ import { Player } from './player.model';
     selector: 'app-player-panel',
     templateUrl: './player-panel.component.html',
     styleUrls: ['./player-panel.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
     standalone: false
 })
 export class PlayerPanelComponent {

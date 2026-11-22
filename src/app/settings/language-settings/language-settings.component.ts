@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { Language } from './language';
 import { LanguageService } from './language.service';
 
@@ -6,6 +6,7 @@ import { LanguageService } from './language.service';
     selector: 'app-language-settings',
     templateUrl: './language-settings.component.html',
     styleUrls: ['./language-settings.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
     standalone: false
 })
 export class LanguageSettingsComponent implements OnInit {

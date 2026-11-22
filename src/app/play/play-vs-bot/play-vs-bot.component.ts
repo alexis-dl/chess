@@ -1,4 +1,4 @@
-import { Component, DoCheck, OnDestroy, OnInit } from '@angular/core';
+import { Component, DoCheck, OnDestroy, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { BotService } from 'src/app/bot/bot.service';
 import { BabyBot } from 'src/app/bot/models/babybot.model';
@@ -52,6 +52,7 @@ interface MaterialSummary {
     selector: 'app-play-vs-bot',
     templateUrl: './play-vs-bot.component.html',
     styleUrls: ['./play-vs-bot.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
     standalone: false
 })
 export class PlayVsBotComponent implements OnInit, DoCheck, OnDestroy {

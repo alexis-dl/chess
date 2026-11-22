@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, ChangeDetectionStrategy } from '@angular/core';
 import { TranslationKey } from 'src/app/i18n/translations';
 import { ChessUtilsService } from '../chess-utils.service';
 import { Square } from '../piece.model';
@@ -7,6 +7,7 @@ import { Square } from '../piece.model';
     selector: 'app-chess-piece',
     templateUrl: './chess-piece.component.html',
     styleUrls: ['./chess-piece.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
     standalone: false
 })
 export class ChessPieceComponent {

@@ -1,4 +1,4 @@
-import { Component, ElementRef, HostListener, ViewChild } from '@angular/core';
+import { Component, ElementRef, HostListener, ViewChild, ChangeDetectionStrategy } from '@angular/core';
 import { Router } from '@angular/router';
 import { LEARN_SECTIONS } from '../learn/learn.component';
 
@@ -6,6 +6,7 @@ import { LEARN_SECTIONS } from '../learn/learn.component';
     selector: 'app-tool-bar',
     templateUrl: './toolbar-sidenav.component.html',
     styleUrls: ['./toolbar-sidenav.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
     standalone: false
 })
 export class ToolbarSidenavComponent {

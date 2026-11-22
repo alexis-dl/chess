@@ -1,4 +1,4 @@
-import { Component, HostListener, OnDestroy, OnInit } from '@angular/core';
+import { Component, HostListener, OnDestroy, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { Subscription } from 'rxjs';
 import {
@@ -30,6 +30,7 @@ const toBoardSquare = (square: string): BoardSquare => ({
     selector: 'app-lesson',
     templateUrl: './lesson.component.html',
     styleUrls: ['./lesson.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
     standalone: false
 })
 export class LessonComponent implements OnInit, OnDestroy {

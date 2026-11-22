@@ -7,6 +7,7 @@ import {
   OnChanges,
   Output,
   ViewChild,
+  ChangeDetectionStrategy
 } from '@angular/core';
 
 interface MoveRow {
@@ -24,6 +25,7 @@ interface MoveRow {
     selector: 'app-move-list',
     templateUrl: './move-list.component.html',
     styleUrls: ['./move-list.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
     standalone: false
 })
 export class MoveListComponent implements OnChanges, AfterViewChecked {
