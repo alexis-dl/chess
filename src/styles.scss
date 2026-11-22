@@ -109,6 +109,13 @@ a {
   &:hover:not(:disabled) {
     background: #8cab69;
   }
+
+  // not a faded green: a quiet button, like the other disabled ones
+  &:disabled {
+    border-color: var(--border);
+    background: var(--surface-raised);
+    color: var(--text-faint);
+  }
 }
 
 .btn-icon {
