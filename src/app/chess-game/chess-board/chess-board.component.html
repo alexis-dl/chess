@@ -70,7 +70,7 @@
     class="annotations"
     viewBox="0 0 8 8"
     aria-hidden="true">
-    @for (circle of circleViews; track circle) {
+    @for (circle of circleViews; track $index) {
       <circle
         [attr.cx]="circle.cx"
         [attr.cy]="circle.cy"
@@ -78,7 +78,7 @@
         [attr.stroke]="circle.color"
         [class.preview]="circle.preview" />
     }
-    @for (arrow of arrowViews; track arrow) {
+    @for (arrow of arrowViews; track $index) {
       <g
         class="arrow"
         [attr.fill]="arrow.color"

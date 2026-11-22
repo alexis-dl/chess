@@ -46,7 +46,7 @@
       @if (lineLength) {
         <div class="line">
           <div class="moves">
-            @for (move of moveItems; track move) {
+            @for (move of moveItems; track $index) {
               <button
                 type="button"
                 class="move"

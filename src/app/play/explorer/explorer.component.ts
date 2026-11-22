@@ -9,6 +9,8 @@ import { Color } from 'src/app/chess-game/piece.model';
 import { PromotionService } from 'src/app/chess-game/promotion/promotion.service';
 import { RulesService } from 'src/app/chess-game/rules.service';
 import { TranslationKey } from 'src/app/i18n/translations';
+import { Opening } from 'src/app/openings/openings';
+import { OpeningService } from 'src/app/openings/opening.service';
 
 interface PositionResult {
   title: TranslationKey;
@@ -36,13 +38,16 @@ export class ExplorerComponent implements DoCheck, OnDestroy {
   chessBoard: Chessboard = new Chessboard(this.chessUtilsService);
   orientation: Color = 'white';
   result: PositionResult | null = null;
+  /** Last known opening reached on the displayed board. */
+  opening: Opening | null = null;
   /** Position after the last move of the line (the others are in the line). */
   private finalState: BoardState = this.chessBoard.saveState();
 
   constructor(
     private rulesService: RulesService,
     private promotionService: PromotionService,
-    private chessUtilsService: ChessUtilsService
+    private chessUtilsService: ChessUtilsService,
+    private openingService: OpeningService
   ) {}
 
   /** Detect a move played on the board. */
@@ -60,7 +65,7 @@ export class ExplorerComponent implements DoCheck, OnDestroy {
     if (this.ply === this.line.length) {
       this.finalState = this.chessBoard.saveState();
     }
-    this.result = this.computeResult();
+    this.onPositionChanged();
   }
 
   ngOnDestroy(): void {
@@ -75,7 +80,7 @@ export class ExplorerComponent implements DoCheck, OnDestroy {
     this.promotionService.cancelPromotion();
     this.ply = ply;
     this.chessBoard = this.buildBoard(ply);
-    this.result = this.computeResult();
+    this.onPositionChanged();
   }
 
   flip(): void {
@@ -90,6 +95,7 @@ export class ExplorerComponent implements DoCheck, OnDestroy {
     this.chessBoard = new Chessboard(this.chessUtilsService);
     this.finalState = this.chessBoard.saveState();
     this.result = null;
+    this.opening = null;
   }
 
   /** Arrow keys move through the line, Home and End jump to its ends. */
@@ -122,6 +128,11 @@ export class ExplorerComponent implements DoCheck, OnDestroy {
       ply < this.line.length ? this.line[ply].stateBefore : this.finalState
     );
     return board;
+  }
+
+  private onPositionChanged(): void {
+    this.result = this.computeResult();
+    this.opening = this.openingService.identify(this.chessBoard);
   }
 
   private computeResult(): PositionResult | null {

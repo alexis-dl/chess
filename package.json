@@ -8,7 +8,9 @@
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
     "test:ci": "ng test --watch=false --browsers=ChromeHeadless",
-    "lint": "ng lint"
+    "lint": "ng lint",
+    "android:sync": "ng build && cap sync android",
+    "android:open": "cap open android"
   },
   "private": true,
   "dependencies": {
@@ -22,6 +24,9 @@
     "@angular/platform-browser": "^22.3.0",
     "@angular/platform-browser-dynamic": "^22.3.0",
     "@angular/router": "^22.3.0",
+    "@capacitor/android": "6.2.1",
+    "@capacitor/app": "6.0.2",
+    "@capacitor/core": "6.2.1",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0",
     "zone.js": "~0.15.1"
@@ -31,6 +36,7 @@
     "@angular-eslint/builder": "^22.8.0",
     "@angular/cli": "~22.3.0",
     "@angular/compiler-cli": "^22.3.0",
+    "@capacitor/cli": "6.2.1",
     "@eslint/js": "^9.39.5",
     "@types/jasmine": "~4.3.0",
     "angular-eslint": "^22.8.0",

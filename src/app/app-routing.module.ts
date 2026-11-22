@@ -6,6 +6,7 @@ import { LessonComponent } from './learn/lesson/lesson.component';
 import { ExplorerComponent } from './play/explorer/explorer.component';
 import { PlayVsBotComponent } from './play/play-vs-bot/play-vs-bot.component';
 import { PuzzlesComponent } from './puzzles/puzzles.component';
+import { AndroidSettingsComponent } from './settings/android-settings/android-settings.component';
 import { BoardSettingsComponent } from './settings/board-settings/board-settings.component';
 import { LanguageSettingsComponent } from './settings/language-settings/language-settings.component';
 import { SettingsComponent } from './settings/settings.component';
@@ -52,6 +53,7 @@ const routes: Routes = [
       { path: 'themes', component: ThemeSettingsComponent },
       { path: 'languages', component: LanguageSettingsComponent },
       { path: 'sounds', component: SoundSettingsComponent },
+      { path: 'android', component: AndroidSettingsComponent },
     ],
   },
   { path: 'quit', component: QuitComponent },

@@ -43,6 +43,12 @@
         [captured]="material.captured.black"
       [advantage]="-material.balance"></app-player-panel>
 
+      @if (opening) {
+        <app-opening-label
+          class="opening"
+          [opening]="opening"></app-opening-label>
+      }
+
       <app-move-list [moves]="moves" [currentPly]="moves.length">
         {{ 'play.firstMove' | t }}
       </app-move-list>

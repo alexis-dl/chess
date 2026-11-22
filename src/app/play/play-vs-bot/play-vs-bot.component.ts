@@ -16,6 +16,8 @@ import { DrawReason, RulesService } from 'src/app/chess-game/rules.service';
 import { PlayerType } from 'src/app/player/player-type.enum';
 import { Player } from 'src/app/player/player.model';
 import { TranslationKey } from 'src/app/i18n/translations';
+import { Opening } from 'src/app/openings/openings';
+import { OpeningService } from 'src/app/openings/opening.service';
 
 /** Pause before the bot answers, so that the user's move is displayed first. */
 const BOT_MOVE_DELAY_MS = 300;
@@ -58,7 +60,7 @@ interface MaterialSummary {
 export class PlayVsBotComponent implements OnInit, DoCheck, OnDestroy {
   readonly user: Player = {
     name: 'Chacalito53',
-    elo: 1548,
+    elo: 1549,
     profilePicture: 'assets/pictures/chacalito-profile-pic.png',
     playerType: PlayerType.User,
   };
@@ -72,6 +74,8 @@ export class PlayVsBotComponent implements OnInit, DoCheck, OnDestroy {
     captured: { white: [], black: [] },
     balance: 0,
   };
+  /** Last known opening reached by the game. */
+  opening: Opening | null = null;
 
   private renderedKey = '';
   private botTimeout?: ReturnType<typeof setTimeout>;
@@ -81,7 +85,8 @@ export class PlayVsBotComponent implements OnInit, DoCheck, OnDestroy {
     private rulesService: RulesService,
     private botService: BotService,
     private promotionService: PromotionService,
-    private chessUtilsService: ChessUtilsService
+    private chessUtilsService: ChessUtilsService,
+    private openingService: OpeningService
   ) {}
 
   get isUserTurn(): boolean {
@@ -132,6 +137,7 @@ export class PlayVsBotComponent implements OnInit, DoCheck, OnDestroy {
       this.renderedKey = key;
       this.moves = this.chessBoard.getHistory().map(entry => entry.san);
       this.material = this.computeMaterial();
+      this.opening = this.openingService.identify(this.chessBoard);
     }
   }
 

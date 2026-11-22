@@ -2,6 +2,7 @@ import { TestBed } from '@angular/core/testing';
 import { ChessUtilsService } from 'src/app/chess-game/chess-utils.service';
 import { PromotionService } from 'src/app/chess-game/promotion/promotion.service';
 import { RulesService } from 'src/app/chess-game/rules.service';
+import { OpeningService } from 'src/app/openings/opening.service';
 import { parseUci } from 'src/app/puzzles/puzzle-moves';
 import { ExplorerComponent } from './explorer.component';
 
@@ -22,7 +23,8 @@ describe('ExplorerComponent', () => {
     explorer = new ExplorerComponent(
       rules,
       TestBed.inject(PromotionService),
-      TestBed.inject(ChessUtilsService)
+      TestBed.inject(ChessUtilsService),
+      TestBed.inject(OpeningService)
     );
   });
 
@@ -67,5 +69,16 @@ describe('ExplorerComponent', () => {
     expect(explorer.result).toBeNull();
     explorer.goToPly(4);
     expect(explorer.result?.detail).toBe('result.blackWins');
+  });
+
+  it('names the opening of the displayed position', () => {
+    play('f2f4');
+    expect(explorer.opening?.eco).toBe('A02');
+    explorer.goToPly(0);
+    expect(explorer.opening).toBeNull();
+    explorer.goToPly(1);
+    expect(explorer.opening?.eco).toBe('A02');
+    explorer.reset();
+    expect(explorer.opening).toBeNull();
   });
 });

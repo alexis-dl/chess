@@ -18,10 +18,12 @@ import { HomeComponent } from './home/home.component';
 import { LearnComponent } from './learn/learn.component';
 import { LessonComponent } from './learn/lesson/lesson.component';
 import { MoveListComponent } from './chess-game/move-list/move-list.component';
+import { OpeningLabelComponent } from './openings/opening-label/opening-label.component';
 import { ExplorerComponent } from './play/explorer/explorer.component';
 import { PlayVsBotComponent } from './play/play-vs-bot/play-vs-bot.component';
 import { PlayerPanelComponent } from './player/player-panel.component';
 import { PuzzlesComponent } from './puzzles/puzzles.component';
+import { AndroidSettingsComponent } from './settings/android-settings/android-settings.component';
 import { BoardSettingsComponent } from './settings/board-settings/board-settings.component';
 import { LanguageSettingsComponent } from './settings/language-settings/language-settings.component';
 import { SettingsComponent } from './settings/settings.component';
@@ -56,6 +58,7 @@ import { MatTabsModule } from '@angular/material/tabs';
     HomeComponent,
     ExplorerComponent,
     MoveListComponent,
+    OpeningLabelComponent,
     PlayVsBotComponent,
     PromotionComponent,
     PuzzlesComponent,
@@ -65,6 +68,7 @@ import { MatTabsModule } from '@angular/material/tabs';
     SoundSettingsComponent,
     LanguageSettingsComponent,
     ThemeSettingsComponent,
+    AndroidSettingsComponent,
   ],
   bootstrap: [AppComponent],
   imports: [

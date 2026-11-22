@@ -1,0 +1,16 @@
+@if (nativeApp.isNative) {
+  <p class="coming-soon">
+    {{ 'settings.android.alreadyInstalled' | t }}
+  </p>
+} @else {
+  <section class="android">
+    <h2>{{ 'settings.android.title' | t }}</h2>
+    <p>{{ 'settings.android.description' | t }}</p>
+    <a class="btn btn-primary" [href]="downloadUrl" download>
+      <mat-icon>download</mat-icon>
+      {{ 'settings.android.download' | t }}
+    </a>
+    <p class="note">{{ 'settings.android.install' | t }}</p>
+    <p class="note">{{ 'settings.android.update' | t }}</p>
+  </section>
+}

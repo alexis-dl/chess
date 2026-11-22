@@ -1,0 +1,29 @@
+.android {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+  max-width: 56rem;
+  padding: 3.2rem;
+}
+
+h2 {
+  margin: 0;
+  color: var(--text-strong);
+  font-size: 1.3em;
+  font-weight: 400;
+}
+
+p {
+  margin: 0;
+}
+
+.btn {
+  margin: 8px 0;
+  text-decoration: none;
+}
+
+.note {
+  color: var(--text-muted);
+  font-size: 0.9em;
+}

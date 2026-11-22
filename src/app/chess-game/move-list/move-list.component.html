@@ -1,5 +1,5 @@
 <div class="moves" #list>
-  @for (row of rows; track row) {
+  @for (row of rows; track $index) {
     <div class="move-row">
       <span class="move-number">{{ row.number }}</span>
       @for (ply of row.plies; track ply) {

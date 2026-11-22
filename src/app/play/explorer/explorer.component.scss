@@ -107,3 +107,10 @@ app-move-list {
     max-height: 180px;
   }
 }
+
+/* Height kept when empty, so the panel doesn't move when a name appears. */
+.opening {
+  min-height: 24px;
+  padding: 8px 16px;
+  border-bottom: 1px solid var(--border);
+}
