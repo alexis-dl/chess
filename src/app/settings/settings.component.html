@@ -1,4 +1,17 @@
 <div class="card">
-  <p-tabMenu class="header" [model]="items" />
-  <router-outlet></router-outlet>
+  <nav mat-tab-nav-bar class="header" [tabPanel]="tabPanel">
+    <a
+      mat-tab-link
+      *ngFor="let tab of tabs"
+      [routerLink]="tab.path"
+      routerLinkActive
+      #rla="routerLinkActive"
+      [active]="rla.isActive">
+      <mat-icon class="tab-icon">{{ tab.icon }}</mat-icon>
+      {{ tab.label | t }}
+    </a>
+  </nav>
+  <mat-tab-nav-panel #tabPanel>
+    <router-outlet></router-outlet>
+  </mat-tab-nav-panel>
 </div>

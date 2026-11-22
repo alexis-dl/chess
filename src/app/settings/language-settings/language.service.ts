@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { MessageService } from 'primeng/api';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { I18nService } from 'src/app/i18n/i18n.service';
 import { AppLanguage } from 'src/app/i18n/localized';
 import { Language } from './language';
@@ -14,10 +14,7 @@ export class LanguageService {
     { name: 'English', code: 'EN', flag: 'GB' },
   ];
 
-  constructor(
-    private messageService: MessageService,
-    private i18n: I18nService
-  ) {}
+  constructor(private snackBar: MatSnackBar, private i18n: I18nService) {}
 
   getAvailableLanguages(): Language[] {
     return this.languages;
@@ -29,23 +26,21 @@ export class LanguageService {
     );
   }
 
-  /** Switch the interface language right away and confirm with a toast. */
+  /** Switch the interface language right away and confirm with a snack bar. */
   setCurrentLanguage(selectedLanguage?: Language) {
     if (selectedLanguage) {
       this.i18n.setLanguage(selectedLanguage.code.toLowerCase() as AppLanguage);
-      this.messageService.add({
-        severity: 'success',
-        summary: this.i18n.t('settings.language.success'),
-        detail: this.i18n.t('settings.language.saved', {
+      this.notify(
+        this.i18n.t('settings.language.saved', {
           language: selectedLanguage.name,
-        }),
-      });
+        })
+      );
     } else {
-      this.messageService.add({
-        severity: 'error',
-        summary: this.i18n.t('settings.language.error'),
-        detail: this.i18n.t('settings.language.none'),
-      });
+      this.notify(this.i18n.t('settings.language.none'));
     }
+  }
+
+  private notify(message: string): void {
+    this.snackBar.open(message, undefined, { duration: 3000 });
   }
 }

@@ -2,11 +2,12 @@
   mat-icon-button
   class="example-icon"
   [attr.aria-label]="'nav.settings' | t"
-  (click)="menu.toggle($event)">
+  [matMenuTriggerFor]="menu">
   <mat-icon>settings</mat-icon>
 </button>
-<p-slideMenu
-  #menu
-  [model]="items"
-  [popup]="true"
-  [viewportHeight]="140"></p-slideMenu>
+<mat-menu #menu="matMenu">
+  <a mat-menu-item *ngFor="let item of items" [routerLink]="item.path">
+    <mat-icon>{{ item.icon }}</mat-icon>
+    <span>{{ item.label | t }}</span>
+  </a>
+</mat-menu>

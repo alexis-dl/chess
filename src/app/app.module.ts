@@ -32,19 +32,13 @@ import { QuitComponent } from './toolbar-sidenav/quit/quit.component';
 import { SettingsSlidemenuComponent } from './toolbar-sidenav/settings-slidemenu/settings-slidemenu.component';
 import { ToolbarSidenavComponent } from './toolbar-sidenav/toolbar-sidenav.component';
 
-// PrimeNG modules
 import { FormsModule } from '@angular/forms';
-import { MessageService } from 'primeng/api';
-import { ButtonModule } from 'primeng/button';
-import { DropdownModule } from 'primeng/dropdown';
-import { InputTextModule } from 'primeng/inputtext';
-import { MessageModule } from 'primeng/message';
-import { MessagesModule } from 'primeng/messages';
-import { PanelModule } from 'primeng/panel';
-import { RippleModule } from 'primeng/ripple';
-import { SlideMenuModule } from 'primeng/slidemenu';
-import { TabMenuModule } from 'primeng/tabmenu';
-import { ToastModule } from 'primeng/toast';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatMenuModule } from '@angular/material/menu';
+import { MatSelectModule } from '@angular/material/select';
+import { MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatTabsModule } from '@angular/material/tabs';
+
 @NgModule({
   declarations: [
     AppComponent,
@@ -72,7 +66,6 @@ import { ToastModule } from 'primeng/toast';
     LanguageSettingsComponent,
     ThemeSettingsComponent,
   ],
-  providers: [MessageService],
   bootstrap: [AppComponent],
   imports: [
     BrowserModule,
@@ -84,17 +77,12 @@ import { ToastModule } from 'primeng/toast';
     MatButtonModule,
     MatToolbarModule,
     MatIconModule,
-    SlideMenuModule,
-    TabMenuModule,
-    InputTextModule,
-    ButtonModule,
-    DropdownModule,
-    PanelModule,
+    MatMenuModule,
+    MatTabsModule,
+    MatFormFieldModule,
+    MatSelectModule,
+    MatSnackBarModule,
     FormsModule,
-    MessagesModule,
-    MessageModule,
-    ToastModule,
-    RippleModule,
   ],
 })
 export class AppModule {}

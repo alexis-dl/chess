@@ -1,3 +1,13 @@
 .container {
   padding: 3.2rem;
 }
+
+.language-option {
+  align-items: center;
+  display: inline-flex;
+  gap: 0.8rem;
+
+  img {
+    width: 18px;
+  }
+}
