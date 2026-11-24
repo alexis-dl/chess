@@ -19,6 +19,7 @@ import { LearnComponent } from './learn/learn.component';
 import { LessonComponent } from './learn/lesson/lesson.component';
 import { CourseComponent } from './learn/course/course.component';
 import { OpeningQuizComponent } from './learn/opening-quiz/opening-quiz.component';
+import { YoutubePlayerComponent } from './learn/youtube-player/youtube-player.component';
 import { MoveListComponent } from './chess-game/move-list/move-list.component';
 import { OpeningLabelComponent } from './openings/opening-label/opening-label.component';
 import { AnalysisComponent } from './analysis/analysis.component';
@@ -59,6 +60,7 @@ import { MatTabsModule } from '@angular/material/tabs';
     LearnComponent,
     LessonComponent,
     OpeningQuizComponent,
+    YoutubePlayerComponent,
     CourseComponent,
     HomeComponent,
     AnalysisComponent,

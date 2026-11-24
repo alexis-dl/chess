@@ -95,8 +95,31 @@
             </a>
           }
         </div>
-        <!-- "coming soon" only when the section has no course either -->
-        @if (lessonsFor(section.id).length || !coursesFor(section.id).length) {
+        @let videos = videosFor(section.id);
+        @if (videos.length) {
+          <h2 class="videos-title">{{ 'learn.videos' | t }}</h2>
+          <div class="videos">
+            @for (video of videos; track video.youtubeId) {
+              <article class="video-card">
+                <app-youtube-player
+                  [videoId]="video.youtubeId"
+                  [title]="video.title"></app-youtube-player>
+                <div class="video-text">
+                  <span class="lesson-title">{{ video.title }}</span>
+                  <span class="video-channel">{{ video.channel }}</span>
+                  <span class="lesson-summary">{{
+                    video.summary | localize
+                  }}</span>
+                </div>
+              </article>
+            }
+          </div>
+        }
+        <!-- "coming soon" only when the section has no course or video either -->
+        @if (
+          lessonsFor(section.id).length ||
+          (!coursesFor(section.id).length && !videos.length)
+        ) {
           <ng-container
             *ngTemplateOutlet="
               lessonList;

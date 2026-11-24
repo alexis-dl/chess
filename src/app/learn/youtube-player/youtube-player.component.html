@@ -1,0 +1,17 @@
+@if (playerUrl) {
+  <iframe
+    [src]="playerUrl"
+    [title]="title"
+    allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
+    allowfullscreen
+    referrerpolicy="strict-origin-when-cross-origin"></iframe>
+} @else {
+  <button
+    type="button"
+    class="poster"
+    [attr.aria-label]="'learn.playVideo' | t: { title: title }"
+    (click)="play()">
+    <img [src]="thumbnailUrl" alt="" loading="lazy" />
+    <span class="play"><mat-icon>play_arrow</mat-icon></span>
+  </button>
+}

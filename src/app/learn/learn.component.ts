@@ -5,6 +5,7 @@ import { Localized } from '../i18n/localized';
 import { Course, COURSES } from './courses';
 import { EndgameTheme, ENDGAME_THEMES } from './endgame-themes';
 import { Lesson, LESSONS } from './lessons/lesson.model';
+import { LearnVideo, VIDEOS } from './videos';
 
 export type LearnSectionId =
   'opening' | 'middlegame' | 'endgame' | 'pawn-structures';
@@ -88,6 +89,10 @@ export class LearnComponent {
     return LESSONS.filter(
       lesson => lesson.section === sectionId && !lesson.course
     );
+  }
+
+  videosFor(sectionId: LearnSectionId): LearnVideo[] {
+    return VIDEOS.filter(video => video.section === sectionId);
   }
 
   /** Number of lessons of a course, shown on its card. */
