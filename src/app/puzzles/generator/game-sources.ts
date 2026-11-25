@@ -14,6 +14,9 @@ export const GAME_SPEEDS: GameSpeed[] = [
   'correspondence',
 ];
 
+/** Winner of a game; null for a draw. */
+export type GameWinner = 'white' | 'black' | null;
+
 /** A game fetched from a platform. */
 export interface SourceGame {
   platform: GamePlatform;
@@ -26,11 +29,18 @@ export interface SourceGame {
   speed: GameSpeed;
   /** When it was played, in ms since 1970. */
   date: number;
+  whiteElo: number | null;
+  blackElo: number | null;
+  winner: GameWinner;
+  /** The loser ran out of time. */
+  onTime: boolean;
 }
 
 export interface FetchOptions {
-  /** Number of games wanted (the most recent ones). */
+  /** Number of games wanted at most (the most recent ones). */
   count: number;
+  /** Only the games played since then (ms since 1970). */
+  since?: number;
   /** Time controls to keep; all of them when empty. */
   speeds: GameSpeed[];
 }
@@ -45,6 +55,11 @@ export class FetchGamesError extends Error {
   constructor(readonly key: FetchErrorKey) {
     super(key);
   }
+}
+
+/** Rating of a player, null when unknown (e.g. Lichess's AI). */
+function rating(value: unknown): number | null {
+  return typeof value === 'number' && value > 0 ? value : null;
 }
 
 /** Months of Chess.com archives read at most, to find enough games. */
@@ -74,9 +89,11 @@ export function readLichessGame(json: unknown): SourceGame | null {
     speed?: string;
     createdAt?: number;
     pgn?: string;
+    status?: string;
+    winner?: string;
     players?: {
-      white?: { user?: { name?: string } };
-      black?: { user?: { name?: string } };
+      white?: { user?: { name?: string }; rating?: number };
+      black?: { user?: { name?: string }; rating?: number };
     };
   };
   const speed = LICHESS_SPEEDS[game.speed ?? ''];
@@ -93,6 +110,11 @@ export function readLichessGame(json: unknown): SourceGame | null {
     black: game.players?.black?.user?.name ?? '',
     speed,
     date: game.createdAt ?? 0,
+    whiteElo: rating(game.players?.white?.rating),
+    blackElo: rating(game.players?.black?.rating),
+    winner:
+      game.winner === 'white' || game.winner === 'black' ? game.winner : null,
+    onTime: game.status === 'outoftime',
   };
 }
 
@@ -105,10 +127,16 @@ export function readChessComGame(json: unknown): SourceGame | null {
     rules?: string;
     time_class?: string;
     end_time?: number;
-    white?: { username?: string };
-    black?: { username?: string };
+    white?: { username?: string; rating?: number; result?: string };
+    black?: { username?: string; rating?: number; result?: string };
   };
   const speed = CHESSCOM_SPEEDS[game.time_class ?? ''];
+  const winner: GameWinner =
+    game.white?.result === 'win'
+      ? 'white'
+      : game.black?.result === 'win'
+        ? 'black'
+        : null;
   if (!game.url || game.rules !== 'chess' || !game.pgn || !speed) {
     return null;
   }
@@ -121,6 +149,11 @@ export function readChessComGame(json: unknown): SourceGame | null {
     black: game.black?.username ?? '',
     speed,
     date: (game.end_time ?? 0) * 1000,
+    whiteElo: rating(game.white?.rating),
+    blackElo: rating(game.black?.rating),
+    winner,
+    onTime:
+      game.white?.result === 'timeout' || game.black?.result === 'timeout',
   };
 }
 
@@ -151,13 +184,13 @@ export class GameSourcesService {
 
   private async fetchLichess(
     username: string,
-    { count, speeds }: FetchOptions,
+    { count, speeds, since }: FetchOptions,
     signal?: AbortSignal
   ): Promise<SourceGame[]> {
     const params = new URLSearchParams({
       max: String(count),
       pgnInJson: 'true',
-      clocks: 'false',
+      clocks: 'true', // for the time management statistics
       evals: 'false',
       opening: 'false',
     });
@@ -168,6 +201,9 @@ export class GameSourcesService {
         )
       );
       params.set('perfType', perfs.join(','));
+    }
+    if (since) {
+      params.set('since', String(since));
     }
     const response = await this.get(
       `https://lichess.org/api/games/user/${encodeURIComponent(username)}?${params}`,
@@ -185,7 +221,7 @@ export class GameSourcesService {
   /** Reads the monthly archives from the most recent until enough games. */
   private async fetchChessCom(
     username: string,
-    { count, speeds }: FetchOptions,
+    { count, speeds, since }: FetchOptions,
     signal?: AbortSignal
   ): Promise<SourceGame[]> {
     const user = encodeURIComponent(username.toLowerCase());
@@ -205,11 +241,16 @@ export class GameSourcesService {
         .map(readChessComGame)
         .filter(
           (game): game is SourceGame =>
-            game !== null && (!speeds.length || speeds.includes(game.speed))
+            game !== null &&
+            (!speeds.length || speeds.includes(game.speed)) &&
+            (!since || game.date >= since)
         )
         .sort((a, b) => b.date - a.date);
       games.push(...monthGames);
-      if (games.length >= count) {
+      // archives are monthly: '2024/01' at the end of the URL
+      const [year, monthNumber] = month.split('/').slice(-2).map(Number);
+      const monthStart = Date.UTC(year, monthNumber - 1, 1);
+      if (games.length >= count || (since && monthStart <= since)) {
         break;
       }
     }

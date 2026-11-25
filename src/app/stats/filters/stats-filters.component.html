@@ -1,0 +1,102 @@
+<form class="filters" (submit)="show(); $event.preventDefault()">
+  <div class="segmented" role="radiogroup">
+    @for (item of platforms; track item) {
+      <button
+        type="button"
+        role="radio"
+        [attr.aria-checked]="query.platform === item"
+        [class.on]="query.platform === item"
+        (click)="setPlatform(item)">
+        {{ platformName(item) }}
+      </button>
+    }
+  </div>
+
+  <input
+    name="username"
+    [(ngModel)]="query.username"
+    autocapitalize="off"
+    spellcheck="false"
+    maxlength="50"
+    [placeholder]="
+      (page === 'mine' ? 'puzzles.mine.username' : 'stats.opponent') | t
+    "
+    [attr.aria-label]="
+      (page === 'mine' ? 'puzzles.mine.username' : 'stats.opponent') | t
+    " />
+
+  <select
+    name="speed"
+    [(ngModel)]="query.speed"
+    [attr.aria-label]="'stats.speed' | t">
+    <option [ngValue]="null">{{ 'stats.allSpeeds' | t }}</option>
+    @for (speed of speeds; track speed) {
+      <option [ngValue]="speed">{{ speedKey(speed) | t }}</option>
+    }
+  </select>
+
+  <select
+    name="days"
+    [(ngModel)]="query.days"
+    [attr.aria-label]="'stats.period' | t">
+    @for (days of periods; track days) {
+      <option [ngValue]="days">{{ 'stats.days' | t: { count: days } }}</option>
+    }
+  </select>
+
+  <button
+    type="submit"
+    class="btn btn-primary"
+    [disabled]="!query.username.trim()">
+    <mat-icon>query_stats</mat-icon>
+    {{ 'stats.show' | t }}
+  </button>
+</form>
+
+@if (stats.state$ | async; as state) {
+  @if (stats.running) {
+    <div class="progress" role="status">
+      <span>
+        @switch (state.status) {
+          @case ('fetching') {
+            {{ 'stats.fetching' | t }}
+          }
+          @case ('analysing') {
+            {{
+              'stats.analysing'
+                | t: { done: state.analysed, total: state.records.length }
+            }}
+          }
+          @default {
+            {{ 'stats.puzzles' | t: { found: state.puzzlesFound } }}
+          }
+        }
+      </span>
+      <div class="bar">
+        <div
+          class="bar-fill"
+          [style.width.%]="
+            state.records.length
+              ? (100 * state.analysed) / state.records.length
+              : 0
+          "></div>
+      </div>
+      <button type="button" class="btn" (click)="stop()">
+        <mat-icon>stop</mat-icon>
+        {{ 'stats.stop' | t }}
+      </button>
+    </div>
+  } @else {
+    @if (state.status === 'error' && state.error) {
+      <p class="message error" role="alert">{{ state.error | t }}</p>
+    }
+    @if (page === 'mine' && state.status === 'done' && state.puzzlesFound) {
+      <p class="message" role="status">
+        {{ 'stats.puzzlesDone' | t: { found: state.puzzlesFound } }}
+        <a routerLink="/puzzles" [queryParams]="{ source: 'mine' }">{{
+          'stats.practice' | t
+        }}</a>
+      </p>
+    }
+  }
+}

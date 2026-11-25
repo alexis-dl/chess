@@ -1,0 +1,252 @@
+// Shared by the Statistics page and its sub-pages.
+
+.stats {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 24px 16px;
+}
+
+.tabs {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 16px;
+  border-bottom: 1px solid var(--border);
+  overflow-x: auto;
+  scrollbar-width: none;
+
+  a {
+    flex: none;
+    margin-bottom: -1px;
+    padding: 10px 16px;
+    border-bottom: 2px solid transparent;
+    color: var(--text-muted);
+    font-weight: 600;
+    text-decoration: none;
+    white-space: nowrap;
+    transition:
+      color 0.15s,
+      border-color 0.15s;
+
+    &:hover {
+      color: var(--text-strong);
+    }
+
+    &.active {
+      border-bottom-color: var(--accent);
+      color: var(--text-strong);
+    }
+  }
+}
+
+.intro {
+  color: var(--text-muted);
+  line-height: 1.6;
+}
+
+.muted {
+  margin: 8px 0;
+  color: var(--text-faint);
+  font-style: italic;
+}
+
+.card {
+  padding: 18px;
+  border-radius: 6px;
+  background: var(--surface);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+
+  h2 {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0 0 12px;
+    color: var(--text-strong);
+    font-size: 1.05em;
+    font-weight: 600;
+
+    img {
+      width: 24px;
+      height: 24px;
+    }
+  }
+}
+
+// ----- scouting: repertoire -----
+
+.repertoire {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.opening {
+  display: grid;
+  grid-template-columns: 1fr 32px 80px 44px;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 0;
+  border-top: 1px solid var(--border);
+  font-size: 0.9em;
+
+  .name {
+    min-width: 0;
+    overflow: hidden;
+    color: var(--text-strong);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .eco {
+    margin-right: 4px;
+    color: var(--text-faint);
+    font-size: 0.85em;
+  }
+
+  .games,
+  .score {
+    color: var(--text-muted);
+    text-align: right;
+  }
+}
+
+.split {
+  display: flex;
+  height: 8px;
+  overflow: hidden;
+  border-radius: 4px;
+  background: var(--surface-sunken);
+
+  .win {
+    background: var(--accent);
+  }
+
+  .draw {
+    background: var(--text-faint);
+  }
+
+  .loss {
+    background: var(--danger);
+  }
+}
+
+// ----- game history -----
+
+.history {
+  padding: 6px;
+}
+
+.game {
+  display: flex;
+  align-items: center;
+  border-radius: 4px;
+
+  & + .game {
+    border-top: 1px solid var(--border);
+  }
+
+  &:hover {
+    background: var(--surface-raised);
+  }
+}
+
+.game-main {
+  display: grid;
+  flex: 1;
+  grid-template-columns: 64px 24px minmax(120px, 1.2fr) 80px minmax(0, 2fr) 150px;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+  padding: 10px 12px;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+
+  .date,
+  .meta {
+    color: var(--text-muted);
+    font-size: 0.85em;
+  }
+
+  .color {
+    width: 22px;
+    height: 22px;
+  }
+
+  .opponent {
+    overflow: hidden;
+    color: var(--text-strong);
+    font-weight: 600;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+
+    small {
+      color: var(--text-faint);
+      font-weight: 400;
+    }
+  }
+
+  .opening-name {
+    overflow: hidden;
+    color: var(--text-muted);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
+.result {
+  justify-self: start;
+  padding: 2px 8px;
+  border-radius: 10px;
+  background: var(--surface-raised);
+  font-size: 0.85em;
+  font-weight: 600;
+
+  &.r2 {
+    color: var(--accent);
+  }
+
+  &.r0 {
+    color: var(--danger);
+  }
+
+  &.r1 {
+    color: var(--text-muted);
+  }
+}
+
+.external {
+  display: flex;
+  padding: 8px 12px;
+  color: var(--text-faint);
+
+  &:hover {
+    color: var(--accent);
+  }
+
+  .mat-icon {
+    width: 18px;
+    height: 18px;
+    font-size: 18px;
+  }
+}
+
+@media (max-width: 760px) {
+  .game-main {
+    grid-template-columns: 24px 1fr auto;
+    row-gap: 2px;
+
+    .date,
+    .opening-name,
+    .meta {
+      grid-column: 2 / -1;
+    }
+
+    .date {
+      order: 10;
+    }
+  }
+}

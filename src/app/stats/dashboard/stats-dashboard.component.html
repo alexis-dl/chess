@@ -1,0 +1,103 @@
+<div class="grid">
+  <article class="card">
+    <header>
+      <h2>{{ 'stats.rating' | t }}</h2>
+      @if (ratingDelta !== null) {
+        <span
+          class="delta"
+          [class.up]="ratingDelta > 0"
+          [class.down]="ratingDelta < 0">
+          {{ ratingDelta > 0 ? '+' : '' }}{{ ratingDelta }}
+        </span>
+      }
+    </header>
+    @if (ratings.length) {
+      <div class="big">{{ ratings[ratings.length - 1] }}</div>
+      <app-line-chart
+        [values]="ratings"
+        [label]="'stats.rating' | t"></app-line-chart>
+    } @else {
+      <p class="muted">{{ 'stats.notEnough' | t }}</p>
+    }
+  </article>
+
+  <article class="card">
+    <header>
+      <h2>{{ 'stats.games' | t }}</h2>
+      <span class="count">{{ games }}</span>
+    </header>
+    @if (games) {
+      <div class="results">
+        <app-result-donut
+          [wins]="wins"
+          [draws]="draws"
+          [losses]="losses"></app-result-donut>
+        <dl>
+          <div class="win">
+            <dt>{{ 'stats.won' | t }}</dt>
+            <dd>{{ wins }}</dd>
+          </div>
+          <div class="draw">
+            <dt>{{ 'stats.drawn' | t }}</dt>
+            <dd>{{ draws }}</dd>
+          </div>
+          <div class="loss">
+            <dt>{{ 'stats.lost' | t }}</dt>
+            <dd>{{ losses }}</dd>
+          </div>
+        </dl>
+      </div>
+    } @else {
+      <p class="muted">{{ 'stats.noGames' | t }}</p>
+    }
+  </article>
+
+  @for (card of cards; track card.id) {
+    <article class="card">
+      <header>
+        <h2>{{ titleKey(card.id) | t }}</h2>
+        @if (card.delta !== null) {
+          <span
+            class="delta"
+            [class.up]="card.delta > 0"
+            [class.down]="card.delta < 0"
+            [title]="'stats.vsPrevious' | t: { days: state.query?.days ?? 0 }">
+            {{ card.delta > 0 ? '+' : '' }}{{ card.delta }}
+          </span>
+        }
+      </header>
+      <p class="help">{{ helpKey(card.id) | t }}</p>
+      @if (card.metric.value !== null) {
+        <div class="big">
+          {{ card.metric.value }}<small>%</small>
+          <span class="sample">{{
+            sampleKey(card.id) | t: { count: card.metric.sample }
+          }}</span>
+        </div>
+        <app-line-chart
+          [values]="card.chart"
+          [min]="0"
+          [max]="100"
+          [label]="titleKey(card.id) | t"></app-line-chart>
+      } @else {
+        <p class="muted">
+          {{
+            (analysing && needsAnalysis(card.id)
+              ? 'stats.waiting'
+              : 'stats.notEnough'
+            ) | t
+          }}
+        </p>
+      }
+      @if (practice && card.id === 'tactics') {
+        <a
+          class="btn practice"
+          routerLink="/puzzles"
+          [queryParams]="{ source: 'mine' }">
+          <mat-icon>extension</mat-icon>
+          {{ 'stats.practice' | t }}
+        </a>
+      }
+    </article>
+  }
+</div>

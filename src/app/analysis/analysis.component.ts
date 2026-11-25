@@ -1,3 +1,4 @@
+import { AnalysisHandoffService } from '../stats/stats-pages';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -151,7 +152,8 @@ export class AnalysisComponent implements OnInit, DoCheck, OnDestroy {
     readonly saved: SavedAnalysesService,
     readonly engine: EngineService,
     private i18n: I18nService,
-    private userService: UserService
+    private userService: UserService,
+    private handoff: AnalysisHandoffService
   ) {}
 
   /** FEN of the displayed position (for the engine and the editor). */
@@ -299,6 +301,7 @@ export class AnalysisComponent implements OnInit, DoCheck, OnDestroy {
   ngOnInit(): void {
     // read once: the last analysis is overwritten as soon as a move is played
     this.hasPrevious = this.saved.last !== null;
+    this.openHandedOverGame();
     this.subscription = this.engine.evaluation$.subscribe(evaluation => {
       this.evaluation = evaluation;
       if (evaluation) {
@@ -338,6 +341,22 @@ export class AnalysisComponent implements OnInit, DoCheck, OnDestroy {
     this.engine.stop();
     this.promotionService.cancelPromotion();
     this.subscription?.unsubscribe();
+  }
+
+  /** A game sent by the game history (Statistics), if any. */
+  private openHandedOverGame(): void {
+    const pending = this.handoff.take();
+    if (!pending) {
+      return;
+    }
+    try {
+      const game = this.gameImport.import(pending.pgn);
+      this.load(game.start, game.moves, game.tags, game.clocks);
+      this.orientation = pending.orientation;
+      this.view = 'moves';
+    } catch {
+      // unreadable game: the page opens as usual
+    }
   }
 
   // ----- menu -----

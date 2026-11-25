@@ -41,6 +41,37 @@
       }
     </div>
 
+    <div
+      class="nav-menu"
+      #statsMenu
+      (mouseenter)="openStats()"
+      (mouseleave)="closeStats()"
+      (focusin)="openStats()"
+      (focusout)="onStatsFocusOut($event)">
+      <a
+        routerLink="/stats/mine"
+        [class.active]="isStatsActive"
+        aria-haspopup="true"
+        [attr.aria-expanded]="statsOpen"
+        (click)="closeStats()">
+        {{ 'nav.stats' | t }}
+      </a>
+      @if (statsOpen) {
+        <div class="dropdown">
+          <div class="dropdown-panel">
+            @for (tab of statsTabs; track tab.id) {
+              <a
+                [routerLink]="['/stats', tab.id]"
+                routerLinkActive="current"
+                (click)="closeStats()">
+                {{ tab.title | t }}
+              </a>
+            }
+          </div>
+        </div>
+      }
+    </div>
+
     <a routerLink="/analysis" routerLinkActive="active">{{
       'nav.analysis' | t
     }}</a>

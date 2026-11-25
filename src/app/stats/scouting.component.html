@@ -1,0 +1,52 @@
+<app-stats-filters page="scouting"></app-stats-filters>
+
+@if (stats.scouting.state$ | async; as state) {
+  @if (state.records.length || state.status === 'done') {
+    <div class="repertoire">
+      @for (color of colors; track color) {
+        <section class="card">
+          <h2>
+            <img
+              [src]="'assets/chess-pieces/' + color + '-king.svg'"
+              alt="" />
+            {{ colorKey(color) | t }}
+          </h2>
+          @for (line of repertoire(state, color); track $index) {
+            <div class="opening">
+              <span class="name">
+                @if (line.opening; as opening) {
+                  <span class="eco">{{ opening.eco }}</span>
+                  {{ opening.name | localize }}
+                } @else {
+                  {{ 'stats.unknownOpening' | t }}
+                }
+              </span>
+              <span class="games">{{ line.games }}</span>
+              <span
+                class="split"
+                [title]="
+                  'stats.split'
+                    | t
+                      : {
+                          wins: line.wins,
+                          draws: line.draws,
+                          losses: line.losses
+                        }
+                ">
+                <span class="win" [style.flex]="line.wins"></span>
+                <span class="draw" [style.flex]="line.draws"></span>
+                <span class="loss" [style.flex]="line.losses"></span>
+              </span>
+              <span class="score">{{ line.score }}%</span>
+            </div>
+          } @empty {
+            <p class="muted">{{ 'stats.noGames' | t }}</p>
+          }
+        </section>
+      }
+    </div>
+    <app-stats-dashboard [state]="state"></app-stats-dashboard>
+  } @else if (state.status === 'idle') {
+    <p class="intro">{{ 'stats.scoutingIntro' | t }}</p>
+  }
+}

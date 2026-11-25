@@ -113,8 +113,10 @@ describe('readLichessGame', () => {
     speed: 'ultraBullet',
     createdAt: 1700000000000,
     pgn: '1. e4 e5',
+    status: 'outoftime',
+    winner: 'black',
     players: {
-      white: { user: { name: 'Alice' } },
+      white: { user: { name: 'Alice' }, rating: 1500 },
       black: { aiLevel: 3 },
     },
   };
@@ -129,6 +131,10 @@ describe('readLichessGame', () => {
       black: '',
       speed: 'bullet',
       date: 1700000000000,
+      whiteElo: 1500,
+      blackElo: null,
+      winner: 'black',
+      onTime: true,
     });
   });
 
@@ -145,8 +151,8 @@ describe('readChessComGame', () => {
     rules: 'chess',
     time_class: 'daily',
     end_time: 1704133706,
-    white: { username: 'Hikaru' },
-    black: { username: 'Bob' },
+    white: { username: 'Hikaru', rating: 3236, result: 'agreed' },
+    black: { username: 'Bob', rating: 2865, result: 'agreed' },
   };
 
   it('reads a game, daily games being correspondence', () => {
@@ -159,6 +165,10 @@ describe('readChessComGame', () => {
       black: 'Bob',
       speed: 'correspondence',
       date: 1704133706000,
+      whiteElo: 3236,
+      blackElo: 2865,
+      winner: null,
+      onTime: false,
     });
   });
 

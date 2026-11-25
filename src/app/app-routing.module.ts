@@ -8,6 +8,12 @@ import { OpeningQuizComponent } from './learn/opening-quiz/opening-quiz.componen
 import { AnalysisComponent } from './analysis/analysis.component';
 import { PlayVsBotComponent } from './play/play-vs-bot/play-vs-bot.component';
 import { PuzzlesComponent } from './puzzles/puzzles.component';
+import {
+  GameHistoryComponent,
+  MyStatsComponent,
+  ScoutingComponent,
+  StatsComponent,
+} from './stats/stats-pages';
 import { AndroidSettingsComponent } from './settings/android-settings/android-settings.component';
 import { LanguageSettingsComponent } from './settings/language-settings/language-settings.component';
 import { SettingsComponent } from './settings/settings.component';
@@ -20,6 +26,16 @@ const routes: Routes = [
   { path: 'play', component: PlayVsBotComponent },
   { path: 'puzzles', component: PuzzlesComponent },
   { path: 'analysis', component: AnalysisComponent },
+  {
+    path: 'stats',
+    component: StatsComponent,
+    children: [
+      { path: '', redirectTo: 'mine', pathMatch: 'full' },
+      { path: 'mine', component: MyStatsComponent },
+      { path: 'scouting', component: ScoutingComponent },
+      { path: 'history', component: GameHistoryComponent },
+    ],
+  },
   // former page
   { path: 'explorer', redirectTo: 'analysis' },
   { path: 'learn', redirectTo: 'learn/opening', pathMatch: 'full' },

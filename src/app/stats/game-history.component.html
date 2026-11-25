@@ -1,0 +1,57 @@
+<app-stats-filters page="mine"></app-stats-filters>
+
+@if (stats.mine.state$ | async; as state) {
+  @if (state.records.length || state.status === 'done') {
+    <div class="history card">
+      @for (record of inPeriod(state); track record.game.id) {
+        <div class="game">
+          <button
+            type="button"
+            class="game-main"
+            [title]="'stats.openInAnalysis' | t"
+            (click)="open(record)">
+            <span class="date">{{ formatDate(record.game.date) }}</span>
+            <img
+              class="color"
+              [src]="'assets/chess-pieces/' + record.color + '-king.svg'"
+              alt="" />
+            <span class="opponent">
+              {{ record.opponent || '?' }}
+              @if (record.opponentRating) {
+                <small>({{ record.opponentRating }})</small>
+              }
+            </span>
+            <span class="result" [ngClass]="'r' + record.score * 2">{{
+              resultKey(record) | t
+            }}</span>
+            <span class="opening-name">
+              {{
+                record.opening
+                  ? (record.opening.name | localize)
+                  : ('stats.unknownOpening' | t)
+              }}
+            </span>
+            <span class="meta">
+              {{ speedKey(record) | t }} ·
+              {{ 'stats.moves' | t: { count: moveCount(record) } }}
+            </span>
+          </button>
+          <a
+            class="external"
+            [href]="record.game.url"
+            target="_blank"
+            rel="noopener"
+            [title]="
+              'stats.viewOn' | t: { platform: platformName(record.game.platform) }
+            ">
+            <mat-icon>open_in_new</mat-icon>
+          </a>
+        </div>
+      } @empty {
+        <p class="muted">{{ 'stats.noGames' | t }}</p>
+      }
+    </div>
+  } @else if (state.status === 'idle') {
+    <p class="intro">{{ 'stats.empty' | t }}</p>
+  }
+}

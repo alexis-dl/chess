@@ -1,14 +1,12 @@
 import { Injectable, OnDestroy } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
-import { GameImportService } from '../../analysis/game-import.service';
-import { ChessUtilsService } from '../../chess-game/chess-utils.service';
-import { Chessboard } from '../../chess-game/chessboard.model';
-import { parseFen, toFen } from '../../chess-game/fen';
-import { toPieceName } from '../../chess-game/piece.model';
-import { PromotionService } from '../../chess-game/promotion/promotion.service';
-import { RulesService } from '../../chess-game/rules.service';
-import { parseUci } from '../puzzle-moves';
-import { BatchEngine, EngineLine } from './batch-engine';
+import { EngineQueueService } from '../../game-analysis/engine-queue.service';
+import {
+  colorOf,
+  GameAnalysisService,
+  ReplayedGame,
+} from '../../game-analysis/game-analysis.service';
+import { EngineLine } from './batch-engine';
 import { gameKey, GamePuzzle, GamePuzzleGoal } from './game-puzzle.model';
 import { GamePuzzleStoreService } from './game-puzzle-store.service';
 import {
@@ -27,8 +25,6 @@ import {
   winChances,
 } from './puzzle-finder';
 
-/** Quick look at every position of a game, to spot the mistakes. */
-const SCAN_DEPTH = 11;
 /** Deeper look at the positions that may become puzzles. */
 const CHECK_DEPTH = 16;
 /** Longest solution, in moves of the solver. */
@@ -61,24 +57,12 @@ const IDLE: GeneratorState = {
   error: null,
 };
 
-/** A game replayed: every position, and who the player is. */
-interface ReplayedGame {
-  /** fens[k]: position before the ply k (fens[moves.length]: the final one). */
-  fens: string[];
-  moves: string[];
-  sans: string[];
-  /** Winning chances of the side to move, for finished positions only. */
-  finished: (number | null)[];
-  playerIsWhite: boolean;
-  startsWithWhite: boolean;
-  fullmoveNumber: number;
-}
-
 /**
- * Turns the player's recent games into puzzles: fetches them, scans them with
- * Stockfish for the moves that lost a lot (classifyMove), then keeps the
- * positions where the best move is the only good one (isOnlyMove).
- * Runs in the background: the generation goes on when leaving the page.
+ * Turns the player's games into puzzles: the shared analysis of a game
+ * (GameAnalysisService) spots the moves that lost a lot (classifyMove), then
+ * a deeper search keeps the positions where the best move is the only good
+ * one (isOnlyMove). Runs in the background: the generation goes on when
+ * leaving the page. The statistics use findPuzzles on the games they analyse.
  */
 @Injectable({
   providedIn: 'root',
@@ -86,24 +70,14 @@ interface ReplayedGame {
 export class PuzzleGeneratorService implements OnDestroy {
   private readonly stateSubject = new BehaviorSubject<GeneratorState>(IDLE);
   readonly state$ = this.stateSubject.asObservable();
-
-  /**
-   * Own instance of the rules: replaying games must not send the game events
-   * (checkmate, next turn...) that the Play page listens to.
-   */
-  private readonly rules: RulesService;
-  private readonly importer: GameImportService;
   private abort: AbortController | null = null;
-  private engine: BatchEngine | null = null;
 
   constructor(
-    private chessUtils: ChessUtilsService,
     private sources: GameSourcesService,
-    private store: GamePuzzleStoreService
-  ) {
-    this.rules = new RulesService(chessUtils, new PromotionService());
-    this.importer = new GameImportService(this.rules, chessUtils);
-  }
+    private store: GamePuzzleStoreService,
+    private analysis: GameAnalysisService,
+    private engine: EngineQueueService
+  ) {}
 
   get running(): boolean {
     const { status } = this.stateSubject.value;
@@ -136,15 +110,18 @@ export class PuzzleGeneratorService implements OnDestroy {
         gamesTotal: fresh.length,
         gamesSkipped: games.length - fresh.length,
       });
-      this.engine = new BatchEngine();
       for (const game of fresh) {
         if (abort.signal.aborted) {
           return;
         }
-        await this.analyseGame(game, username);
-        this.store.markAnalysed(gameKey(game.platform, game.id));
-        const gamesDone = this.stateSubject.value.gamesDone + 1;
-        this.setState({ gamesDone, progress: gamesDone / fresh.length });
+        const found = await this.findPuzzles(game, username);
+        const state = this.stateSubject.value;
+        const gamesDone = state.gamesDone + 1;
+        this.setState({
+          gamesDone,
+          found: state.found + found,
+          progress: gamesDone / fresh.length,
+        });
       }
       this.setState({ status: 'done', progress: 1 });
     } catch (error) {
@@ -159,8 +136,6 @@ export class PuzzleGeneratorService implements OnDestroy {
             : 'puzzles.mine.error.engine',
       });
     } finally {
-      this.engine?.terminate();
-      this.engine = null;
       if (this.abort === abort) {
         this.abort = null;
       }
@@ -172,8 +147,9 @@ export class PuzzleGeneratorService implements OnDestroy {
     if (!this.running) {
       return;
     }
+    // stops at the next game: the shared engine is not stopped, the
+    // statistics may be using it
     this.abort?.abort();
-    this.engine?.terminate();
     this.setState({ status: 'done' });
   }
 
@@ -181,63 +157,66 @@ export class PuzzleGeneratorService implements OnDestroy {
     this.cancel();
   }
 
-  private async analyseGame(game: SourceGame, username: string): Promise<void> {
-    const replayed = this.replay(game, username);
-    if (!replayed) {
-      return; // not a game of the player, or a PGN that cannot be read
+  /**
+   * Adds the puzzles of one game of the player to the store, once per game.
+   * @returns the number of puzzles found
+   * @throws when the engine is stopped
+   */
+  async findPuzzles(game: SourceGame, username: string): Promise<number> {
+    const key = gameKey(game.platform, game.id);
+    const color = colorOf(game, username);
+    const replayed = this.analysis.replay(game);
+    if (this.store.isAnalysed(key) || !color || !replayed) {
+      return 0;
     }
-    const engine = this.engine!;
-    engine.newGame();
-    const { fens, moves, finished, playerIsWhite, startsWithWhite } = replayed;
-
-    // winning chances of the player in every position
-    const player: number[] = [];
-    for (let k = 0; k <= moves.length; k++) {
-      const whiteToMove = startsWithWhite === (k % 2 === 0);
-      const sign = whiteToMove === playerIsWhite ? 1 : -1;
-      const done = finished[k];
-      if (done !== null) {
-        player.push(sign * done);
-      } else {
-        const [best] = await engine.evaluate(fens[k], SCAN_DEPTH);
-        player.push(sign * (best ? winChances(best) : 0));
-      }
-      const plyProgress = (k + 1) / (moves.length + 1);
-      const { gamesDone, gamesTotal } = this.stateSubject.value;
-      this.setState({ progress: (gamesDone + plyProgress) / gamesTotal });
+    const values = await this.analysis.analyse(game);
+    if (!values) {
+      return 0;
     }
-
-    for (let k = 0; k < moves.length; k++) {
-      const whiteToMove = startsWithWhite === (k % 2 === 0);
+    const playerIsWhite = color === 'white';
+    // the player's winning chances in every position
+    const player = values.map(value => (playerIsWhite ? value : -value));
+    let found = 0;
+    for (let ply = 0; ply < replayed.moves.length; ply++) {
+      const whiteToMove = replayed.startsWithWhite === (ply % 2 === 0);
       if (whiteToMove !== playerIsWhite) {
         continue; // the opponent's move
       }
       const kind = classifyMove(
-        k > 0 ? player[k - 1] : null,
-        player[k],
-        player[k + 1]
+        ply > 0 ? player[ply - 1] : null,
+        player[ply],
+        player[ply + 1]
       );
       if (kind) {
-        const puzzle = await this.makePuzzle(game, replayed, k, kind, player);
+        const puzzle = await this.makePuzzle(
+          game,
+          replayed,
+          playerIsWhite,
+          ply,
+          kind,
+          player
+        );
         if (puzzle) {
           this.store.add(puzzle);
-          this.setState({ found: this.stateSubject.value.found + 1 });
+          found++;
         }
       }
     }
+    this.store.markAnalysed(key);
+    return found;
   }
 
   /** Checks a candidate position deeply, and builds its solution. */
   private async makePuzzle(
     game: SourceGame,
     replayed: ReplayedGame,
+    playerIsWhite: boolean,
     ply: number,
     scanKind: GamePuzzleKind,
     player: number[]
   ): Promise<GamePuzzle | null> {
-    const engine = this.engine!;
     const fen = replayed.fens[ply];
-    let lines = await engine.evaluate(fen, CHECK_DEPTH, 2);
+    let lines = await this.engine.evaluate(fen, CHECK_DEPTH, 2);
     const [best] = lines;
     if (!best || best.pv[0] === replayed.moves[ply] || !isOnlyMove(lines)) {
       return null;
@@ -252,9 +231,9 @@ export class PuzzleGeneratorService implements OnDestroy {
       return null;
     }
 
-    const board = this.boardFromFen(fen);
+    const board = this.analysis.boardFromFen(fen);
     const solution = [best.pv[0]];
-    this.play(board, best.pv[0]);
+    this.analysis.play(board, best.pv[0]);
     const maxMoves =
       best.mate !== null && best.mate > 0
         ? Math.min(best.mate, MAX_MATE_MOVES)
@@ -263,11 +242,19 @@ export class PuzzleGeneratorService implements OnDestroy {
     // extend the line while the solver's next move is again the only one
     for (let moves = 1; moves < maxMoves; moves++) {
       const reply = lines[0].pv[1];
-      if (!reply || !this.play(board, reply) || this.isOver(board)) {
+      if (
+        !reply ||
+        !this.analysis.play(board, reply) ||
+        this.analysis.finishedValue(board) !== null
+      ) {
         break;
       }
-      lines = await engine.evaluate(this.fen(board), CHECK_DEPTH, 2);
-      if (!isOnlyMove(lines) || !this.play(board, lines[0].pv[0])) {
+      lines = await this.engine.evaluate(
+        this.analysis.fen(board),
+        CHECK_DEPTH,
+        2
+      );
+      if (!isOnlyMove(lines) || !this.analysis.play(board, lines[0].pv[0])) {
         break;
       }
       solution.push(reply, lines[0].pv[0]);
@@ -294,98 +281,20 @@ export class PuzzleGeneratorService implements OnDestroy {
       game: {
         platform: game.platform,
         url: game.url,
-        opponent: replayed.playerIsWhite ? game.black : game.white,
+        opponent: playerIsWhite ? game.black : game.white,
         speed: game.speed,
         date: game.date,
       },
     };
   }
 
-  /** Every position of a game, or null if it is not one of the player's. */
-  private replay(game: SourceGame, username: string): ReplayedGame | null {
-    const name = username.trim().toLowerCase();
-    const playerIsWhite = game.white.toLowerCase() === name;
-    if (!playerIsWhite && game.black.toLowerCase() !== name) {
-      return null;
-    }
-    let imported;
-    try {
-      imported = this.importer.import(game.pgn);
-    } catch {
-      return null;
-    }
-    const { start, moves } = imported;
-    const board = new Chessboard(this.chessUtils, start.state);
-    const fens: string[] = [];
-    const finished: (number | null)[] = [];
-    for (const move of moves) {
-      fens.push(this.fen(board, start.fullmoveNumber, start.state.isWhiteTurn));
-      finished.push(null);
-      this.play(board, move);
-    }
-    fens.push(this.fen(board, start.fullmoveNumber, start.state.isWhiteTurn));
-    finished.push(this.finishedValue(board));
-    return {
-      fens,
-      moves,
-      sans: board.getHistory().map(entry => entry.san),
-      finished,
-      playerIsWhite,
-      startsWithWhite: start.state.isWhiteTurn,
-      fullmoveNumber: start.fullmoveNumber,
-    };
-  }
-
-  /** -1 if the side to move is mated, 0 if stalemated, null if not over. */
-  private finishedValue(board: Chessboard): number | null {
-    if (this.rules.getAvailableMoves(board).length) {
-      return null;
-    }
-    return this.rules.isInCheck(board) ? -1 : 0;
-  }
-
-  private isOver(board: Chessboard): boolean {
-    return this.finishedValue(board) !== null;
-  }
-
   /** The solution, played from the start, ends with a checkmate. */
   private isCheckmate(solution: string[], fen: string): boolean {
-    const replay = this.boardFromFen(fen);
+    const board = this.analysis.boardFromFen(fen);
     return (
-      solution.every(move => this.play(replay, move)) &&
-      this.finishedValue(replay) === -1
+      solution.every(move => this.analysis.play(board, move)) &&
+      this.analysis.finishedValue(board) === -1
     );
-  }
-
-  private boardFromFen(fen: string): Chessboard {
-    return new Chessboard(this.chessUtils, parseFen(fen).state);
-  }
-
-  /**
-   * FEN of the board. Its full move number is counted from the start of the
-   * game (the board's history), so that move numbers read as in the game.
-   */
-  private fen(
-    board: Chessboard,
-    startFullmove = 1,
-    startsWithWhite = true
-  ): string {
-    const plies = board.getHistory().length + (startsWithWhite ? 0 : 1);
-    return toFen(board.saveState(), startFullmove + Math.floor(plies / 2));
-  }
-
-  /** Plays a UCI move; false if it is illegal. */
-  private play(board: Chessboard, uci: string): boolean {
-    let move;
-    try {
-      move = parseUci(uci);
-    } catch {
-      return false;
-    }
-    const piece = move.promotion
-      ? toPieceName(board.getCurrentPlayerColor(), move.promotion)
-      : undefined;
-    return this.rules.playMoveWithPromotion(move.from, move.to, board, piece);
   }
 
   private setState(change: Partial<GeneratorState>): void {
