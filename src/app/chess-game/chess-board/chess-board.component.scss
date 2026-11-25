@@ -46,10 +46,15 @@
   &.selected::before {
     background: var(--square-selected);
   }
-  // puzzle hint: a pulsing ring around the piece to play
+  // puzzle hint: a green tint and a thick pulsing ring around the piece to
+  // play, visible on light and dark squares
   &.hint {
-    box-shadow: inset 0 0 0 calc(var(--board-size, 560px) * 0.008) var(--accent);
-    animation: hint-pulse 1.2s ease-in-out infinite alternate;
+    background-image: linear-gradient(
+      rgba(124, 154, 90, 0.5),
+      rgba(124, 154, 90, 0.5)
+    );
+    box-shadow: inset 0 0 0 calc(var(--board-size, 560px) * 0.012) var(--accent);
+    animation: hint-pulse 1s ease-in-out infinite alternate;
   }
 
   &.check::before {
@@ -151,10 +156,10 @@ app-promotion {
 
 @keyframes hint-pulse {
   from {
-    box-shadow: inset 0 0 0 calc(var(--board-size, 560px) * 0.004) var(--accent);
+    box-shadow: inset 0 0 0 calc(var(--board-size, 560px) * 0.008) var(--accent);
   }
   to {
-    box-shadow: inset 0 0 0 calc(var(--board-size, 560px) * 0.012) var(--accent);
+    box-shadow: inset 0 0 0 calc(var(--board-size, 560px) * 0.02) var(--accent);
   }
 }
 
