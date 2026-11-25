@@ -106,6 +106,11 @@ a {
   background: var(--accent);
   color: #fff;
 
+  // the thin icons are hard to see in white on green: as bold as the text
+  .mat-icon {
+    -webkit-text-stroke: 1.2px currentColor;
+  }
+
   &:hover:not(:disabled) {
     background: #8cab69;
   }
