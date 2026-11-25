@@ -1,4 +1,4 @@
-import { Component, DoCheck, OnDestroy, OnInit, ChangeDetectionStrategy } from '@angular/core';
+import { Component, DoCheck, HostListener, OnDestroy, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { EngineService, Evaluation } from '../analysis/engine.service';
 import { evaluationLabelOf } from '../analysis/eval-bar.component';
@@ -91,6 +91,13 @@ export class PuzzlesComponent implements OnInit, DoCheck, OnDestroy {
   bestMoveArrow: { circles: []; arrows: ArrowAnnotation[] } | null = null;
   /** '1-0', '0-1', '½-½' when the explored position is over. */
   exploreResult: string | null = null;
+  /**
+   * Moves taken back in free play, the next one last (UCI): the right arrow
+   * plays them again, as in the Analysis page.
+   */
+  private redoMoves: string[] = [];
+  /** The last move was replayed by forward(), not played by the user. */
+  private replaying = false;
   /** History length analysed by the engine; -1 when not exploring. */
   private exploredPlies = -1;
   private engineTimeout?: ReturnType<typeof setTimeout>;
@@ -136,18 +143,74 @@ export class PuzzlesComponent implements OnInit, DoCheck, OnDestroy {
     return !!this.puzzle && this.status !== 'playing' && !this.busy;
   }
 
-  get canUndo(): boolean {
+  get canGoBack(): boolean {
     return this.exploring && this.chessBoard.getHistory().length > 0;
+  }
+
+  get canGoForward(): boolean {
+    return this.exploring && this.redoMoves.length > 0;
   }
 
   get engineLabel(): string {
     return this.exploreResult ?? evaluationLabelOf(this.evaluation ?? this.lastEvaluation);
   }
 
-  /** Take back the last move, in free play. */
-  undo(): void {
-    if (this.canUndo) {
-      this.rulesService.undoMove(this.chessBoard);
+  /** One move back, in free play; forward() plays it again. */
+  back(): void {
+    if (!this.canGoBack) {
+      return;
+    }
+    const history = this.chessBoard.getHistory();
+    const index = history.length - 1;
+    const { oldPos, newPos } = history[index].move;
+    this.redoMoves.push(toUci(oldPos, newPos, this.promotionOf(newPos, index)));
+    this.rulesService.undoMove(this.chessBoard);
+  }
+
+  /** Play again the move taken back last. */
+  forward(): void {
+    if (!this.canGoForward) {
+      return;
+    }
+    const { from, to, promotion } = parseUci(this.redoMoves.pop()!);
+    const piece = promotion
+      ? toPieceName(this.chessBoard.getCurrentPlayerColor(), promotion)
+      : undefined;
+    this.replaying = true;
+    this.rulesService.playMoveWithPromotion(from, to, this.chessBoard, piece);
+  }
+
+  toStart(): void {
+    while (this.canGoBack) {
+      this.back();
+    }
+  }
+
+  toEnd(): void {
+    while (this.canGoForward) {
+      this.forward();
+    }
+  }
+
+  /** In free play, the arrow keys move through the line, as in Analysis. */
+  @HostListener('document:keydown', ['$event'])
+  onKeyDown(event: KeyboardEvent): void {
+    const target = event.target as HTMLElement | null;
+    if (
+      !this.exploring ||
+      target?.closest('input, textarea, select, [contenteditable]')
+    ) {
+      return;
+    }
+    const actions: Record<string, () => void> = {
+      ArrowLeft: () => this.back(),
+      ArrowRight: () => this.forward(),
+      Home: () => this.toStart(),
+      End: () => this.toEnd(),
+    };
+    if (event.key in actions) {
+      actions[event.key]();
+      event.preventDefault();
     }
   }
 
@@ -379,6 +442,8 @@ export class PuzzlesComponent implements OnInit, DoCheck, OnDestroy {
       this.processedPlies = plies;
       if (isUserMove && this.status === 'playing') {
         this.checkUserMove();
+      } else if (isUserMove && this.exploring) {
+        this.onFreeMove();
       }
     }
     // separate from processedPlies, which scripted moves update themselves
@@ -392,6 +457,26 @@ export class PuzzlesComponent implements OnInit, DoCheck, OnDestroy {
     if (exploredPlies !== this.exploredPlies) {
       this.exploredPlies = exploredPlies;
       this.onExploredPositionChanged();
+    }
+  }
+
+  /**
+   * A move played in free play: the same as the next taken-back move keeps
+   * the rest of the line, another one replaces it.
+   */
+  private onFreeMove(): void {
+    if (this.replaying) {
+      this.replaying = false;
+      return;
+    }
+    const history = this.chessBoard.getHistory();
+    const index = history.length - 1;
+    const { oldPos, newPos } = history[index].move;
+    const played = toUci(oldPos, newPos, this.promotionOf(newPos, index));
+    if (this.redoMoves[this.redoMoves.length - 1] === played) {
+      this.redoMoves.pop();
+    } else {
+      this.redoMoves = [];
     }
   }
 
@@ -465,6 +550,8 @@ export class PuzzlesComponent implements OnInit, DoCheck, OnDestroy {
     this.feedback = 'none';
     this.hintSquare = null;
     this.movesText = '';
+    this.redoMoves = [];
+    this.replaying = false;
   }
 
   next(): void {

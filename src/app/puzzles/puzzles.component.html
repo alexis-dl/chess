@@ -208,17 +208,44 @@
             <button
               type="button"
               class="btn btn-icon"
-              [disabled]="!canUndo"
-              [title]="'puzzles.undo' | t"
-              [attr.aria-label]="'puzzles.undo' | t"
-              (click)="undo()">
-              <mat-icon>undo</mat-icon>
+              [disabled]="!canGoBack"
+              [title]="'moves.first' | t"
+              [attr.aria-label]="'moves.first' | t"
+              (click)="toStart()">
+              <mat-icon>first_page</mat-icon>
             </button>
-            <button type="button" class="btn" (click)="openInAnalysis()">
-              <mat-icon>query_stats</mat-icon>
-              {{ 'puzzles.openInAnalysis' | t }}
+            <button
+              type="button"
+              class="btn btn-icon"
+              [disabled]="!canGoBack"
+              [title]="'moves.previous' | t"
+              [attr.aria-label]="'moves.previous' | t"
+              (click)="back()">
+              <mat-icon>chevron_left</mat-icon>
+            </button>
+            <button
+              type="button"
+              class="btn btn-icon"
+              [disabled]="!canGoForward"
+              [title]="'moves.next' | t"
+              [attr.aria-label]="'moves.next' | t"
+              (click)="forward()">
+              <mat-icon>chevron_right</mat-icon>
+            </button>
+            <button
+              type="button"
+              class="btn btn-icon"
+              [disabled]="!canGoForward"
+              [title]="'moves.last' | t"
+              [attr.aria-label]="'moves.last' | t"
+              (click)="toEnd()">
+              <mat-icon>last_page</mat-icon>
             </button>
           </div>
+          <button type="button" class="btn" (click)="openInAnalysis()">
+            <mat-icon>query_stats</mat-icon>
+            {{ 'puzzles.openInAnalysis' | t }}
+          </button>
         </div>
       }
 
