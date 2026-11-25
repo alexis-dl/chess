@@ -1,9 +1,13 @@
 import { Component, DoCheck, OnDestroy, OnInit, ChangeDetectionStrategy } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
+import { EngineService, Evaluation } from '../analysis/engine.service';
+import { evaluationLabelOf } from '../analysis/eval-bar.component';
+import { ArrowAnnotation } from '../chess-game/chess-board/annotations';
+import { AnalysisHandoffService } from '../stats/stats-pages';
 import { Subscription } from 'rxjs';
 import { ChessUtilsService } from '../chess-game/chess-utils.service';
 import { Chessboard } from '../chess-game/chessboard.model';
-import { parseFen } from '../chess-game/fen';
+import { parseFen, toFen } from '../chess-game/fen';
 import { formatMoveList } from '../chess-game/move-list';
 import {
   Color,
@@ -31,6 +35,8 @@ import { PuzzleGeneratorService } from './generator/puzzle-generator.service';
 /** Pause before the opponent's answer, and between moves of a revealed solution. */
 const OPPONENT_DELAY_MS = 500;
 const UNDO_WRONG_MOVE_DELAY_MS = 600;
+/** Wait for the user to stop playing moves before starting the engine. */
+const ENGINE_DELAY_MS = 150;
 const SOLVED_STORAGE_KEYS: Record<PuzzleSource, string> = {
   collection: 'chess.solvedPuzzles',
   mine: 'chess.solvedGamePuzzles',
@@ -78,6 +84,17 @@ export class PuzzlesComponent implements OnInit, DoCheck, OnDestroy {
   /** The delete button was pressed once: the next press deletes. */
   confirmingClear = false;
 
+  // free play once the puzzle is solved or its solution shown
+  evaluation: Evaluation | null = null;
+  /** Kept while the engine thinks, so that the bar does not jump. */
+  lastEvaluation: Evaluation | null = null;
+  bestMoveArrow: { circles: []; arrows: ArrowAnnotation[] } | null = null;
+  /** '1-0', '0-1', '½-½' when the explored position is over. */
+  exploreResult: string | null = null;
+  /** History length analysed by the engine; -1 when not exploring. */
+  private exploredPlies = -1;
+  private engineTimeout?: ReturnType<typeof setTimeout>;
+
   chessBoard!: Chessboard;
   solverColor: Color = 'white';
   status: PuzzleStatus = 'playing';
@@ -105,8 +122,46 @@ export class PuzzlesComponent implements OnInit, DoCheck, OnDestroy {
     private route: ActivatedRoute,
     private store: GamePuzzleStoreService,
     private generator: PuzzleGeneratorService,
-    private i18n: I18nService
+    private i18n: I18nService,
+    readonly engine: EngineService,
+    private handoff: AnalysisHandoffService,
+    private router: Router
   ) {}
+
+  /**
+   * The puzzle is over (solved, or its solution shown): any move can be
+   * played, with Stockfish's evaluation.
+   */
+  get exploring(): boolean {
+    return !!this.puzzle && this.status !== 'playing' && !this.busy;
+  }
+
+  get canUndo(): boolean {
+    return this.exploring && this.chessBoard.getHistory().length > 0;
+  }
+
+  get engineLabel(): string {
+    return this.exploreResult ?? evaluationLabelOf(this.evaluation ?? this.lastEvaluation);
+  }
+
+  /** Take back the last move, in free play. */
+  undo(): void {
+    if (this.canUndo) {
+      this.rulesService.undoMove(this.chessBoard);
+    }
+  }
+
+  /** Continue in the Analysis page, from the puzzle's position. */
+  openInAnalysis(): void {
+    const puzzle = this.puzzle;
+    if (!puzzle) {
+      return;
+    }
+    const moves = this.chessBoard.getHistory().map(entry => entry.san);
+    const pgn = `[FEN "${puzzle.fen}"]\n[SetUp "1"]\n\n${moves.join(' ')}`;
+    this.handoff.open(pgn, this.solverColor);
+    void this.router.navigate(['/analysis']);
+  }
 
   /** The puzzle on the board; undefined when the list is empty. */
   get puzzle(): SolvablePuzzle | undefined {
@@ -189,6 +244,9 @@ export class PuzzlesComponent implements OnInit, DoCheck, OnDestroy {
   }
 
   get canMove(): boolean {
+    if (this.exploring) {
+      return true; // free play, for both sides
+    }
     return (
       !!this.puzzle &&
       this.status === 'playing' &&
@@ -206,6 +264,17 @@ export class PuzzlesComponent implements OnInit, DoCheck, OnDestroy {
       this.selectedSpeeds = new Set(settings.speeds);
     }
     this.gamePuzzles = this.store.puzzles;
+    this.subscriptions.add(
+      this.engine.evaluation$.subscribe(evaluation => {
+        this.evaluation = evaluation;
+        if (evaluation) {
+          this.lastEvaluation = evaluation;
+        }
+        this.bestMoveArrow = this.exploring
+          ? this.arrowOf(evaluation?.bestMove ?? null)
+          : null;
+      })
+    );
     this.subscriptions.add(
       this.route.queryParamMap.subscribe(params =>
         this.showSource(params.get('source') === 'mine' ? 'mine' : 'collection')
@@ -318,10 +387,65 @@ export class PuzzlesComponent implements OnInit, DoCheck, OnDestroy {
       this.displayedPlies = displayedPlies;
       this.movesText = this.computeMovesText();
     }
+    // free play: analyse each new position
+    const exploredPlies = this.exploring ? displayedPlies : -1;
+    if (exploredPlies !== this.exploredPlies) {
+      this.exploredPlies = exploredPlies;
+      this.onExploredPositionChanged();
+    }
+  }
+
+  private onExploredPositionChanged(): void {
+    clearTimeout(this.engineTimeout);
+    this.evaluation = null;
+    this.bestMoveArrow = null;
+    this.exploreResult = null;
+    if (this.exploredPlies < 0) {
+      this.lastEvaluation = null;
+      this.engine.stop();
+      return;
+    }
+    const board = this.chessBoard;
+    if (this.rulesService.getAvailableMoves(board).length === 0) {
+      this.engine.stop(); // the game is over: nothing to evaluate
+      this.exploreResult = this.rulesService.isInCheck(board)
+        ? board.getCurrentPlayerColor() === 'white'
+          ? '0-1'
+          : '1-0'
+        : '½-½';
+      return;
+    }
+    const plies = board.getHistory().length;
+    const whiteStarts = this.solverColor === 'white';
+    const fen = toFen(
+      board.saveState(),
+      this.fullmoveNumber + Math.floor((plies + (whiteStarts ? 0 : 1)) / 2)
+    );
+    this.engineTimeout = setTimeout(
+      () => this.engine.analyse(fen),
+      ENGINE_DELAY_MS
+    );
+  }
+
+  private arrowOf(
+    uci: string | null
+  ): { circles: []; arrows: ArrowAnnotation[] } | null {
+    if (!uci || this.exploreResult) {
+      return null;
+    }
+    const { from, to } = parseUci(uci);
+    return {
+      circles: [],
+      arrows: [
+        { from: { x: from.x, y: from.y }, to: { x: to.x, y: to.y }, color: 'blue' },
+      ],
+    };
   }
 
   ngOnDestroy(): void {
     this.clearTimeouts();
+    clearTimeout(this.engineTimeout);
+    this.engine.stop();
     this.subscriptions.unsubscribe();
   }
 

@@ -115,6 +115,23 @@
 
 .board-area {
   grid-area: board;
+  position: relative;
+}
+
+// in the gap left of the board, once the puzzle is over
+.puzzle-eval {
+  position: absolute;
+  top: 0;
+  right: calc(100% + 4px);
+  bottom: 0;
+  width: 14px;
+}
+
+@media (max-width: 760px) {
+  .puzzle-eval {
+    right: calc(100% + 3px);
+    width: 10px;
+  }
 }
 
 // ----- right: status and controls -----

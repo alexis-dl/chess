@@ -98,11 +98,19 @@
   </aside>
 
   <main class="board-area">
+    @if (exploring && engine.available) {
+      <app-eval-bar
+        class="puzzle-eval"
+        [evaluation]="evaluation ?? lastEvaluation"
+        [orientation]="solverColor"
+        [result]="exploreResult"></app-eval-bar>
+    }
     <app-chess-board
       [chessBoard]="chessBoard"
       [canMove]="canMove"
       [orientation]="solverColor"
-      [hintSquare]="hintSquare"></app-chess-board>
+      [hintSquare]="hintSquare"
+      [shapes]="bestMoveArrow"></app-chess-board>
   </main>
 
   <section class="panel puzzle-panel">
@@ -181,6 +189,38 @@
 
       @if (movesText) {
         <p class="moves">{{ movesText }}</p>
+      }
+
+      @if (exploring) {
+        <div class="explore">
+          <p>{{ 'puzzles.explore' | t }}</p>
+          @if (engine.available) {
+            <div class="engine-line">
+              <span class="engine-name">Stockfish 18</span>
+              <span class="engine-eval">{{ engineLabel }}</span>
+              @if ((evaluation ?? lastEvaluation)?.depth; as depth) {
+                <span class="engine-depth">{{
+                  'puzzles.depth' | t: { depth: depth }
+                }}</span>
+              }
+            </div>
+          }
+          <div class="explore-actions">
+            <button
+              type="button"
+              class="btn btn-icon"
+              [disabled]="!canUndo"
+              [title]="'puzzles.undo' | t"
+              [attr.aria-label]="'puzzles.undo' | t"
+              (click)="undo()">
+              <mat-icon>undo</mat-icon>
+            </button>
+            <button type="button" class="btn" (click)="openInAnalysis()">
+              <mat-icon>query_stats</mat-icon>
+              {{ 'puzzles.openInAnalysis' | t }}
+            </button>
+          </div>
+        </div>
       }
 
       @if (gamePuzzle; as game) {
