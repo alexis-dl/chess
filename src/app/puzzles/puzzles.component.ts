@@ -44,7 +44,8 @@ export type PuzzleSource = 'collection' | 'mine';
 type SolvablePuzzle = Pick<Puzzle, 'id' | 'fen' | 'solution'>;
 
 type PuzzleStatus = 'playing' | 'solved' | 'revealed';
-type Feedback = 'none' | 'good' | 'wrong';
+/** gameMove: a wrong move, the very one played in the game. */
+type Feedback = 'none' | 'good' | 'wrong' | 'gameMove';
 
 @Component({
     selector: 'app-puzzles',
@@ -140,6 +141,25 @@ export class PuzzlesComponent implements OnInit, DoCheck, OnDestroy {
 
   speedKey(speed: GameSpeed): TranslationKey {
     return `puzzles.speed.${speed}`;
+  }
+
+  /**
+   * Link to the game. On Lichess it opens at the puzzle's position, seen
+   * from the player's side ('#ply'); Chess.com has no such link.
+   */
+  gameUrl(puzzle: GamePuzzle): string {
+    const { platform, url } = puzzle.game;
+    if (platform !== 'lichess') {
+      return url;
+    }
+    const ply = puzzle.id.slice(puzzle.id.lastIndexOf('-') + 1);
+    const side = puzzle.fen.split(' ')[1] === 'b' ? '/black' : '';
+    return `${url}${side}#${ply}`;
+  }
+
+  /** The move played in the game: '16... Bxh6'. */
+  gameMove(puzzle: GamePuzzle): string {
+    return `${puzzle.moveNumber} ${puzzle.played}`;
   }
 
   platformName(platform: GamePlatform): string {
@@ -384,7 +404,8 @@ export class PuzzlesComponent implements OnInit, DoCheck, OnDestroy {
         }, OPPONENT_DELAY_MS);
       }
     } else {
-      this.feedback = 'wrong';
+      const san = history[history.length - 1].san;
+      this.feedback = san === this.gamePuzzle?.played ? 'gameMove' : 'wrong';
       this.busy = true;
       this.later(() => {
         this.rulesService.undoMove(this.chessBoard);

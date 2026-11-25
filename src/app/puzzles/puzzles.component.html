@@ -107,7 +107,9 @@
 
   <section class="panel puzzle-panel">
     @if (puzzle; as current) {
-      <div class="status" [ngClass]="[status, feedback]">
+      <div
+        class="status"
+        [ngClass]="[status, feedback === 'gameMove' ? 'wrong' : feedback]">
         <img
           class="status-piece"
           [src]="'assets/chess-pieces/' + solverColor + '-king.svg'"
@@ -135,6 +137,17 @@
                   <div class="status-title">{{ 'puzzles.wrong' | t }}</div>
                   <div class="status-detail">{{ 'puzzles.tryElse' | t }}</div>
                 }
+                @case ('gameMove') {
+                  <div class="status-title">
+                    {{ 'puzzles.mine.gameMoveTitle' | t }}
+                  </div>
+                  <div class="status-detail">
+                    {{
+                      'puzzles.mine.gameMoveDetail'
+                        | t: { move: gameMove(gamePuzzle!) }
+                    }}
+                  </div>
+                }
                 @default {
                   <div class="status-title">{{ 'puzzles.yourTurn' | t }}</div>
                   <div class="status-detail">
@@ -152,23 +165,29 @@
         <span>{{ goalText(current) }}</span>
       </div>
 
+      @if (gamePuzzle; as game) {
+        <a
+          class="game-link"
+          [href]="gameUrl(game)"
+          [title]="'puzzles.mine.viewGame' | t"
+          target="_blank"
+          rel="noopener">
+          {{ 'puzzles.mine.vs' | t: { name: game.game.opponent || '?' } }}
+          · {{ formatDate(game.game.date) }} ·
+          {{ platformName(game.game.platform) }}
+          <mat-icon>open_in_new</mat-icon>
+        </a>
+      }
+
       @if (movesText) {
         <p class="moves">{{ movesText }}</p>
       }
 
       @if (gamePuzzle; as game) {
         @if (status !== 'playing') {
-          <div class="in-game">
-            <span>{{
-              'puzzles.mine.played'
-                | t: { move: game.moveNumber + ' ' + game.played }
-            }}</span>
-            <a [href]="game.game.url" target="_blank" rel="noopener">
-              {{ 'puzzles.mine.viewGame' | t }}
-              ({{ platformName(game.game.platform) }})
-              <mat-icon>open_in_new</mat-icon>
-            </a>
-          </div>
+          <p class="in-game">
+            {{ 'puzzles.mine.played' | t: { move: gameMove(game) } }}
+          </p>
         }
       }
 
