@@ -1,19 +1,56 @@
 <div class="puzzles">
   <aside class="panel puzzle-list">
+    <nav class="sources" [attr.aria-label]="'puzzles.title' | t">
+      <a
+        routerLink="/puzzles"
+        [class.active]="source === 'collection'">
+        {{ 'puzzles.tab.collection' | t }}
+      </a>
+      <a
+        routerLink="/puzzles"
+        [queryParams]="{ source: 'mine' }"
+        [class.active]="source === 'mine'">
+        {{ 'puzzles.tab.mine' | t }}
+      </a>
+    </nav>
+
+    @if (source === 'mine') {
+      <ng-container *ngTemplateOutlet="generatorForm"></ng-container>
+    }
+
     <header class="list-header">
-      <mat-icon class="list-icon">extension</mat-icon>
+      <mat-icon class="list-icon">{{
+        source === 'mine' ? 'person' : 'extension'
+      }}</mat-icon>
       <div>
-        <div class="list-title">{{ 'puzzles.title' | t }}</div>
+        <div class="list-title">
+          {{ (source === 'mine' ? 'puzzles.tab.mine' : 'puzzles.title') | t }}
+        </div>
         <div class="list-subtitle">
           {{
-          'puzzles.solvedCount'
-          | t: { solved: solved.size, total: puzzles.length }
+            'puzzles.solvedCount'
+              | t: { solved: solved.size, total: puzzles.length }
           }}
         </div>
       </div>
     </header>
 
-    @for (item of puzzles; track item; let i = $index) {
+    @if (source === 'mine' && gamePuzzles.length) {
+      <div class="chips" role="group">
+        @for (kind of kindList; track kind) {
+          <button
+            type="button"
+            class="chip"
+            [class.on]="kinds[kind]"
+            [attr.aria-pressed]="kinds[kind]"
+            (click)="toggleKind(kind)">
+            {{ kindKey(kind) | t }}
+          </button>
+        }
+      </div>
+    }
+
+    @for (item of puzzles; track item.id; let i = $index) {
       <button
         type="button"
         class="puzzle-item"
@@ -21,29 +58,55 @@
         (click)="load(i)">
         <span class="puzzle-number">{{ i + 1 }}</span>
         <span class="puzzle-text">
-          <span class="puzzle-theme">{{ themeKey(item) | t }}</span>
-          <span class="puzzle-goal">{{
-            'puzzles.mateIn' | t: { moves: mateIn(item) }
-          }}</span>
+          <span class="puzzle-theme">{{ titleKey(item) | t }}</span>
+          @if (source === 'mine') {
+            <span class="puzzle-goal">
+              {{
+                'puzzles.mine.vs'
+                  | t: { name: $any(item).game.opponent || '?' }
+              }}
+              · {{ formatDate($any(item).game.date) }}
+            </span>
+          }
+          <span class="puzzle-goal">{{ goalText(item) }}</span>
         </span>
         @if (solved.has(item.id)) {
-          <mat-icon class="solved-icon"
-            >check_circle</mat-icon
-            >
-          }
-        </button>
+          <mat-icon class="solved-icon">check_circle</mat-icon>
+        }
+      </button>
+    } @empty {
+      <!-- with no puzzle at all, the right panel explains what to do -->
+      @if (gamePuzzles.length) {
+        <p class="empty">{{ 'puzzles.mine.noMatch' | t }}</p>
       }
-    </aside>
+    }
 
-    <main class="board-area">
-      <app-chess-board
-        [chessBoard]="chessBoard"
-        [canMove]="canMove"
-        [orientation]="solverColor"
+    @if (source === 'mine' && gamePuzzles.length) {
+      <button
+        type="button"
+        class="btn clear"
+        [class.confirm]="confirmingClear"
+        [disabled]="generating"
+        (click)="clearGamePuzzles()">
+        <mat-icon>delete</mat-icon>
+        {{
+          (confirmingClear ? 'puzzles.mine.clearConfirm' : 'puzzles.mine.clear')
+            | t
+        }}
+      </button>
+    }
+  </aside>
+
+  <main class="board-area">
+    <app-chess-board
+      [chessBoard]="chessBoard"
+      [canMove]="canMove"
+      [orientation]="solverColor"
       [hintSquare]="hintSquare"></app-chess-board>
-    </main>
+  </main>
 
-    <section class="panel puzzle-panel">
+  <section class="panel puzzle-panel">
+    @if (puzzle; as current) {
       <div class="status" [ngClass]="[status, feedback]">
         <img
           class="status-piece"
@@ -54,8 +117,8 @@
             @case ('solved') {
               <div class="status-title">{{ 'puzzles.solved' | t }}</div>
               <div class="status-detail">
-                {{ 'puzzles.mateIn' | t: { moves: mateIn(puzzle) } }} ·
-                {{ themeKey(puzzle) | t }}
+                {{ goalText(current) }} ·
+                {{ titleKey(current) | t }}
               </div>
             }
             @case ('revealed') {
@@ -86,11 +149,27 @@
 
       <div class="goal">
         <span class="goal-label">{{ 'puzzles.goal' | t }}</span>
-        <span>{{ 'puzzles.mateIn' | t: { moves: mateIn(puzzle) } }}</span>
+        <span>{{ goalText(current) }}</span>
       </div>
 
       @if (movesText) {
         <p class="moves">{{ movesText }}</p>
+      }
+
+      @if (gamePuzzle; as game) {
+        @if (status !== 'playing') {
+          <div class="in-game">
+            <span>{{
+              'puzzles.mine.played'
+                | t: { move: game.moveNumber + ' ' + game.played }
+            }}</span>
+            <a [href]="game.game.url" target="_blank" rel="noopener">
+              {{ 'puzzles.mine.viewGame' | t }}
+              ({{ platformName(game.game.platform) }})
+              <mat-icon>open_in_new</mat-icon>
+            </a>
+          </div>
+        }
       }
 
       @if (status === 'playing') {
@@ -120,5 +199,116 @@
           </button>
         </div>
       }
-    </section>
-  </div>
+    } @else {
+      <p class="empty panel-empty">{{ 'puzzles.mine.empty' | t }}</p>
+    }
+  </section>
+</div>
+
+<ng-template #generatorForm>
+  <form class="generator" (submit)="generate(); $event.preventDefault()">
+    <div class="segmented" role="radiogroup">
+      @for (item of platforms; track item) {
+        <button
+          type="button"
+          role="radio"
+          [attr.aria-checked]="platform === item"
+          [class.on]="platform === item"
+          [disabled]="generating"
+          (click)="platform = item">
+          {{ platformName(item) }}
+        </button>
+      }
+    </div>
+
+    <input
+      name="username"
+      [(ngModel)]="username"
+      autocomplete="username"
+      autocapitalize="off"
+      spellcheck="false"
+      maxlength="50"
+      [disabled]="generating"
+      [placeholder]="'puzzles.mine.username' | t"
+      [attr.aria-label]="'puzzles.mine.username' | t" />
+
+    <label class="field">
+      <span>{{ 'puzzles.mine.count' | t }}</span>
+      <select
+        name="count"
+        [(ngModel)]="gameCount"
+        [disabled]="generating">
+        @for (count of gameCounts; track count) {
+          <option [ngValue]="count">{{ count }}</option>
+        }
+      </select>
+    </label>
+
+    <div class="field-label">{{ 'puzzles.mine.speeds' | t }}</div>
+    <div class="chips" role="group">
+      @for (speed of speeds; track speed) {
+        <button
+          type="button"
+          class="chip"
+          [class.on]="selectedSpeeds.has(speed)"
+          [attr.aria-pressed]="selectedSpeeds.has(speed)"
+          [disabled]="generating"
+          (click)="toggleSpeed(speed)">
+          {{ speedKey(speed) | t }}
+        </button>
+      }
+    </div>
+    <div class="hint">{{ 'puzzles.mine.allSpeeds' | t }}</div>
+
+    @if (generatorState$ | async; as state) {
+      @if (generating) {
+        <div class="progress" role="status">
+          <div class="progress-text">
+            @if (state.status === 'fetching') {
+              {{ 'puzzles.mine.fetching' | t }}
+            } @else {
+              {{
+                'puzzles.mine.analysing'
+                  | t
+                    : {
+                        current: state.gamesDone + 1,
+                        total: state.gamesTotal,
+                        found: state.found
+                      }
+              }}
+            }
+          </div>
+          <div class="bar">
+            <div class="bar-fill" [style.width.%]="state.progress * 100"></div>
+          </div>
+        </div>
+        <button type="button" class="btn" (click)="cancelGeneration()">
+          <mat-icon>stop</mat-icon>
+          {{ 'puzzles.mine.cancel' | t }}
+        </button>
+      } @else {
+        @if (state.status === 'done') {
+          <p class="result" role="status">
+            {{
+              'puzzles.mine.done'
+                | t: { found: state.found, games: state.gamesDone }
+            }}
+            @if (state.gamesSkipped) {
+              {{ 'puzzles.mine.skipped' | t: { count: state.gamesSkipped } }}
+            }
+          </p>
+        }
+        @if (state.status === 'error' && state.error) {
+          <p class="result error" role="alert">{{ state.error | t }}</p>
+        }
+        <button
+          type="submit"
+          class="btn btn-primary"
+          [disabled]="!username.trim()">
+          <mat-icon>auto_fix_high</mat-icon>
+          {{ 'puzzles.mine.generate' | t }}
+        </button>
+      }
+    }
+  </form>
+</ng-template>
