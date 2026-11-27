@@ -21,6 +21,7 @@ import { CourseComponent } from './learn/course/course.component';
 import { OpeningQuizComponent } from './learn/opening-quiz/opening-quiz.component';
 import { YoutubePlayerComponent } from './learn/youtube-player/youtube-player.component';
 import { EvalBarComponent } from './analysis/eval-bar.component';
+import { PuzzleThemesComponent } from './puzzles/puzzle-themes.component';
 import { LineChartComponent } from './stats/charts/line-chart.component';
 import { ResultDonutComponent } from './stats/charts/result-donut.component';
 import { StatsDashboardComponent } from './stats/dashboard/stats-dashboard.component';
@@ -73,6 +74,7 @@ import { MatTabsModule } from '@angular/material/tabs';
     OpeningQuizComponent,
     YoutubePlayerComponent,
     EvalBarComponent,
+    PuzzleThemesComponent,
     StatsComponent,
     MyStatsComponent,
     ScoutingComponent,

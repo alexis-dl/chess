@@ -1,14 +1,11 @@
 <div class="puzzles">
   <aside class="panel puzzle-list">
-    <nav class="sources" [attr.aria-label]="'puzzles.title' | t">
-      @for (page of pages; track page.path) {
-        <a
-          [routerLink]="['/puzzles', page.path]"
-          [class.active]="source === page.source">
-          {{ page.title | t }}
-        </a>
-      }
-    </nav>
+    @if (source === 'collection') {
+      <a class="back" routerLink="/puzzles/themes">
+        <mat-icon>arrow_back</mat-icon>
+        {{ 'puzzles.allThemes' | t }}
+      </a>
+    }
 
     @if (source === 'mine') {
       <ng-container *ngTemplateOutlet="generatorForm"></ng-container>
@@ -16,11 +13,16 @@
 
     <header class="list-header">
       <mat-icon class="list-icon">{{
-        source === 'mine' ? 'person' : 'extension'
+        source === 'mine' ? 'person' : (theme?.icon ?? 'extension')
       }}</mat-icon>
       <div>
         <div class="list-title">
-          {{ (source === 'mine' ? 'puzzles.tab.mine' : 'puzzles.title') | t }}
+          {{
+            (source === 'mine'
+              ? 'nav.puzzles.personalized'
+              : (themeTitleKey ?? 'puzzles.title')
+            ) | t
+          }}
         </div>
         <div class="list-subtitle">
           {{
@@ -54,7 +56,7 @@
         (click)="load(i)">
         <span class="puzzle-number">{{ i + 1 }}</span>
         <span class="puzzle-text">
-          <span class="puzzle-theme">{{ titleKey(item) | t }}</span>
+          <span class="puzzle-theme">{{ itemTitle(item) }}</span>
           @if (source === 'mine') {
             <span class="puzzle-goal">
               {{
@@ -124,7 +126,7 @@
               <div class="status-title">{{ 'puzzles.solved' | t }}</div>
               <div class="status-detail">
                 {{ goalText(current) }} ·
-                {{ titleKey(current) | t }}
+                {{ itemTitle(current) }}
               </div>
             }
             @case ('revealed') {
@@ -168,6 +170,10 @@
         <span class="goal-label">{{ 'puzzles.goal' | t }}</span>
         <span>{{ goalText(current) }}</span>
       </div>
+
+      @if (introOf(current); as intro) {
+        <p class="puzzle-intro">{{ intro | localize }}</p>
+      }
 
       @if (gamePuzzle; as game) {
         <a

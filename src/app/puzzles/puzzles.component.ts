@@ -18,7 +18,14 @@ import { Position } from '../chess-game/position.model';
 import { PromotionService } from '../chess-game/promotion/promotion.service';
 import { RulesService } from '../chess-game/rules.service';
 import { parseUci, toUci } from './puzzle-moves';
-import { mateIn, Puzzle, PUZZLES } from './puzzle.model';
+import { Localized } from '../i18n/localized';
+import {
+  mateIn,
+  Puzzle,
+  PUZZLE_THEMES,
+  PuzzleThemeInfo,
+  PUZZLES,
+} from './puzzle.model';
 import { TranslationKey } from '../i18n/translations';
 import { I18nService } from '../i18n/i18n.service';
 import { GamePuzzle } from './generator/game-puzzle.model';
@@ -47,23 +54,17 @@ const GAME_COUNTS = [10, 20, 50, 100];
 /** The built-in collection, or the puzzles made from the player's games. */
 export type PuzzleSource = 'collection' | 'mine';
 
-/** Sub-pages of Puzzles, in the order of the tabs and of the menu. */
+/** Sub-pages of Puzzles, in the order of the menu. */
 export const PUZZLE_PAGES: {
   path: string;
-  source: PuzzleSource;
-  title: TranslationKey;
   menuTitle: TranslationKey;
 }[] = [
   {
     path: 'themes',
-    source: 'collection',
-    title: 'puzzles.tab.collection',
     menuTitle: 'nav.puzzles.themes',
   },
   {
     path: 'personalized',
-    source: 'mine',
-    title: 'puzzles.tab.mine',
     menuTitle: 'nav.puzzles.personalized',
   },
 ];
@@ -86,7 +87,8 @@ export class PuzzlesComponent implements OnInit, DoCheck, OnDestroy {
   readonly speeds = GAME_SPEEDS;
   readonly gameCounts = GAME_COUNTS;
   readonly kindList: GamePuzzleKind[] = ['missed', 'blunder'];
-  readonly pages = PUZZLE_PAGES;
+  /** Theme shown (collection only). */
+  theme: PuzzleThemeInfo | null = null;
   readonly generatorState$ = this.generator.state$;
 
   source: PuzzleSource = 'collection';
@@ -268,11 +270,26 @@ export class PuzzlesComponent implements OnInit, DoCheck, OnDestroy {
       : this.i18n.t(`puzzles.goal.${goal}`);
   }
 
-  /** Title of a puzzle in the list: its theme, or its kind. */
-  titleKey(puzzle: SolvablePuzzle): TranslationKey {
-    return this.source === 'mine'
-      ? `puzzles.mine.kind.${(puzzle as GamePuzzle).kind}`
-      : this.themeKey(puzzle as Puzzle);
+  /** Title of a puzzle: the name of its idea, its theme, or its kind. */
+  itemTitle(puzzle: SolvablePuzzle): string {
+    if (this.source === 'mine') {
+      return this.i18n.t(`puzzles.mine.kind.${(puzzle as GamePuzzle).kind}`);
+    }
+    const name = (puzzle as Puzzle).name;
+    return name
+      ? this.i18n.localize(name)
+      : this.i18n.t(this.themeKey(puzzle as Puzzle));
+  }
+
+  /** How the position arose (opening puzzles). */
+  introOf(puzzle: SolvablePuzzle): Localized | null {
+    return this.source === 'collection'
+      ? ((puzzle as Puzzle).intro ?? null)
+      : null;
+  }
+
+  get themeTitleKey(): TranslationKey | null {
+    return this.theme ? `puzzles.theme.${this.theme.id}` : null;
   }
 
   kindKey(kind: GamePuzzleKind): TranslationKey {
@@ -361,9 +378,17 @@ export class PuzzlesComponent implements OnInit, DoCheck, OnDestroy {
       })
     );
     this.subscriptions.add(
-      this.route.data.subscribe(data =>
-        this.showSource(data['source'] === 'mine' ? 'mine' : 'collection')
-      )
+      this.route.paramMap.subscribe(params => {
+        const source: PuzzleSource =
+          this.route.snapshot.data['source'] === 'mine' ? 'mine' : 'collection';
+        this.theme =
+          PUZZLE_THEMES.find(theme => theme.id === params.get('theme')) ?? null;
+        if (source === 'collection' && !this.theme) {
+          void this.router.navigate(['/puzzles/themes']); // unknown theme
+          return;
+        }
+        this.showSource(source);
+      })
     );
     this.subscriptions.add(
       this.store.puzzles$.subscribe(puzzles => {
@@ -383,7 +408,10 @@ export class PuzzlesComponent implements OnInit, DoCheck, OnDestroy {
     this.source = source;
     this.solved = this.loadSolved();
     this.confirmingClear = false;
-    this.puzzles = source === 'mine' ? this.filteredGamePuzzles() : PUZZLES;
+    this.puzzles =
+      source === 'mine'
+        ? this.filteredGamePuzzles()
+        : PUZZLES.filter(puzzle => puzzle.theme === this.theme?.id);
     this.loadFirstUnsolved();
   }
 

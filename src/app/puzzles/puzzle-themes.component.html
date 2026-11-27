@@ -1,0 +1,25 @@
+<div class="themes-page">
+  <h1>{{ 'nav.puzzles.themes' | t }}</h1>
+  <p class="intro">{{ 'puzzles.themesIntro' | t }}</p>
+
+  @for (category of categories; track category.id) {
+    <section>
+      <h2>{{ categoryKey(category.id) | t }}</h2>
+      <div class="cards">
+        @for (card of category.cards; track card.theme.id) {
+          <a class="card" [routerLink]="['/puzzles/themes', card.theme.id]">
+            <mat-icon class="icon">{{ card.theme.icon }}</mat-icon>
+            <span class="text">
+              <span class="title">{{ titleKey(card.theme) | t }}</span>
+              <span class="info">{{ infoKey(card.theme) | t }}</span>
+            </span>
+            <span class="progress" [class.done]="card.solved === card.total">
+              {{ card.solved }} / {{ card.total }}
+            </span>
+            <mat-icon class="chevron">chevron_right</mat-icon>
+          </a>
+        }
+      </div>
+    </section>
+  }
+</div>

@@ -6,7 +6,7 @@ import { Move } from '../chess-game/move.model';
 import { PromotionPieceType } from '../chess-game/piece.model';
 import { RulesService } from '../chess-game/rules.service';
 import { parseUci } from './puzzle-moves';
-import { mateIn, PUZZLES } from './puzzle.model';
+import { mateIn, PUZZLE_THEMES, PUZZLES } from './puzzle.model';
 
 /** Validates the puzzle collection with the rules engine. */
 describe('PUZZLES', () => {
@@ -61,7 +61,46 @@ describe('PUZZLES', () => {
     );
   };
 
-  for (const puzzle of PUZZLES) {
+  it('has puzzles in every theme, and only known themes', () => {
+    for (const theme of PUZZLE_THEMES) {
+      expect(PUZZLES.some(puzzle => puzzle.theme === theme.id))
+        .withContext(theme.id)
+        .toBeTrue();
+    }
+    for (const puzzle of PUZZLES) {
+      expect(PUZZLE_THEMES.some(theme => theme.id === puzzle.theme))
+        .withContext(puzzle.id)
+        .toBeTrue();
+    }
+  });
+
+  it('has unique ids', () => {
+    const ids = PUZZLES.map(puzzle => puzzle.id);
+    expect(new Set(ids).size).toBe(ids.length);
+  });
+
+  // opening puzzles win material: their moves are only checked to be legal
+  for (const puzzle of PUZZLES.filter(p => p.goal === 'advantage')) {
+    describe(`${puzzle.id} (advantage)`, () => {
+      it('has a legal solution ending with the solver', () => {
+        expect(puzzle.solution.length % 2).toBe(1);
+        let board = new Chessboard(utils, parseFen(puzzle.fen).state);
+        for (const step of puzzle.solution) {
+          const { from, to, promotion } = parseUci(step);
+          const legal = rules
+            .getAvailableMoves(board)
+            .find(move => move.oldPos.equals(from) && move.newPos.equals(to));
+          expect(legal).withContext(`${step} is legal`).toBeDefined();
+          if (!legal) {
+            return;
+          }
+          board = play(board, legal, promotion);
+        }
+      });
+    });
+  }
+
+  for (const puzzle of PUZZLES.filter(p => (p.goal ?? 'mate') === 'mate')) {
     const solverMoves = mateIn(puzzle);
     describe(`${puzzle.id} (mate in ${solverMoves})`, () => {
       it('has a solution in an odd number of moves (ends with the solver)', () => {

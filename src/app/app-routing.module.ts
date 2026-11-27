@@ -8,6 +8,7 @@ import { OpeningQuizComponent } from './learn/opening-quiz/opening-quiz.componen
 import { AnalysisComponent } from './analysis/analysis.component';
 import { PlayVsBotComponent } from './play/play-vs-bot/play-vs-bot.component';
 import { PuzzlesComponent } from './puzzles/puzzles.component';
+import { PuzzleThemesComponent } from './puzzles/puzzle-themes.component';
 import {
   GameHistoryComponent,
   MyStatsComponent,
@@ -35,8 +36,9 @@ const routes: Routes = [
           : '/puzzles/themes'
       ),
   },
+  { path: 'puzzles/themes', component: PuzzleThemesComponent },
   {
-    path: 'puzzles/themes',
+    path: 'puzzles/themes/:theme',
     component: PuzzlesComponent,
     data: { source: 'collection' },
   },

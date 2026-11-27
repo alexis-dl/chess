@@ -1,0 +1,100 @@
+.themes-page {
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 32px 16px;
+}
+
+h1 {
+  margin: 0 0 8px;
+  color: var(--text-strong);
+  font-size: 1.8em;
+  font-weight: 400;
+}
+
+.intro {
+  margin: 0 0 8px;
+  color: var(--text-muted);
+  line-height: 1.6;
+}
+
+h2 {
+  margin: 28px 0 12px;
+  color: var(--text-strong);
+  font-size: 1.15em;
+  font-weight: 600;
+}
+
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 10px;
+}
+
+.card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 18px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--surface);
+  color: inherit;
+  text-decoration: none;
+  transition:
+    border-color 0.15s,
+    background 0.15s;
+
+  &:hover {
+    border-color: var(--accent);
+    background: var(--accent-soft);
+  }
+}
+
+.icon {
+  flex: none;
+  width: 32px;
+  height: 32px;
+  font-size: 32px;
+  color: var(--text-strong);
+}
+
+.text {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.title {
+  color: var(--text-strong);
+  font-weight: 600;
+}
+
+.info {
+  color: var(--text-muted);
+  font-size: 0.85em;
+  line-height: 1.4;
+}
+
+.progress {
+  flex: none;
+  color: var(--text-faint);
+  font-size: 0.85em;
+
+  &.done {
+    color: var(--accent);
+    font-weight: 600;
+  }
+}
+
+.chevron {
+  flex: none;
+  color: var(--text-muted);
+}
+
+@media (max-width: 480px) {
+  .cards {
+    grid-template-columns: 1fr;
+  }
+}
