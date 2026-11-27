@@ -167,6 +167,14 @@ export class PuzzlesComponent implements OnInit, DoCheck, OnDestroy {
     return !!this.puzzle && this.status !== 'playing' && !this.busy;
   }
 
+  /**
+   * Solved puzzles among those listed (the solved set also holds the other
+   * themes' puzzles, and the ones hidden by a filter).
+   */
+  get solvedInList(): number {
+    return this.puzzles.filter(puzzle => this.solved.has(puzzle.id)).length;
+  }
+
   get canGoBack(): boolean {
     return this.exploring && this.chessBoard.getHistory().length > 0;
   }
