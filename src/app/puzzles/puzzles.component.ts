@@ -38,12 +38,19 @@ import {
 } from './generator/game-sources';
 import { GamePuzzleKind } from './generator/puzzle-finder';
 import { PuzzleGeneratorService } from './generator/puzzle-generator.service';
+import { winChances } from './generator/puzzle-finder';
+import { EngineQueueService } from '../game-analysis/engine-queue.service';
+import { GameAnalysisService } from '../game-analysis/game-analysis.service';
 
 /** Pause before the opponent's answer, and between moves of a revealed solution. */
 const OPPONENT_DELAY_MS = 500;
 const UNDO_WRONG_MOVE_DELAY_MS = 600;
 /** Wait for the user to stop playing moves before starting the engine. */
 const ENGINE_DELAY_MS = 150;
+/** Depth of the check of another move than the line's (quick). */
+const ALTERNATIVE_DEPTH = 12;
+/** Another move of the opening line is fine if it loses less than this. */
+const ALTERNATIVE_MARGIN = 0.1;
 const SOLVED_STORAGE_KEYS: Record<PuzzleSource, string> = {
   collection: 'chess.solvedPuzzles',
   mine: 'chess.solvedGamePuzzles',
@@ -72,8 +79,13 @@ export const PUZZLE_PAGES: {
 type SolvablePuzzle = Pick<Puzzle, 'id' | 'fen' | 'solution'>;
 
 type PuzzleStatus = 'playing' | 'solved' | 'revealed';
-/** gameMove: a wrong move, the very one played in the game. */
-type Feedback = 'none' | 'good' | 'wrong' | 'gameMove';
+/**
+ * gameMove: a wrong move, the very one played in the game.
+ * checking: Stockfish looks at another move of the opening line;
+ * alternative: that move is fine too, but it is not the line's.
+ */
+type Feedback =
+  'none' | 'good' | 'wrong' | 'gameMove' | 'checking' | 'alternative';
 
 @Component({
     selector: 'app-puzzles',
@@ -134,8 +146,17 @@ export class PuzzlesComponent implements OnInit, DoCheck, OnDestroy {
   movesText = '';
   solved = new Set<string>();
 
-  /** Index in the solution of the next move to play. */
+  /** Index in steps of the next move to play. */
   private step = 0;
+  /**
+   * Moves to play: the opening line (if any), then the solution; solver and
+   * opponent alternate.
+   */
+  private steps: string[] = [];
+  /** Index in steps of the puzzle's key position (after the opening line). */
+  private keyStep = 0;
+  /** Incremented by each load and reveal: late async results are ignored. */
+  private run = 0;
   /** History length already handled, to detect the user's moves. */
   private processedPlies = 0;
   /** History length shown in the move list. */
@@ -156,8 +177,15 @@ export class PuzzlesComponent implements OnInit, DoCheck, OnDestroy {
     private i18n: I18nService,
     readonly engine: EngineService,
     private handoff: AnalysisHandoffService,
-    private router: Router
+    private router: Router,
+    private engineQueue: EngineQueueService,
+    private gameAnalysis: GameAnalysisService
   ) {}
+
+  /** The opening line is being played (before the key position). */
+  get inOpeningLine(): boolean {
+    return this.step < this.keyStep;
+  }
 
   /**
    * The puzzle is over (solved, or its solution shown): any move can be
@@ -596,10 +624,20 @@ export class PuzzlesComponent implements OnInit, DoCheck, OnDestroy {
     this.clearTimeouts();
     this.promotionService.cancelPromotion();
     this.index = this.puzzles.length ? index : -1;
-    const { state, fullmoveNumber } = parseFen(this.puzzle?.fen ?? INITIAL_FEN);
+    this.run++;
+    const puzzle = this.puzzle as Puzzle | undefined;
+    const line = puzzle?.start ? puzzle.start.split(' ') : [];
+    this.steps = [...line, ...(puzzle?.solution ?? [])];
+    this.keyStep = line.length;
+    // the solver is the side to move in the puzzle's position
+    this.solverColor = parseFen(puzzle?.fen ?? INITIAL_FEN).state.isWhiteTurn
+      ? 'white'
+      : 'black';
+    const { state, fullmoveNumber } = parseFen(
+      line.length ? INITIAL_FEN : (puzzle?.fen ?? INITIAL_FEN)
+    );
     this.chessBoard = new Chessboard(this.chessUtilsService, state);
     this.fullmoveNumber = fullmoveNumber;
-    this.solverColor = state.isWhiteTurn ? 'white' : 'black';
     this.step = 0;
     this.processedPlies = 0;
     this.displayedPlies = 0;
@@ -610,6 +648,14 @@ export class PuzzlesComponent implements OnInit, DoCheck, OnDestroy {
     this.movesText = '';
     this.redoMoves = [];
     this.replaying = false;
+    // the line starts with the opponent's move (a puzzle for Black)
+    if (this.steps.length && state.isWhiteTurn !== (this.solverColor === 'white')) {
+      this.busy = true;
+      this.later(() => {
+        this.playScriptedMove();
+        this.busy = false;
+      }, OPPONENT_DELAY_MS);
+    }
   }
 
   next(): void {
@@ -624,22 +670,22 @@ export class PuzzlesComponent implements OnInit, DoCheck, OnDestroy {
 
   showHint(): void {
     if (this.canMove) {
-      this.hintSquare = parseUci(this.puzzle!.solution[this.step]).from;
+      this.hintSquare = parseUci(this.steps[this.step]).from;
     }
   }
 
   /** Play the rest of the solution, one move at a time. */
   revealSolution(): void {
-    const puzzle = this.puzzle;
-    if (!puzzle) {
+    if (!this.puzzle || this.busy) {
       return;
     }
+    this.run++;
     this.status = 'revealed';
     this.feedback = 'none';
     this.hintSquare = null;
     this.busy = true;
     const playNext = () => {
-      if (this.step >= puzzle.solution.length) {
+      if (this.step >= this.steps.length) {
         this.busy = false;
         return;
       }
@@ -654,13 +700,13 @@ export class PuzzlesComponent implements OnInit, DoCheck, OnDestroy {
     const { move } = history[history.length - 1];
     const promotion = this.promotionOf(move.newPos, history.length - 1);
     const played = toUci(move.oldPos, move.newPos, promotion);
-    const solution = this.puzzle!.solution;
-    const isLastMove = this.step === solution.length - 1;
+    const steps = this.steps;
+    const isLastMove = this.step === steps.length - 1;
     this.hintSquare = null;
 
-    if (played === solution[this.step] || (isLastMove && this.isCheckmate())) {
+    if (played === steps[this.step] || (isLastMove && this.isCheckmate())) {
       this.step++;
-      if (this.step >= solution.length) {
+      if (this.step >= steps.length) {
         this.status = 'solved';
         this.feedback = 'none';
         this.markSolved();
@@ -672,20 +718,64 @@ export class PuzzlesComponent implements OnInit, DoCheck, OnDestroy {
           this.busy = false;
         }, OPPONENT_DELAY_MS);
       }
+    } else if (this.inOpeningLine && this.engine.available) {
+      void this.checkAlternative(played, steps[this.step]);
     } else {
       const san = history[history.length - 1].san;
-      this.feedback = san === this.gamePuzzle?.played ? 'gameMove' : 'wrong';
-      this.busy = true;
-      this.later(() => {
+      this.feedback =
+        this.step === 0 && san === this.gamePuzzle?.played ? 'gameMove' : 'wrong';
+      this.takeBack();
+    }
+  }
+
+  /** Take back the user's move after a while, so that it can be seen. */
+  private takeBack(): void {
+    this.busy = true;
+    const run = this.run;
+    this.later(() => {
+      if (run === this.run) {
         this.rulesService.undoMove(this.chessBoard);
         this.busy = false;
-      }, UNDO_WRONG_MOVE_DELAY_MS);
+      }
+    }, UNDO_WRONG_MOVE_DELAY_MS);
+  }
+
+  /**
+   * In the opening line, another move than the line's: Stockfish says
+   * whether it is fine too (orange) or a mistake (red). It is taken back in
+   * both cases, the line goes on with its own move.
+   */
+  private async checkAlternative(played: string, expected: string): Promise<void> {
+    const run = this.run;
+    this.feedback = 'checking';
+    this.busy = true;
+    const history = this.chessBoard.getHistory();
+    const before = toFen(history[history.length - 1].stateBefore);
+    const fenAfter = (move: string) => {
+      const board = this.gameAnalysis.boardFromFen(before);
+      this.gameAnalysis.play(board, move);
+      return this.gameAnalysis.fen(board);
+    };
+    let fine = false;
+    try {
+      // the opponent is to move after each: its winning chances, reversed
+      const [mine] = await this.engineQueue.evaluate(fenAfter(played), ALTERNATIVE_DEPTH);
+      const [theirs] = await this.engineQueue.evaluate(fenAfter(expected), ALTERNATIVE_DEPTH);
+      const score = (line: typeof mine) => (line ? -winChances(line) : 1);
+      fine = score(mine) >= score(theirs) - ALTERNATIVE_MARGIN;
+    } catch {
+      fine = false; // no engine: as a wrong move
     }
+    if (run !== this.run) {
+      return; // the puzzle was left or revealed meanwhile
+    }
+    this.feedback = fine ? 'alternative' : 'wrong';
+    this.takeBack();
   }
 
   /** Play the next move of the solution, whoever's turn it is. */
   private playScriptedMove(): void {
-    const { from, to, promotion } = parseUci(this.puzzle!.solution[this.step]);
+    const { from, to, promotion } = parseUci(this.steps[this.step]);
     const color = this.chessBoard.getCurrentPlayerColor();
     this.rulesService.playMove(from, to, this.chessBoard);
     if (promotion) {

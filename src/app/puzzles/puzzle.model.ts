@@ -42,6 +42,13 @@ export interface Puzzle {
   name?: Localized;
   /** How the position arose (opening puzzles), shown with the puzzle. */
   intro?: Localized;
+  /**
+   * Opening puzzles: the moves leading to `fen` from the initial position
+   * (UCI, separated by spaces). The puzzle starts from the initial position:
+   * the solver plays its moves of this line (another good move is pointed
+   * out, then taken back), the opponent's are played for it.
+   */
+  start?: string;
   /** Starting position; the side to move is the solver. */
   fen: string;
   /**
@@ -122,6 +129,8 @@ export const PUZZLES: Puzzle[] = [
       en: 'French Defense, Steinitz Variation: 1.e4 e6 2.d4 d5 3.Nc3 Nf6 4.Bg5 Be7 5.e5 Nfd7 6.Bxe7 Qxe7 7.f4 O-O 8.Nf3 c5 9.Bd3 Nc6. Black has castled with no knight on f6 to guard h7.',
       fr: 'Défense française, variante Steinitz : 1.e4 e6 2.d4 d5 3.Cc3 Cf6 4.Fg5 Fe7 5.e5 Cfd7 6.Fxe7 Dxe7 7.f4 0-0 8.Cf3 c5 9.Fd3 Cc6. Les Noirs ont roqué sans cavalier en f6 pour garder h7.',
     },
+    start:
+      'e2e4 e7e6 d2d4 d7d5 b1c3 g8f6 c1g5 f8e7 e4e5 f6d7 g5e7 d8e7 f2f4 e8g8 g1f3 c7c5 f1d3 b8c6',
     fen: 'r1b2rk1/pp1nqppp/2n1p3/2ppP3/3P1P2/2NB1N2/PPP3PP/R2QK2R w KQ - 2 10',
     solution: ['d3h7'],
   },
@@ -134,6 +143,8 @@ export const PUZZLES: Puzzle[] = [
       en: 'French Defense, Advance Variation: 1.e4 e6 2.d4 d5 3.e5 c5 4.c3 Nc6 5.Nf3 Qb6 6.Bd3 cxd4 7.cxd4 Nxd4. Black has just grabbed a pawn: the queen and the knight both aim at d4.',
       fr: 'Défense française, variante d’avance : 1.e4 e6 2.d4 d5 3.e5 c5 4.c3 Cc6 5.Cf3 Db6 6.Fd3 cxd4 7.cxd4 Cxd4. Les Noirs viennent de prendre un pion : la dame et le cavalier visent d4.',
     },
+    start:
+      'e2e4 e7e6 d2d4 d7d5 e4e5 c7c5 c2c3 b8c6 g1f3 d8b6 f1d3 c5d4 c3d4 c6d4',
     fen: 'r1b1kbnr/pp3ppp/1q2p3/3pP3/3n4/3B1N2/PP3PPP/RNBQK2R w KQkq - 0 8',
     solution: ['f3d4', 'b6d4', 'd3b5'],
   },
@@ -146,6 +157,7 @@ export const PUZZLES: Puzzle[] = [
       en: 'Queen’s Gambit Declined: 1.d4 d5 2.c4 e6 3.Nc3 Nf6 4.Bg5 Nbd7 5.cxd5 exd5 6.Nxd5. White thinks the f6 knight is pinned and grabs a pawn.',
       fr: 'Gambit dame refusé : 1.d4 d5 2.c4 e6 3.Cc3 Cf6 4.Fg5 Cbd7 5.cxd5 exd5 6.Cxd5. Les Blancs croient le cavalier f6 cloué et prennent un pion.',
     },
+    start: 'd2d4 d7d5 c2c4 e7e6 b1c3 g8f6 c1g5 b8d7 c4d5 e6d5 c3d5',
     fen: 'r1bqkb1r/pppn1ppp/5n2/3N2B1/3P4/8/PP2PPPP/R2QKBNR b KQkq - 0 6',
     solution: ['f6d5', 'g5d8', 'f8b4'],
   },
@@ -158,6 +170,7 @@ export const PUZZLES: Puzzle[] = [
       en: 'Queen’s Gambit Accepted: 1.d4 d5 2.c4 dxc4 3.e3 b5 4.a4 c6 5.axb5 cxb5. Black wants to keep the gambit pawn, but the long diagonal is now open.',
       fr: 'Gambit dame accepté : 1.d4 d5 2.c4 dxc4 3.e3 b5 4.a4 c6 5.axb5 cxb5. Les Noirs veulent garder le pion du gambit, mais la grande diagonale est ouverte.',
     },
+    start: 'd2d4 d7d5 c2c4 d5c4 e2e3 b7b5 a2a4 c7c6 a4b5 c6b5',
     fen: 'rnbqkbnr/p3pppp/8/1p6/2pP4/4P3/1P3PPP/RNBQKBNR w KQkq - 0 6',
     solution: ['d1f3', 'b8c6', 'f3c6'],
   },
@@ -170,6 +183,7 @@ export const PUZZLES: Puzzle[] = [
       en: 'Albin Countergambit: 1.d4 d5 2.c4 e5 3.dxe5 d4 4.e3 Bb4+ 5.Bd2 dxe3 6.Bxb4. White has won the bishop, but the e3 pawn has not had its last word.',
       fr: 'Contre-gambit Albin : 1.d4 d5 2.c4 e5 3.dxe5 d4 4.e3 Fb4+ 5.Fd2 dxe3 6.Fxb4. Les Blancs ont gagné le fou, mais le pion e3 n’a pas dit son dernier mot.',
     },
+    start: 'd2d4 d7d5 c2c4 e7e5 d4e5 d5d4 e2e3 f8b4 c1d2 d4e3 d2b4',
     fen: 'rnbqk1nr/ppp2ppp/8/4P3/1BP5/4p3/PP3PPP/RN1QKBNR b KQkq - 0 6',
     solution: ['e3f2', 'e1e2', 'f2g1n'],
   },

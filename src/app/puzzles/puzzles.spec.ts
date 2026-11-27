@@ -79,6 +79,29 @@ describe('PUZZLES', () => {
     expect(new Set(ids).size).toBe(ids.length);
   });
 
+  for (const puzzle of PUZZLES.filter(p => p.start)) {
+    it(`${puzzle.id}: its opening line is legal and reaches its position`, () => {
+      let board = new Chessboard(
+        utils,
+        parseFen('rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1').state
+      );
+      for (const step of puzzle.start!.split(' ')) {
+        const { from, to, promotion } = parseUci(step);
+        const legal = rules
+          .getAvailableMoves(board)
+          .find(move => move.oldPos.equals(from) && move.newPos.equals(to));
+        expect(legal).withContext(`${step} is legal`).toBeDefined();
+        if (!legal) {
+          return;
+        }
+        board = play(board, legal, promotion);
+      }
+      const reached = Chessboard.getPositionKey(board.saveState());
+      const expected = Chessboard.getPositionKey(parseFen(puzzle.fen).state);
+      expect(reached).toBe(expected);
+    });
+  }
+
   // opening puzzles win material: their moves are only checked to be legal
   for (const puzzle of PUZZLES.filter(p => p.goal === 'advantage')) {
     describe(`${puzzle.id} (advantage)`, () => {

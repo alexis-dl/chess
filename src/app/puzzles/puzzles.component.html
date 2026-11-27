@@ -115,7 +115,8 @@
     @if (puzzle; as current) {
       <div
         class="status"
-        [ngClass]="[status, feedback === 'gameMove' ? 'wrong' : feedback]">
+        [ngClass]="[status, feedback === 'gameMove' ? 'wrong' : feedback]"
+        role="status">
         <img
           class="status-piece"
           [src]="'assets/chess-pieces/' + solverColor + '-king.svg'"
@@ -143,6 +144,20 @@
                   <div class="status-title">{{ 'puzzles.wrong' | t }}</div>
                   <div class="status-detail">{{ 'puzzles.tryElse' | t }}</div>
                 }
+                @case ('checking') {
+                  <div class="status-title">{{ 'puzzles.checking' | t }}</div>
+                  <div class="status-detail">
+                    {{ 'puzzles.checkingDetail' | t }}
+                  </div>
+                }
+                @case ('alternative') {
+                  <div class="status-title">
+                    {{ 'puzzles.alternative' | t }}
+                  </div>
+                  <div class="status-detail">
+                    {{ 'puzzles.alternativeDetail' | t }}
+                  </div>
+                }
                 @case ('gameMove') {
                   <div class="status-title">
                     {{ 'puzzles.mine.gameMoveTitle' | t }}
@@ -157,7 +172,7 @@
                 @default {
                   <div class="status-title">{{ 'puzzles.yourTurn' | t }}</div>
                   <div class="status-detail">
-                    {{ findMoveKey | t }}
+                    {{ (inOpeningLine ? 'puzzles.playLine' : findMoveKey) | t }}
                   </div>
                 }
               }
@@ -269,7 +284,11 @@
             <mat-icon>lightbulb</mat-icon>
             {{ 'puzzles.hint' | t }}
           </button>
-          <button type="button" class="btn" (click)="revealSolution()">
+          <button
+            type="button"
+            class="btn"
+            [disabled]="busy"
+            (click)="revealSolution()">
             <mat-icon>visibility</mat-icon>
             {{ 'puzzles.solution' | t }}
           </button>

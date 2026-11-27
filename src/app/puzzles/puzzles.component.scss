@@ -160,6 +160,10 @@
   &.wrong {
     border-left-color: var(--danger);
   }
+
+  &.alternative {
+    border-left-color: var(--warning, #e0a13a);
+  }
 }
 
 .status-piece {
@@ -179,6 +183,10 @@
 
 .wrong .status-title {
   color: var(--danger);
+}
+
+.alternative .status-title {
+  color: var(--warning, #e0a13a);
 }
 
 .good .status-title,
