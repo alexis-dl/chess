@@ -54,6 +54,16 @@
               "extractLicenses": false,
               "sourceMap": true,
               "namedChunks": true
+            },
+            "github-pages": {
+              "assets": [
+                {
+                  "glob": "favicon.ico",
+                  "input": "src/deploy/github-pages",
+                  "output": "/"
+                },
+                "src/assets"
+              ]
             }
           },
           "defaultConfiguration": "production"
