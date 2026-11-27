@@ -5,13 +5,30 @@ export type PuzzleTheme =
   | 'backRank'
   | 'weakF7'
   | 'smothered'
+  | 'anastasia'
+  | 'arabian'
+  | 'balestra'
+  | 'blindSwine'
+  | 'boden'
+  | 'corner'
+  | 'doubleBishop'
+  | 'dovetail'
+  | 'epaulette'
+  | 'hook'
+  | 'killBox'
+  | 'pillsbury'
+  | 'morphy'
+  | 'opera'
+  | 'swallowTail'
+  | 'triangle'
+  | 'vukovic'
   | 'promotion'
   | 'deflection'
   | 'french'
   | 'queensGambit';
 
-/** Themes are shown in two groups: tactical ideas, and openings. */
-export type PuzzleCategory = 'tactics' | 'openings';
+/** Themes are shown in groups: tactical ideas, mating patterns, openings. */
+export type PuzzleCategory = 'tactics' | 'mates' | 'openings';
 
 export interface PuzzleThemeInfo {
   id: PuzzleTheme;
@@ -22,11 +39,28 @@ export interface PuzzleThemeInfo {
 
 /** The themes, in the order of the Puzzle themes page. */
 export const PUZZLE_THEMES: PuzzleThemeInfo[] = [
-  { id: 'backRank', category: 'tactics', icon: 'border_bottom' },
   { id: 'weakF7', category: 'tactics', icon: 'gps_fixed' },
-  { id: 'smothered', category: 'tactics', icon: 'grid_view' },
   { id: 'promotion', category: 'tactics', icon: 'upgrade' },
   { id: 'deflection', category: 'tactics', icon: 'call_split' },
+  { id: 'backRank', category: 'mates', icon: 'border_bottom' },
+  { id: 'smothered', category: 'mates', icon: 'grid_view' },
+  { id: 'anastasia', category: 'mates', icon: 'woman' },
+  { id: 'arabian', category: 'mates', icon: 'mosque' },
+  { id: 'balestra', category: 'mates', icon: 'close' },
+  { id: 'blindSwine', category: 'mates', icon: 'savings' },
+  { id: 'boden', category: 'mates', icon: 'shuffle' },
+  { id: 'corner', category: 'mates', icon: 'south_east' },
+  { id: 'doubleBishop', category: 'mates', icon: 'filter_2' },
+  { id: 'dovetail', category: 'mates', icon: 'flutter_dash' },
+  { id: 'epaulette', category: 'mates', icon: 'military_tech' },
+  { id: 'hook', category: 'mates', icon: 'phishing' },
+  { id: 'killBox', category: 'mates', icon: 'check_box_outline_blank' },
+  { id: 'pillsbury', category: 'mates', icon: 'shield' },
+  { id: 'morphy', category: 'mates', icon: 'star' },
+  { id: 'opera', category: 'mates', icon: 'theater_comedy' },
+  { id: 'swallowTail', category: 'mates', icon: 'call_merge' },
+  { id: 'triangle', category: 'mates', icon: 'change_history' },
+  { id: 'vukovic', category: 'mates', icon: 'grid_on' },
   { id: 'french', category: 'openings', icon: 'menu_book' },
   { id: 'queensGambit', category: 'openings', icon: 'menu_book' },
 ];
@@ -109,6 +143,110 @@ export const PUZZLES: Puzzle[] = [
     theme: 'smothered',
     fen: '5r1k/6pp/7N/3Q4/8/8/5PPP/6K1 w - - 0 1',
     solution: ['d5g8', 'f8g8', 'h6f7'],
+  },
+
+  // ----- mating patterns: one mate in one each -----
+  {
+    id: 'anastasia',
+    theme: 'anastasia',
+    fen: '8/4N1pk/8/R7/8/8/5PPP/6K1 w - - 0 1',
+    solution: ['a5h5'],
+  },
+  {
+    id: 'arabian',
+    theme: 'arabian',
+    fen: '7k/1R6/5N2/8/8/8/5PPP/6K1 w - - 0 1',
+    solution: ['b7h7'],
+  },
+  {
+    id: 'balestra',
+    theme: 'balestra',
+    fen: '4k3/pp5p/5Q2/8/8/3B4/5PPP/6K1 w - - 0 1',
+    solution: ['d3b5'],
+  },
+  {
+    id: 'blindSwine',
+    theme: 'blindSwine',
+    fen: '5rk1/1R5R/8/8/8/8/5PPP/6K1 w - - 0 1',
+    solution: ['b7g7'],
+  },
+  {
+    id: 'boden',
+    theme: 'boden',
+    fen: '2kr4/p2p4/8/8/5B2/3B4/5PPP/6K1 w - - 0 1',
+    solution: ['d3a6'],
+  },
+  {
+    id: 'corner',
+    theme: 'corner',
+    fen: '7k/7p/8/6N1/8/6R1/5P1P/7K w - - 0 1',
+    solution: ['g5f7'],
+  },
+  {
+    id: 'doubleBishop',
+    theme: 'doubleBishop',
+    fen: '7k/7p/8/8/2B5/8/5PPP/2B3K1 w - - 0 1',
+    solution: ['c1b2'],
+  },
+  {
+    id: 'dovetail',
+    theme: 'dovetail',
+    fen: '6kr/7p/8/6N1/8/5Q2/5PPP/6K1 w - - 0 1',
+    solution: ['f3f7'],
+  },
+  {
+    id: 'epaulette',
+    theme: 'epaulette',
+    fen: '3rkr2/8/8/8/8/1Q6/5PPP/6K1 w - - 0 1',
+    solution: ['b3e6'],
+  },
+  {
+    id: 'hook',
+    theme: 'hook',
+    fen: '5k2/5pp1/5N2/6P1/8/8/4RPPP/6K1 w - - 0 1',
+    solution: ['e2e8'],
+  },
+  {
+    id: 'killBox',
+    theme: 'killBox',
+    fen: '4kn2/R7/3Q4/8/8/8/5PPP/6K1 w - - 0 1',
+    solution: ['a7e7'],
+  },
+  {
+    id: 'pillsbury',
+    theme: 'pillsbury',
+    fen: '5rk1/5p1p/8/8/8/4R3/1B3PPP/6K1 w - - 0 1',
+    solution: ['e3g3'],
+  },
+  {
+    id: 'morphy',
+    theme: 'morphy',
+    fen: '7k/7p/8/8/8/6R1/5P1P/2B4K w - - 0 1',
+    solution: ['c1b2'],
+  },
+  {
+    id: 'opera',
+    theme: 'opera',
+    fen: '4k3/5ppp/8/6B1/8/8/5PPP/3R2K1 w - - 0 1',
+    solution: ['d1d8'],
+  },
+  {
+    id: 'swallowTail',
+    theme: 'swallowTail',
+    fen: '8/3p1p2/4k3/8/5P2/8/6PP/Q5K1 w - - 0 1',
+    solution: ['a1e5'],
+  },
+  {
+    id: 'triangle',
+    theme: 'triangle',
+    fen: '2bk4/8/8/4R3/8/Q7/5PPP/6K1 w - - 0 1',
+    solution: ['a3e7'],
+  },
+  {
+    id: 'vukovic',
+    theme: 'vukovic',
+    fen: '4k3/R7/3PN3/8/8/8/5PPP/6K1 w - - 0 1',
+    solution: ['a7e7'],
   },
 
   // ----- openings: checked with Stockfish 18 at depth 20 (each move of the

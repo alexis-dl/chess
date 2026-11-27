@@ -74,6 +74,14 @@ describe('PUZZLES', () => {
     }
   });
 
+  it('has legal positions: the side not to move is not in check', () => {
+    for (const puzzle of PUZZLES) {
+      const board = new Chessboard(utils, parseFen(puzzle.fen).state);
+      board.toggleIsWhiteTurn();
+      expect(rules.isInCheck(board)).withContext(puzzle.id).toBeFalse();
+    }
+  });
+
   it('has unique ids', () => {
     const ids = PUZZLES.map(puzzle => puzzle.id);
     expect(new Set(ids).size).toBe(ids.length);

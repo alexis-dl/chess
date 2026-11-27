@@ -37,7 +37,7 @@ export class PuzzleThemesComponent {
         solved: puzzles.filter(puzzle => solved.has(puzzle.id)).length,
       };
     };
-    this.categories = (['tactics', 'openings'] as PuzzleCategory[]).map(
+    this.categories = (['tactics', 'mates', 'openings'] as PuzzleCategory[]).map(
       id => ({
         id,
         cards: PUZZLE_THEMES.filter(theme => theme.category === id).map(card),
