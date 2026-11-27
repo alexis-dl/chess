@@ -93,6 +93,26 @@ h2 {
   color: var(--text-muted);
 }
 
+.more {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin: 10px auto 0;
+  padding: 6px 12px;
+  border: 0;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--text-muted);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+
+  &:hover {
+    background: var(--surface-raised);
+    color: var(--text-strong);
+  }
+}
+
 @media (max-width: 480px) {
   .cards {
     grid-template-columns: 1fr;

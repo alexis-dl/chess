@@ -6,7 +6,7 @@
     <section>
       <h2>{{ categoryKey(category.id) | t }}</h2>
       <div class="cards">
-        @for (card of category.cards; track card.theme.id) {
+        @for (card of visible(category); track card.theme.id) {
           <a class="card" [routerLink]="['/puzzles/themes', card.theme.id]">
             <mat-icon class="icon">{{ card.theme.icon }}</mat-icon>
             <span class="text">
@@ -20,6 +20,24 @@
           </a>
         }
       </div>
+      @if (category.cards.length > visibleCards) {
+        <button
+          type="button"
+          class="more"
+          [attr.aria-expanded]="expanded.has(category.id)"
+          (click)="toggle(category.id)">
+          @if (expanded.has(category.id)) {
+            {{ 'puzzles.showLess' | t }}
+            <mat-icon>expand_less</mat-icon>
+          } @else {
+            {{
+              'puzzles.showMore'
+                | t: { count: category.cards.length - visibleCards }
+            }}
+            <mat-icon>expand_more</mat-icon>
+          }
+        </button>
+      }
     </section>
   }
 </div>

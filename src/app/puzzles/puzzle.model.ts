@@ -25,6 +25,14 @@ export type PuzzleTheme =
   | 'promotion'
   | 'deflection'
   | 'french'
+  | 'sicilian'
+  | 'caroKann'
+  | 'ruyLopez'
+  | 'petrov'
+  | 'philidor'
+  | 'stafford'
+  | 'budapest'
+  | 'englund'
   | 'queensGambit';
 
 /** Themes are shown in groups: tactical ideas, mating patterns, openings. */
@@ -61,8 +69,16 @@ export const PUZZLE_THEMES: PuzzleThemeInfo[] = [
   { id: 'swallowTail', category: 'mates', icon: 'call_merge' },
   { id: 'triangle', category: 'mates', icon: 'change_history' },
   { id: 'vukovic', category: 'mates', icon: 'grid_on' },
+  { id: 'sicilian', category: 'openings', icon: 'menu_book' },
   { id: 'french', category: 'openings', icon: 'menu_book' },
+  { id: 'caroKann', category: 'openings', icon: 'menu_book' },
+  { id: 'ruyLopez', category: 'openings', icon: 'menu_book' },
+  { id: 'petrov', category: 'openings', icon: 'menu_book' },
+  { id: 'philidor', category: 'openings', icon: 'menu_book' },
+  { id: 'stafford', category: 'openings', icon: 'menu_book' },
   { id: 'queensGambit', category: 'openings', icon: 'menu_book' },
+  { id: 'budapest', category: 'openings', icon: 'menu_book' },
+  { id: 'englund', category: 'openings', icon: 'menu_book' },
 ];
 
 export interface Puzzle {
@@ -318,5 +334,114 @@ export const PUZZLES: Puzzle[] = [
     start: 'd2d4 d7d5 c2c4 e7e5 d4e5 d5d4 e2e3 f8b4 c1d2 d4e3 d2b4',
     fen: 'rnbqk1nr/ppp2ppp/8/4P3/1BP5/4p3/PP3PPP/RN1QKBNR b KQkq - 0 6',
     solution: ['e3f2', 'e1e2', 'f2g1n'],
+  },
+  {
+    id: 'sicilian-siberian-trap',
+    theme: 'sicilian',
+    goal: 'advantage',
+    name: { en: 'Siberian Trap', fr: 'Piège sibérien' },
+    intro: {
+      en: 'Sicilian, Smith-Morra Gambit: 1.e4 c5 2.d4 cxd4 3.c3 dxc3 4.Nxc3 Nc6 5.Nf3 e6 6.Bc4 Qc7 7.O-O Nf6 8.Qe2 Ng4 9.h3. White chases the knight, but h2 has lost its defender.',
+      fr: 'Sicilienne, gambit Smith-Morra : 1.e4 c5 2.d4 cxd4 3.c3 dxc3 4.Cxc3 Cc6 5.Cf3 e6 6.Fc4 Dc7 7.0-0 Cf6 8.De2 Cg4 9.h3. Les Blancs chassent le cavalier, mais h2 n’a plus de défenseur.',
+    },
+    start:
+      'e2e4 c7c5 d2d4 c5d4 c2c3 d4c3 b1c3 b8c6 g1f3 e7e6 f1c4 d8c7 e1g1 g8f6 d1e2 f6g4 h2h3',
+    fen: 'r1b1kb1r/ppqp1ppp/2n1p3/8/2B1P1n1/2N2N1P/PP2QPP1/R1B2RK1 b kq - 0 9',
+    solution: ['c6d4', 'h3g4', 'd4e2'],
+  },
+  {
+    id: 'caro-kann-nd6',
+    theme: 'caroKann',
+    name: { en: 'Smothered mate on d6', fr: 'Mat étouffé en d6' },
+    intro: {
+      en: 'Caro-Kann: 1.e4 c6 2.d4 d5 3.Nc3 dxe4 4.Nxe4 Nd7 5.Qe2 Ngf6. The queen on e2 pins the e7 pawn: nothing guards d6 any more.',
+      fr: 'Caro-Kann : 1.e4 c6 2.d4 d5 3.Cc3 dxe4 4.Cxe4 Cd7 5.De2 Cgf6. La dame e2 cloue le pion e7 : plus rien ne garde d6.',
+    },
+    start:
+      'e2e4 c7c6 d2d4 d7d5 b1c3 d5e4 c3e4 b8d7 d1e2 g8f6',
+    fen: 'r1bqkb1r/pp1npppp/2p2n2/8/3PN3/8/PPP1QPPP/R1B1KBNR w KQkq - 3 6',
+    solution: ['e4d6'],
+  },
+  {
+    id: 'ruy-lopez-noahs-ark',
+    theme: 'ruyLopez',
+    goal: 'advantage',
+    name: { en: 'Noah’s Ark Trap', fr: 'Piège de l’arche de Noé' },
+    intro: {
+      en: 'Ruy Lopez: 1.e4 e5 2.Nf3 Nc6 3.Bb5 a6 4.Ba4 d6 5.d4 b5 6.Bb3 Nxd4 7.Nxd4 exd4 8.Qxd4. The queen takes the pawn back, but the b3 bishop is short of squares.',
+      fr: 'Partie espagnole : 1.e4 e5 2.Cf3 Cc6 3.Fb5 a6 4.Fa4 d6 5.d4 b5 6.Fb3 Cxd4 7.Cxd4 exd4 8.Dxd4. La dame reprend le pion, mais le fou b3 manque de cases.',
+    },
+    start:
+      'e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4 d7d6 d2d4 b7b5 a4b3 c6d4 f3d4 e5d4 d1d4',
+    fen: 'r1bqkbnr/2p2ppp/p2p4/1p6/3QP3/1B6/PPP2PPP/RNB1K2R b KQkq - 0 8',
+    solution: ['c7c5', 'd4c3', 'c5c4'],
+  },
+  {
+    id: 'petrov-copycat',
+    theme: 'petrov',
+    goal: 'advantage',
+    name: { en: 'The copycat punished', fr: 'La symétrie punie' },
+    intro: {
+      en: 'Petrov Defense: 1.e4 e5 2.Nf3 Nf6 3.Nxe5 Nxe4 4.Qe2 Nf6. Black copied White, but the queen e2 now faces the king along the e-file.',
+      fr: 'Défense Petrov : 1.e4 e5 2.Cf3 Cf6 3.Cxe5 Cxe4 4.De2 Cf6. Les Noirs ont copié les Blancs, mais la dame e2 fait face au roi sur la colonne e.',
+    },
+    start:
+      'e2e4 e7e5 g1f3 g8f6 f3e5 f6e4 d1e2 e4f6',
+    fen: 'rnbqkb1r/pppp1ppp/5n2/4N3/8/8/PPPPQPPP/RNB1KB1R w KQkq - 2 5',
+    solution: ['e5c6', 'd8e7', 'c6e7'],
+  },
+  {
+    id: 'philidor-legal-mate',
+    theme: 'philidor',
+    name: { en: 'Légal’s mate', fr: 'Mat de Légal' },
+    intro: {
+      en: 'Philidor Defense: 1.e4 e5 2.Nf3 d6 3.Bc4 Bg4 4.Nc3 g6 5.Nxe5 Bxd1. White left the queen hanging, and Black took it.',
+      fr: 'Défense Philidor : 1.e4 e5 2.Cf3 d6 3.Fc4 Fg4 4.Cc3 g6 5.Cxe5 Fxd1. Les Blancs ont laissé leur dame en prise, et les Noirs l’ont prise.',
+    },
+    start:
+      'e2e4 e7e5 g1f3 d7d6 f1c4 c8g4 b1c3 g7g6 f3e5 g4d1',
+    fen: 'rn1qkbnr/ppp2p1p/3p2p1/4N3/2B1P3/2N5/PPPP1PPP/R1BbK2R w KQkq - 0 6',
+    solution: ['c4f7', 'e8e7', 'c3d5'],
+  },
+  {
+    id: 'stafford-bg5-trap',
+    theme: 'stafford',
+    goal: 'advantage',
+    name: { en: 'The pin that isn’t one', fr: 'Le faux clouage' },
+    intro: {
+      en: 'Stafford Gambit: 1.e4 e5 2.Nf3 Nf6 3.Nxe5 Nc6 4.Nxc6 dxc6 5.d3 Bc5 6.Bg5. White pins the f6 knight… or so it seems.',
+      fr: 'Gambit Stafford : 1.e4 e5 2.Cf3 Cf6 3.Cxe5 Cc6 4.Cxc6 dxc6 5.d3 Fc5 6.Fg5. Les Blancs clouent le cavalier f6… du moins le croient-ils.',
+    },
+    start:
+      'e2e4 e7e5 g1f3 g8f6 f3e5 b8c6 e5c6 d7c6 d2d3 f8c5 c1g5',
+    fen: 'r1bqk2r/ppp2ppp/2p2n2/2b3B1/4P3/3P4/PPP2PPP/RN1QKB1R b KQkq - 2 6',
+    solution: ['f6e4', 'g5d8', 'c5f2', 'e1e2', 'c8g4'],
+  },
+  {
+    id: 'budapest-nd3-mate',
+    theme: 'budapest',
+    name: { en: 'Smothered mate on d3', fr: 'Mat étouffé en d3' },
+    intro: {
+      en: 'Budapest Gambit: 1.d4 Nf6 2.c4 e5 3.dxe5 Ng4 4.Bf4 Nc6 5.Nf3 Bb4+ 6.Nbd2 Qe7 7.a3 Ngxe5 8.axb4. White has won the bishop.',
+      fr: 'Gambit de Budapest : 1.d4 Cf6 2.c4 e5 3.dxe5 Cg4 4.Ff4 Cc6 5.Cf3 Fb4+ 6.Cbd2 De7 7.a3 Cgxe5 8.axb4. Les Blancs ont gagné le fou.',
+    },
+    start:
+      'd2d4 g8f6 c2c4 e7e5 d4e5 f6g4 c1f4 b8c6 g1f3 f8b4 b1d2 d8e7 a2a3 g4e5 a3b4',
+    fen: 'r1b1k2r/ppppqppp/2n5/4n3/1PP2B2/5N2/1P1NPPPP/R2QKB1R b KQkq - 0 8',
+    solution: ['e5d3'],
+  },
+  {
+    id: 'englund-qc1-mate',
+    theme: 'englund',
+    goal: 'advantage',
+    name: { en: 'Englund Gambit trap', fr: 'Piège du gambit Englund' },
+    intro: {
+      en: 'Englund Gambit: 1.d4 e5 2.dxe5 Nc6 3.Nf3 Qe7 4.Bf4 Qb4+ 5.Bd2 Qxb2 6.Bc3. White attacks the queen, and forgets about c1.',
+      fr: 'Gambit Englund : 1.d4 e5 2.dxe5 Cc6 3.Cf3 De7 4.Ff4 Db4+ 5.Fd2 Dxb2 6.Fc3. Les Blancs attaquent la dame, et oublient c1.',
+    },
+    start:
+      'd2d4 e7e5 d4e5 b8c6 g1f3 d8e7 c1f4 e7b4 f4d2 b4b2 d2c3',
+    fen: 'r1b1kbnr/pppp1ppp/2n5/4P3/8/2B2N2/PqP1PPPP/RN1QKB1R b KQkq - 1 6',
+    solution: ['f8b4', 'd1d2', 'b4c3', 'd2c3', 'b2c1'],
   },
 ];

@@ -7,6 +7,9 @@ import {
   PUZZLES,
 } from './puzzle.model';
 
+/** Cards shown in a group before "Show more". */
+const VISIBLE_CARDS = 6;
+
 /** Same key as PuzzlesComponent: ids of the solved puzzles of the collection. */
 const SOLVED_STORAGE_KEY = 'chess.solvedPuzzles';
 
@@ -26,6 +29,9 @@ interface ThemeCard {
 })
 export class PuzzleThemesComponent {
   readonly categories: { id: PuzzleCategory; cards: ThemeCard[] }[];
+  readonly visibleCards = VISIBLE_CARDS;
+  /** Groups showing all their cards. */
+  expanded = new Set<PuzzleCategory>();
 
   constructor() {
     const solved = readSolved();
@@ -37,12 +43,26 @@ export class PuzzleThemesComponent {
         solved: puzzles.filter(puzzle => solved.has(puzzle.id)).length,
       };
     };
-    this.categories = (['tactics', 'mates', 'openings'] as PuzzleCategory[]).map(
+    this.categories = (['openings', 'tactics', 'mates'] as PuzzleCategory[]).map(
       id => ({
         id,
         cards: PUZZLE_THEMES.filter(theme => theme.category === id).map(card),
       })
     );
+  }
+
+  visible(category: { id: PuzzleCategory; cards: ThemeCard[] }): ThemeCard[] {
+    return this.expanded.has(category.id)
+      ? category.cards
+      : category.cards.slice(0, VISIBLE_CARDS);
+  }
+
+  toggle(category: PuzzleCategory): void {
+    if (this.expanded.has(category)) {
+      this.expanded.delete(category);
+    } else {
+      this.expanded.add(category);
+    }
   }
 
   categoryKey(category: PuzzleCategory): TranslationKey {
