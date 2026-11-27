@@ -7,7 +7,6 @@ export type PuzzleTheme =
   | 'smothered'
   | 'promotion'
   | 'deflection'
-  | 'philidor'
   | 'french'
   | 'queensGambit';
 
@@ -28,7 +27,6 @@ export const PUZZLE_THEMES: PuzzleThemeInfo[] = [
   { id: 'smothered', category: 'tactics', icon: 'grid_view' },
   { id: 'promotion', category: 'tactics', icon: 'upgrade' },
   { id: 'deflection', category: 'tactics', icon: 'call_split' },
-  { id: 'philidor', category: 'tactics', icon: 'auto_awesome' },
   { id: 'french', category: 'openings', icon: 'menu_book' },
   { id: 'queensGambit', category: 'openings', icon: 'menu_book' },
 ];
@@ -105,17 +103,12 @@ export const PUZZLES: Puzzle[] = [
     fen: 'r1b2k1r/ppp1bppp/8/1B1Q4/5q2/2P5/PPP2PPP/R3R1K1 w - - 1 1',
     solution: ['d5d8', 'e7d8', 'e1e8'],
   },
+  // Philidor's legacy: a queen sacrifice, then the smothered mate
   {
     id: 'philidor',
-    theme: 'philidor',
+    theme: 'smothered',
     fen: '5r1k/6pp/7N/3Q4/8/8/5PPP/6K1 w - - 0 1',
     solution: ['d5g8', 'f8g8', 'h6f7'],
-  },
-  {
-    id: 'philidor-black',
-    theme: 'philidor',
-    fen: '6k1/5ppp/8/8/3q4/7n/6PP/5R1K b - - 0 1',
-    solution: ['d4g1', 'f1g1', 'h3f2'],
   },
 
   // ----- openings: checked with Stockfish 18 at depth 20 (each move of the
