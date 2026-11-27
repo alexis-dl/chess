@@ -6,71 +6,12 @@
 
   <nav class="nav">
     <a routerLink="/play" routerLinkActive="active">{{ 'nav.play' | t }}</a>
-    <a routerLink="/puzzles" routerLinkActive="active">{{
-      'nav.puzzles' | t
-    }}</a>
-
-    <div
-      class="nav-menu"
-      #learnMenu
-      (mouseenter)="openLearn()"
-      (mouseleave)="closeLearn()"
-      (focusin)="openLearn()"
-      (focusout)="onLearnFocusOut($event)">
-      <a
-        routerLink="/learn/opening"
-        [class.active]="isLearnActive"
-        aria-haspopup="true"
-        [attr.aria-expanded]="learnOpen"
-        (click)="closeLearn()">
-        {{ 'nav.learn' | t }}
-      </a>
-      @if (learnOpen) {
-        <div class="dropdown">
-          <div class="dropdown-panel">
-            @for (section of learnSections; track section) {
-              <a
-                [routerLink]="['/learn', section.id]"
-                routerLinkActive="current"
-                (click)="closeLearn()">
-                {{ section.title | localize }}
-              </a>
-            }
-          </div>
-        </div>
-      }
-    </div>
-
-    <div
-      class="nav-menu"
-      #statsMenu
-      (mouseenter)="openStats()"
-      (mouseleave)="closeStats()"
-      (focusin)="openStats()"
-      (focusout)="onStatsFocusOut($event)">
-      <a
-        routerLink="/stats/mine"
-        [class.active]="isStatsActive"
-        aria-haspopup="true"
-        [attr.aria-expanded]="statsOpen"
-        (click)="closeStats()">
-        {{ 'nav.stats' | t }}
-      </a>
-      @if (statsOpen) {
-        <div class="dropdown">
-          <div class="dropdown-panel">
-            @for (tab of statsTabs; track tab.id) {
-              <a
-                [routerLink]="['/stats', tab.id]"
-                routerLinkActive="current"
-                (click)="closeStats()">
-                {{ tab.title | t }}
-              </a>
-            }
-          </div>
-        </div>
-      }
-    </div>
+    <ng-container
+      *ngTemplateOutlet="dropdown; context: { $implicit: puzzlesMenu }"></ng-container>
+    <ng-container
+      *ngTemplateOutlet="dropdown; context: { $implicit: learnMenu }"></ng-container>
+    <ng-container
+      *ngTemplateOutlet="dropdown; context: { $implicit: statsMenu }"></ng-container>
 
     <a routerLink="/analysis" routerLinkActive="active">{{
       'nav.analysis' | t
@@ -84,3 +25,37 @@
 </header>
 
 <router-outlet></router-outlet>
+
+<!-- a top-bar entry and its dropdown of sub-pages -->
+<ng-template #dropdown let-menu>
+  <div
+    class="nav-menu"
+    #menuElement
+    (mouseenter)="open(menu)"
+    (mouseleave)="close()"
+    (focusin)="open(menu)"
+    (focusout)="onFocusOut($event, menuElement)">
+    <a
+      [routerLink]="menu.link"
+      [class.active]="isActive(menu)"
+      aria-haspopup="true"
+      [attr.aria-expanded]="openMenu === menu.id"
+      (click)="close()">
+      {{ menu.key | t }}
+    </a>
+    @if (openMenu === menu.id) {
+      <div class="dropdown">
+        <div class="dropdown-panel">
+          @for (item of menu.items; track item.link.join('/')) {
+            <a
+              [routerLink]="item.link"
+              routerLinkActive="current"
+              (click)="close()">
+              {{ item.key ? (item.key | t) : (item.title | localize) }}
+            </a>
+          }
+        </div>
+      </div>
+    }
+  </div>
+</ng-template>

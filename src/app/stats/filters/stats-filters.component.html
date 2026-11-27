@@ -93,7 +93,7 @@
     @if (page === 'mine' && state.status === 'done' && state.puzzlesFound) {
       <p class="message" role="status">
         {{ 'stats.puzzlesDone' | t: { found: state.puzzlesFound } }}
-        <a routerLink="/puzzles" [queryParams]="{ source: 'mine' }">{{
+        <a routerLink="/puzzles/personalized">{{
           'stats.practice' | t
         }}</a>
       </p>

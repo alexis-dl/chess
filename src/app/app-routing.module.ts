@@ -1,5 +1,5 @@
-import { NgModule } from '@angular/core';
-import { RouterModule, Routes } from '@angular/router';
+import { inject, NgModule } from '@angular/core';
+import { Router, RouterModule, Routes } from '@angular/router';
 import { HomeComponent } from './home/home.component';
 import { LearnComponent } from './learn/learn.component';
 import { LessonComponent } from './learn/lesson/lesson.component';
@@ -24,7 +24,27 @@ import { QuitComponent } from './toolbar-sidenav/quit/quit.component';
 const routes: Routes = [
   { path: 'home', component: HomeComponent },
   { path: 'play', component: PlayVsBotComponent },
-  { path: 'puzzles', component: PuzzlesComponent },
+  // former address of the personalized puzzles: /puzzles?source=mine
+  {
+    path: 'puzzles',
+    pathMatch: 'full',
+    redirectTo: ({ queryParams }) =>
+      inject(Router).parseUrl(
+        queryParams['source'] === 'mine'
+          ? '/puzzles/personalized'
+          : '/puzzles/themes'
+      ),
+  },
+  {
+    path: 'puzzles/themes',
+    component: PuzzlesComponent,
+    data: { source: 'collection' },
+  },
+  {
+    path: 'puzzles/personalized',
+    component: PuzzlesComponent,
+    data: { source: 'mine' },
+  },
   { path: 'analysis', component: AnalysisComponent },
   {
     path: 'stats',

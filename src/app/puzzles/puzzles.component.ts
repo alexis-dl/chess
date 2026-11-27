@@ -46,6 +46,27 @@ const GAME_COUNTS = [10, 20, 50, 100];
 
 /** The built-in collection, or the puzzles made from the player's games. */
 export type PuzzleSource = 'collection' | 'mine';
+
+/** Sub-pages of Puzzles, in the order of the tabs and of the menu. */
+export const PUZZLE_PAGES: {
+  path: string;
+  source: PuzzleSource;
+  title: TranslationKey;
+  menuTitle: TranslationKey;
+}[] = [
+  {
+    path: 'themes',
+    source: 'collection',
+    title: 'puzzles.tab.collection',
+    menuTitle: 'nav.puzzles.themes',
+  },
+  {
+    path: 'personalized',
+    source: 'mine',
+    title: 'puzzles.tab.mine',
+    menuTitle: 'nav.puzzles.personalized',
+  },
+];
 /** What the solver needs: a start position and the solution. */
 type SolvablePuzzle = Pick<Puzzle, 'id' | 'fen' | 'solution'>;
 
@@ -65,6 +86,7 @@ export class PuzzlesComponent implements OnInit, DoCheck, OnDestroy {
   readonly speeds = GAME_SPEEDS;
   readonly gameCounts = GAME_COUNTS;
   readonly kindList: GamePuzzleKind[] = ['missed', 'blunder'];
+  readonly pages = PUZZLE_PAGES;
   readonly generatorState$ = this.generator.state$;
 
   source: PuzzleSource = 'collection';
@@ -339,8 +361,8 @@ export class PuzzlesComponent implements OnInit, DoCheck, OnDestroy {
       })
     );
     this.subscriptions.add(
-      this.route.queryParamMap.subscribe(params =>
-        this.showSource(params.get('source') === 'mine' ? 'mine' : 'collection')
+      this.route.data.subscribe(data =>
+        this.showSource(data['source'] === 'mine' ? 'mine' : 'collection')
       )
     );
     this.subscriptions.add(

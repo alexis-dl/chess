@@ -1,17 +1,13 @@
 <div class="puzzles">
   <aside class="panel puzzle-list">
     <nav class="sources" [attr.aria-label]="'puzzles.title' | t">
-      <a
-        routerLink="/puzzles"
-        [class.active]="source === 'collection'">
-        {{ 'puzzles.tab.collection' | t }}
-      </a>
-      <a
-        routerLink="/puzzles"
-        [queryParams]="{ source: 'mine' }"
-        [class.active]="source === 'mine'">
-        {{ 'puzzles.tab.mine' | t }}
-      </a>
+      @for (page of pages; track page.path) {
+        <a
+          [routerLink]="['/puzzles', page.path]"
+          [class.active]="source === page.source">
+          {{ page.title | t }}
+        </a>
+      }
     </nav>
 
     @if (source === 'mine') {

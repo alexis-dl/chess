@@ -92,8 +92,7 @@
       @if (practice && card.id === 'tactics') {
         <a
           class="btn practice"
-          routerLink="/puzzles"
-          [queryParams]="{ source: 'mine' }">
+          routerLink="/puzzles/personalized">
           <mat-icon>extension</mat-icon>
           {{ 'stats.practice' | t }}
         </a>
