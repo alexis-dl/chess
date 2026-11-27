@@ -146,7 +146,8 @@ export const PUZZLES: Puzzle[] = [
     start:
       'e2e4 e7e6 d2d4 d7d5 e4e5 c7c5 c2c3 b8c6 g1f3 d8b6 f1d3 c5d4 c3d4 c6d4',
     fen: 'r1b1kbnr/pp3ppp/1q2p3/3pP3/3n4/3B1N2/PP3PPP/RNBQK2R w KQkq - 0 8',
-    solution: ['f3d4', 'b6d4', 'd3b5'],
+    // 10.Qxd4 wins too: it is pointed out as a good move, not the line's
+    solution: ['f3d4', 'b6d4', 'd3b5', 'c8d7', 'b5d7', 'e8d7', 'd1d4'],
   },
   {
     id: 'qgd-elephant-trap',

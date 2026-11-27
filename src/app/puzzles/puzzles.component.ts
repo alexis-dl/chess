@@ -38,7 +38,7 @@ import {
 } from './generator/game-sources';
 import { GamePuzzleKind } from './generator/puzzle-finder';
 import { PuzzleGeneratorService } from './generator/puzzle-generator.service';
-import { winChances } from './generator/puzzle-finder';
+import { WINNING, winChances } from './generator/puzzle-finder';
 import { EngineQueueService } from '../game-analysis/engine-queue.service';
 import { GameAnalysisService } from '../game-analysis/game-analysis.service';
 
@@ -49,7 +49,10 @@ const UNDO_WRONG_MOVE_DELAY_MS = 600;
 const ENGINE_DELAY_MS = 150;
 /** Depth of the check of another move than the line's (quick). */
 const ALTERNATIVE_DEPTH = 12;
-/** Another move of the opening line is fine if it loses less than this. */
+/**
+ * Another move than the expected one is fine if it loses less than this (or
+ * if both win clearly).
+ */
 const ALTERNATIVE_MARGIN = 0.1;
 const SOLVED_STORAGE_KEYS: Record<PuzzleSource, string> = {
   collection: 'chess.solvedPuzzles',
@@ -718,12 +721,16 @@ export class PuzzlesComponent implements OnInit, DoCheck, OnDestroy {
           this.busy = false;
         }, OPPONENT_DELAY_MS);
       }
-    } else if (this.inOpeningLine && this.engine.available) {
+    } else if (
+      this.step === 0 &&
+      history[history.length - 1].san === this.gamePuzzle?.played
+    ) {
+      this.feedback = 'gameMove';
+      this.takeBack();
+    } else if (this.engine.available) {
       void this.checkAlternative(played, steps[this.step]);
     } else {
-      const san = history[history.length - 1].san;
-      this.feedback =
-        this.step === 0 && san === this.gamePuzzle?.played ? 'gameMove' : 'wrong';
+      this.feedback = 'wrong';
       this.takeBack();
     }
   }
@@ -741,9 +748,9 @@ export class PuzzlesComponent implements OnInit, DoCheck, OnDestroy {
   }
 
   /**
-   * In the opening line, another move than the line's: Stockfish says
-   * whether it is fine too (orange) or a mistake (red). It is taken back in
-   * both cases, the line goes on with its own move.
+   * Another move than the expected one: Stockfish says whether it is fine
+   * too (orange: about as good, or winning as well) or a mistake (red). It is
+   * taken back in both cases, the puzzle goes on with its own move.
    */
   private async checkAlternative(played: string, expected: string): Promise<void> {
     const run = this.run;
@@ -762,7 +769,13 @@ export class PuzzlesComponent implements OnInit, DoCheck, OnDestroy {
       const [mine] = await this.engineQueue.evaluate(fenAfter(played), ALTERNATIVE_DEPTH);
       const [theirs] = await this.engineQueue.evaluate(fenAfter(expected), ALTERNATIVE_DEPTH);
       const score = (line: typeof mine) => (line ? -winChances(line) : 1);
-      fine = score(mine) >= score(theirs) - ALTERNATIVE_MARGIN;
+      // the opponent is mated, or will be (mate 0: already mated)
+      const mates = (line: typeof mine) =>
+        !line || (line.mate !== null && line.mate <= 0);
+      fine =
+        (mates(mine) || !mates(theirs)) &&
+        (score(mine) >= score(theirs) - ALTERNATIVE_MARGIN ||
+          (score(mine) >= WINNING && score(theirs) >= WINNING));
     } catch {
       fine = false; // no engine: as a wrong move
     }
